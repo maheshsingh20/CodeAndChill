@@ -1,0 +1,31 @@
+# Node.js dependencies
+node_modules
+
+# Build output directory
+dist
+dist-ssr
+
+# Log files
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment variables
+# Never commit your secret keys or environment-specific settings
+.env
+.env.local
+.env.*.local
+
+# IDE and editor directories
+.idea
+.vscode/*
+!.vscode/extensions.json
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# Vite-specific cache and temp files
+.vite/
+coverage/
