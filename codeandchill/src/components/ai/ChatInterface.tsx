@@ -1,55 +1,71 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { Card, CardContent } from "@/components/ui/card.tsx";
 import { Input } from "@/components/ui/input.tsx";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
-import { Send, Bot, User, Square } from 'lucide-react';
+import { Send, Bot, User, Square } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area.tsx";
 import { cn } from "@/lib/utils.ts";
-import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
-import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
+import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
+import vsDark from "react-syntax-highlighter/dist/esm/styles/prism/vs-dark";
 
 type Message = {
   id: number;
   text: string;
-  sender: 'user' | 'ai';
+  sender: "user" | "ai";
 };
 
 export function ChatInterface() {
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "Hello! I'm your AI Assistant. How can I help you with your coding journey today?", sender: 'ai' }
+    {
+      id: 1,
+      text: "Hello! I'm your AI Assistant, powered by Gemini. How can I help you today?",
+      sender: "ai",
+    },
   ]);
-  const [input, setInput] = useState('');
+  const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
-  const [abortController, setAbortController] = useState<AbortController | null>(null); // ⬅️ for stopping
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const abortControllerRef = useRef<AbortController | null>(null);
 
+  // Scroll to bottom smoothly whenever messages change
   useEffect(() => {
     if (scrollAreaRef.current) {
       scrollAreaRef.current.scrollTo({
         top: scrollAreaRef.current.scrollHeight,
-        behavior: 'smooth'
+        behavior: "smooth",
       });
     }
   }, [messages]);
 
-  const handleSend = async () => {
-    if (input.trim() === '' || isLoading) return;
+  const handleStop = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setIsLoading(false);
+    }
+  };
 
-    const userMessage: Message = { id: Date.now(), text: input, sender: 'user' };
-    setMessages(prev => [...prev, userMessage]);
-    setInput('');
+  const handleSend = async () => {
+    if (input.trim() === "" || isLoading) return;
+
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    const userMessage: Message = {
+      id: Date.now(),
+      text: input,
+      sender: "user",
+    };
+    setMessages((prev) => [...prev, userMessage]);
+    setInput("");
     setIsLoading(true);
 
-    const controller = new AbortController(); // ⬅️ Create AbortController
-    setAbortController(controller);
-
     try {
-      const response = await fetch("http://localhost:3001/api/chat", {
+      const response = await fetch("http://localhost:3001/api/gemini-chat", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: userMessage.text }),
-        signal: controller.signal // ⬅️ Attach abort signal
+        signal: controller.signal,
       });
 
       if (!response.ok || !response.body) {
@@ -59,127 +75,168 @@ export function ChatInterface() {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
-
       const aiMessageId = Date.now() + 1;
-      setMessages(prev => [...prev, { id: aiMessageId, text: "", sender: 'ai' }]);
+
+      // Add empty AI message to update as stream comes
+      setMessages((prev) => [
+        ...prev,
+        { id: aiMessageId, text: "", sender: "ai" },
+      ]);
 
       while (!done) {
         const { value, done: readerDone } = await reader.read();
         done = readerDone;
-        const chunk = decoder.decode(value, { stream: true });
+        const chunk = decoder.decode(value);
 
-        const jsonChunks = chunk.split('\n').filter(Boolean);
-
-        for (const jsonChunk of jsonChunks) {
-          try {
-            const parsed = JSON.parse(jsonChunk);
-            if (parsed.response) {
-              setMessages(prev => prev.map(msg =>
-                msg.id === aiMessageId ? { ...msg, text: msg.text + parsed.response } : msg
-              ));
-            }
-          } catch (e) {
-            console.error("Failed to parse JSON chunk:", jsonChunk);
-          }
-        }
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === aiMessageId ? { ...msg, text: msg.text + chunk } : msg
+          )
+        );
       }
-
-    } catch (error) {
+    } catch (error: any) {
       if (error.name === "AbortError") {
-        console.log("Generation stopped by user.");
+        setMessages((prev) =>
+          prev.map((msg) =>
+            msg.id === Date.now() + 1 && msg.text === ""
+              ? { ...msg, text: "[Response stopped by user]" }
+              : msg
+          )
+        );
       } else {
-        console.error("Error communicating with AI:", error);
-        setMessages(prev => [...prev, { id: Date.now() + 1, text: "Sorry, an error occurred.", sender: 'ai' }]);
+        const errorMessage: Message = {
+          id: Date.now() + 1,
+          text: "Sorry, I'm having trouble connecting to the AI service.",
+          sender: "ai",
+        };
+        setMessages((prev) => [...prev, errorMessage]);
       }
     } finally {
       setIsLoading(false);
-      setAbortController(null); // reset
+      abortControllerRef.current = null;
     }
   };
 
-  const handleStop = () => {
-    if (abortController) {
-      abortController.abort(); // ⬅️ stop streaming
-      setIsLoading(false);
-    }
-  };
+  // Function to render code blocks if detected
+  const renderMessage = (text: string) => {
+    const codeRegex = /```(.*?)\n([\s\S]*?)```/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
 
-  const renderMessageContent = (text: string) => {
-    const codeRegex = /```([\s\S]*?)```/g;
-    const parts = text.split(codeRegex);
-
-    return parts.map((part, index) =>
-      index % 2 === 1 ? (
+    let match;
+    while ((match = codeRegex.exec(text)) !== null) {
+      const [full, lang, code] = match;
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+      parts.push(
         <SyntaxHighlighter
-          key={index}
-          language="javascript"
-          style={oneDark}
-          customStyle={{ borderRadius: "8px", fontSize: "0.85rem" }}
+          language={lang || "javascript"}
+          style={vsDark}
+          key={match.index}
+          className="rounded-md my-2"
         >
-          {part.trim()}
+          {code}
         </SyntaxHighlighter>
-      ) : (
-        <p key={index} className="text-sm leading-relaxed">{part}</p>
-      )
-    );
+      );
+      lastIndex = match.index + full.length;
+    }
+
+    if (lastIndex < text.length) {
+      parts.push(text.slice(lastIndex));
+    }
+
+    return parts;
   };
 
   return (
-    <Card className="rounded-2xl shadow-xl w-full h-[70vh] flex flex-col bg-gradient-to-br from-cyan-100 via-lime-100 to-gray-100 border border-cyan-200">
-      <CardContent className="p-6 flex flex-col flex-1 overflow-hidden">
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea ref={scrollAreaRef} className="h-full pr-4 -mr-4 scrollbar-thin scrollbar-thumb-cyan-400 scrollbar-track-cyan-100 rounded-lg">
-            <div className="space-y-6">
-              {messages.map(message => (
+    <Card className="rounded-2xl shadow-xl w-full h-[80vh] flex flex-col bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 border border-gray-700">
+      <CardContent className="p-4 md:p-6 flex flex-col flex-grow min-h-0">
+        <ScrollArea
+          className="flex-grow min-h-0 overflow-y-auto pr-4 -mr-4"
+          ref={scrollAreaRef}
+        >
+          <div className="space-y-4">
+            {messages.map((message) => (
+              <div
+                key={message.id}
+                className={cn(
+                  "flex items-start gap-3 max-w-[90%]",
+                  message.sender === "user"
+                    ? "ml-auto flex-row-reverse"
+                    : "mr-auto"
+                )}
+              >
+                <Avatar className="h-7 w-7 border border-gray-700 shadow-sm flex-shrink-0">
+                  <AvatarFallback
+                    className={cn(
+                      message.sender === "ai"
+                        ? "bg-cyan-900 text-cyan-300"
+                        : "bg-purple-700 text-white"
+                    )}
+                  >
+                    {message.sender === "ai" ? (
+                      <Bot className="h-4 w-4" />
+                    ) : (
+                      <User className="h-4 w-4" />
+                    )}
+                  </AvatarFallback>
+                </Avatar>
                 <div
-                  key={message.id}
                   className={cn(
-                    "flex items-start gap-4 max-w-[90%]",
-                    message.sender === 'user' ? "ml-auto justify-end" : "mr-auto justify-start"
+                    "p-3 rounded-xl whitespace-pre-wrap break-words shadow-md text-sm leading-relaxed",
+                    message.sender === "ai"
+                      ? "bg-gray-800 text-gray-200 border border-gray-700 rounded-bl-none"
+                      : "bg-gradient-to-r from-cyan-600 to-purple-700 text-white rounded-br-none"
                   )}
                 >
-                  {message.sender === 'ai' && (
-                    <Avatar className="h-8 w-8 border border-cyan-400 bg-cyan-200 flex-shrink-0">
-                      <AvatarFallback><Bot className="text-cyan-700" /></AvatarFallback>
-                    </Avatar>
-                  )}
-                  <div
-                    className={cn(
-                      "p-3 rounded-xl whitespace-pre-wrap break-words overflow-hidden",
-                      message.sender === 'ai'
-                        ? "bg-cyan-200 text-cyan-900"
-                        : "bg-cyan-700 text-white"
-                    )}
-                    style={{ wordBreak: "break-word" }}
-                  >
-                    {renderMessageContent(message.text)}
-                  </div>
-                  {message.sender === 'user' && (
-                    <Avatar className="h-8 w-8 border border-cyan-700 bg-cyan-700 flex-shrink-0">
-                      <AvatarFallback><User className="text-white" /></AvatarFallback>
-                    </Avatar>
-                  )}
+                  {renderMessage(message.text)}
                 </div>
-              ))}
-            </div>
-          </ScrollArea>
-        </div>
+              </div>
+            ))}
+            {isLoading && (
+              <div className="flex items-start gap-3">
+                <Avatar className="h-7 w-7 border border-gray-700 shadow-sm">
+                  <AvatarFallback className="bg-cyan-900 text-cyan-300">
+                    <Bot className="h-4 w-4" />
+                  </AvatarFallback>
+                </Avatar>
+                <div className="p-3 rounded-xl bg-gray-800 border border-gray-700 shadow-md">
+                  <div className="flex items-center space-x-1">
+                    <span className="h-2 w-2 bg-cyan-400 rounded-full animate-pulse [animation-delay:-0.3s]"></span>
+                    <span className="h-2 w-2 bg-cyan-400 rounded-full animate-pulse [animation-delay:-0.15s]"></span>
+                    <span className="h-2 w-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+        </ScrollArea>
 
-        <div className="mt-6 flex items-center gap-4">
+        <div className="mt-4 flex items-center gap-2">
           <Input
             value={input}
-            onChange={e => setInput(e.target.value)}
-            onKeyDown={e => e.key === 'Enter' && handleSend()}
+            onChange={(e) => setInput(e.target.value)}
+            onKeyDown={(e) => e.key === "Enter" && !isLoading && handleSend()}
             placeholder="Ask a question about coding..."
-            className="h-11 rounded-lg border-cyan-700 focus:border-cyan-800"
+            className="h-10 text-sm rounded-md bg-gray-800 border border-gray-700 text-gray-200 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-cyan-400 flex-grow"
             disabled={isLoading}
           />
           {isLoading ? (
-            <Button onClick={handleStop} className="h-11 bg-red-600 hover:bg-red-700 text-white rounded-lg">
-              <Square className="h-4 w-4" /> {/* Stop icon */}
+            <Button
+              onClick={handleStop}
+              variant="destructive"
+              size="sm"
+              className="h-10 w-10 rounded-md flex-shrink-0 bg-red-600 hover:bg-red-700"
+            >
+              <Square className="h-4 w-4" />
             </Button>
           ) : (
-            <Button onClick={handleSend} className="h-11 font-semibold bg-cyan-700 hover:bg-cyan-800 text-white rounded-lg">
+            <Button
+              onClick={handleSend}
+              size="sm"
+              className="h-10 w-10 rounded-md flex-shrink-0 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white shadow-md"
+            >
               <Send className="h-4 w-4" />
             </Button>
           )}

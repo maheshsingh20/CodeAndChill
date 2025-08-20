@@ -41,13 +41,13 @@ const popularCourses: Course[] = [
 
 export function PopularCoursesSection() {
   return (
-    <section className="py-20 bg-gradient-to-br from-lime-100 via-gray-100 to-cyan-100">
+    <section className="py-20 bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
       <div className="container mx-auto px-4 md:px-6">
-        <div className="text-center space-y-4 mb-12">
-          <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-cyan-900">
+        <div className="text-center space-y-6 mb-12">
+          <h2 className="text-3xl font-bold tracking-tighter sm:text-4xl text-cyan-400 drop-shadow-neon">
             Explore Our Popular Courses
           </h2>
-          <p className="max-w-2xl mx-auto text-cyan-800/90 md:text-xl/relaxed">
+          <p className="max-w-2xl mx-auto text-cyan-300/80 md:text-xl">
             Join thousands of learners on a journey to mastery.
           </p>
         </div>

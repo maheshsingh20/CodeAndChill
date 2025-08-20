@@ -5,31 +5,34 @@ import { Code, Bot, Server } from "lucide-react";
 export function LearningPaths() {
   const paths = [
     {
-      icon: <Code size={32} />,
+      icon: <Code size={32} className="text-cyan-400" />,
       title: "Full-Stack Development",
       desc: "Master the MERN stack from scratch to deployment.",
-      gradient: "from-lime-200 via-gray-200 to-cyan-100",
-      iconBg: "bg-lime-400 text-lime-900",
-      border: "border-lime-300",
-      text: "text-lime-900",
+      gradient: "from-gray-900/80 via-gray-800/70 to-gray-900/90",
+      iconBg: "bg-gray-800/60 text-cyan-400",
+      border: "border-gray-700",
+      textGradient:
+        "bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-cyan-400 to-cyan-500",
     },
     {
-      icon: <Bot size={32} />,
+      icon: <Bot size={32} className="text-purple-400" />,
       title: "AI & Machine Learning",
       desc: "Dive into data science, neural networks, and more.",
-      gradient: "from-gray-200 via-cyan-100 to-lime-200",
-      iconBg: "bg-cyan-200 text-cyan-900",
-      border: "border-cyan-200",
-      text: "text-cyan-900",
+      gradient: "from-gray-900/80 via-gray-800/70 to-gray-900/90",
+      iconBg: "bg-gray-800/60 text-purple-400",
+      border: "border-gray-700",
+      textGradient:
+        "bg-clip-text text-transparent bg-gradient-to-r from-purple-300 via-purple-400 to-purple-500",
     },
     {
-      icon: <Server size={32} />,
+      icon: <Server size={32} className="text-green-400" />,
       title: "Cloud & DevOps",
       desc: "Learn to build, deploy, and scale modern applications.",
-      gradient: "from-cyan-100 via-lime-200 to-gray-200",
-      iconBg: "bg-gray-200 text-gray-900",
-      border: "border-gray-300",
-      text: "text-gray-900",
+      gradient: "from-gray-900/80 via-gray-800/70 to-gray-900/90",
+      iconBg: "bg-gray-800/60 text-green-400",
+      border: "border-gray-700",
+      textGradient:
+        "bg-clip-text text-transparent bg-gradient-to-r from-green-300 via-green-400 to-green-500",
     },
   ];
 
@@ -40,16 +43,26 @@ export function LearningPaths() {
           <Card
             key={path.title}
             className={`
-              rounded-2xl shadow-lg border-2 ${path.border}
+              rounded-2xl shadow-xl ${path.border}
               bg-gradient-to-br ${path.gradient}
-              hover:shadow-2xl hover:scale-[1.03] transition-all duration-300 ease-in-out
-              p-8 flex items-center gap-6 min-h-[140px]
+              hover:shadow-neon hover:scale-[1.03] transition-all duration-300 ease-in-out
+              p-6 flex items-center gap-6 min-h-[140px]
             `}
           >
-            <div className={`p-4 rounded-xl shadow ${path.iconBg}`}>{path.icon}</div>
-            <div>
-              <CardTitle className={`text-lg font-bold ${path.text} drop-shadow`}>{path.title}</CardTitle>
-              <CardDescription className={`mt-1 ${path.text}/90`}>{path.desc}</CardDescription>
+            <div
+              className={`p-4 rounded-xl shadow-md ${path.iconBg} flex items-center justify-center`}
+            >
+              {path.icon}
+            </div>
+            <div className="flex flex-col">
+              <CardTitle
+                className={`text-lg font-bold ${path.textGradient} drop-shadow-md`}
+              >
+                {path.title}
+              </CardTitle>
+              <CardDescription className={`${path.textGradient}/80 mt-1`}>
+                {path.desc}
+              </CardDescription>
             </div>
           </Card>
         ))}

@@ -1,7 +1,11 @@
 import React from "react";
 import { useParams } from "react-router-dom";
 import { CourseRoadmap } from "@/components/LearningPath/CourseRoadmap.tsx";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar.tsx";
+import {
+  Avatar,
+  AvatarFallback,
+  AvatarImage,
+} from "@/components/ui/avatar.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
 import { Code } from "lucide-react";
 
@@ -20,10 +24,7 @@ const pathsData = {
       {
         level: "Beginner (Level 1)",
         courses: [
-          {
-            id: "html-css",
-            title: "HTML, CSS, & JavaScript for Beginners",
-          },
+          { id: "html-css", title: "HTML, CSS, & JavaScript for Beginners" },
           { id: "react-basics", title: "React Fundamentals" },
         ],
       },
@@ -46,7 +47,6 @@ const pathsData = {
       },
     ],
   },
-  // Add other paths here
 };
 
 export function PathDetailPage() {
@@ -55,40 +55,33 @@ export function PathDetailPage() {
 
   if (!path) {
     return (
-      <div className="min-h-screen flex items-center justify-center text-red-600 font-semibold text-xl">
+      <div className="min-h-screen flex items-center justify-center text-red-500 font-semibold text-xl">
         Learning Path not found.
       </div>
     );
   }
 
   return (
-    <div
-      className={`
-        w-full min-h-screen
-        bg-gradient-to-br from-lime-100 via-gray-100 to-cyan-100
-        border-t-4 border-cyan-200
-      `}
-    >
-      {/* Header */}
-      <header className="py-16 bg-white/70 backdrop-blur-md shadow-lg border-b border-cyan-200">
+    <div className="w-full min-h-screen bg-[#0a0a1a] text-white">
+      <header className="py-16 bg-[#111126]/80 backdrop-blur-md shadow-lg border-b border-[#4b0082]">
         <div className="container mx-auto max-w-7xl px-6 flex flex-col md:flex-row md:items-center md:gap-10">
           <div
-            className="p-4 bg-cyan-100 text-cyan-800 rounded-full w-fit mb-6 md:mb-0 shadow-md transition-transform duration-300 hover:scale-105"
+            className="p-4 bg-[#1f1f3a] text-[#ff4d6d] rounded-full w-fit mb-6 md:mb-0 shadow-md transition-transform duration-300 hover:scale-105"
             aria-hidden="true"
           >
             {path.icon}
           </div>
           <div>
-            <h1 className="text-4xl font-extrabold tracking-tight text-cyan-900">
+            <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-red-500 via-purple-500 to-pink-500 bg-clip-text text-transparent">
               {path.title}
             </h1>
-            <p className="mt-4 max-w-3xl text-lg text-cyan-800/80">
+            <p className="mt-4 max-w-3xl text-lg text-[#e0aaff]/80">
               {path.description}
             </p>
             <div className="mt-8 flex flex-wrap items-center gap-6">
               {/* Instructor */}
               <div className="flex items-center gap-3">
-                <Avatar className="h-12 w-12 border-2 border-cyan-300">
+                <Avatar className="h-12 w-12 border-2 border-[#bb33ff]">
                   <AvatarImage
                     src={path.instructor.image}
                     alt={`Instructor ${path.instructor.name}`}
@@ -104,7 +97,7 @@ export function PathDetailPage() {
                       .join("")}
                   </AvatarFallback>
                 </Avatar>
-                <span className="font-semibold text-cyan-900">
+                <span className="font-semibold text-[#ff66cc]">
                   Curated by {path.instructor.name}
                 </span>
               </div>
@@ -119,7 +112,7 @@ export function PathDetailPage() {
                     <Badge
                       key={tag}
                       variant="secondary"
-                      className="uppercase text-sm bg-cyan-50 text-cyan-800 border border-cyan-200 hover:bg-cyan-100 transition"
+                      className="uppercase text-sm bg-[#1a1a2e] text-[#00ff99] border border-[#33ffcc] hover:bg-[#22223b] transition"
                       role="listitem"
                       tabIndex={0}
                     >
@@ -139,11 +132,11 @@ export function PathDetailPage() {
         aria-label={`${path.title} roadmap`}
         className="container mx-auto max-w-7xl px-6 py-12"
       >
-        <div className="bg-white/80 backdrop-blur-lg rounded-2xl shadow-lg p-8 transition hover:shadow-xl">
+        <div className="bg-[#1a1a2e]/80 backdrop-blur-lg rounded-2xl shadow-lg p-8 transition hover:shadow-xl">
           {path.roadmap?.length ? (
             <CourseRoadmap roadmap={path.roadmap} />
           ) : (
-            <p className="text-center text-cyan-800/70">
+            <p className="text-center text-[#ff66cc]/70">
               No roadmap available.
             </p>
           )}

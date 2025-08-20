@@ -1,5 +1,12 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import React from "react";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Badge } from "@/components/ui/badge";
 
@@ -18,8 +25,9 @@ interface PostCardProps {
 
 export function PostCard({ post }: PostCardProps) {
   return (
-    <Link to={`/blogdesc`} className="block group">
-      <Card className="rounded-2xl shadow-xl border-2 border-cyan-200 bg-gradient-to-b from-lime-50 via-gray-50 to-cyan-50 hover:shadow-2xl hover:-translate-y-1.5 transition-transform duration-300 ease-in-out flex flex-col h-full overflow-hidden">
+    <Link to={`/blog/${post.id}`} className="block group">
+      <Card className="rounded-2xl shadow-xl border-2 border-cyan-200 bg-gradient-to-br from-lime-50 via-gray-50 to-cyan-50 dark:from-gray-800 dark:via-gray-900 dark:to-cyan-900 dark:border-cyan-700 hover:shadow-2xl hover:-translate-y-1.5 transition-transform duration-300 ease-in-out flex flex-col h-full overflow-hidden">
+        {/* Image Section */}
         <CardHeader className="p-0 relative">
           <div className="h-48 overflow-hidden relative">
             <img
@@ -30,21 +38,25 @@ export function PostCard({ post }: PostCardProps) {
             <div className="absolute inset-0 bg-gradient-to-t from-black/30 to-transparent opacity-70 group-hover:opacity-60 transition-opacity pointer-events-none"></div>
           </div>
         </CardHeader>
+
+        {/* Content Section */}
         <CardContent className="p-5 flex-grow">
           <Badge
-            variant="secondary"
-            className="mb-3 px-3 py-1 text-xs font-semibold tracking-wide bg-cyan-100 text-cyan-900 border border-cyan-300"
+            variant="outline"
+            className="mb-3 px-3 py-1 text-xs font-semibold tracking-wide border-cyan-300 text-cyan-900 dark:border-cyan-600 dark:text-cyan-200"
           >
             {post.category}
           </Badge>
-          <CardTitle className="text-lg font-extrabold leading-tight group-hover:text-cyan-700 transition-colors text-cyan-900">
+          <CardTitle className="text-lg font-extrabold leading-tight text-cyan-900 dark:text-cyan-200 group-hover:text-cyan-700 dark:group-hover:text-cyan-400 transition-colors">
             {post.title}
           </CardTitle>
-          <CardDescription className="mt-2 text-sm text-cyan-800/90 line-clamp-2">
+          <CardDescription className="mt-2 text-sm text-cyan-800/90 dark:text-cyan-300 line-clamp-2">
             Written by {post.author}
           </CardDescription>
         </CardContent>
-        <CardFooter className="p-5 pt-0 text-xs text-cyan-700 border-t border-cyan-200">
+
+        {/* Footer */}
+        <CardFooter className="p-5 pt-0 text-xs text-cyan-700 dark:text-cyan-400 border-t border-cyan-200 dark:border-cyan-700">
           {post.author} • {post.date}
         </CardFooter>
       </Card>

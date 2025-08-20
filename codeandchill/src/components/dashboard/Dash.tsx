@@ -1,4 +1,5 @@
 import React from "react";
+import { Sparkles } from "lucide-react";
 
 interface WelcomeBackProps {
   userName?: string;
@@ -20,20 +21,27 @@ export function WelcomeBack({
   return (
     <section
       aria-label="Welcome back user"
-      className="max-w-7xl mx-auto px-6 md:px-12 py-10"
+      className="w-full px-6 md:px-12 py-14 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800"
     >
-      <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-        {/* Greeting Text */}
-        <div className="flex-1 min-w-0">
-          <p className="text-sm text-muted-foreground select-none">{currentDate}</p>
-          <h1 className="text-5xl font-extrabold text-primary leading-tight truncate">
-            Welcome back, <span className="capitalize">{userName}</span>!
-          </h1>
-          <p className="mt-6 max-w-lg text-lg italic text-muted-foreground font-medium">
-            {quote}
-          </p>
-          <p className="mt-2 text-right text-muted-foreground font-semibold">{author}</p>
-        </div>
+      <div className="max-w-7xl mx-auto flex flex-col gap-6">
+        {/* Date */}
+        <p className="text-sm text-gray-200 opacity-70 tracking-wide">
+          {currentDate}
+        </p>
+
+        {/* Heading */}
+        <h1 className="text-5xl md:text-6xl font-extrabold leading-tight bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent flex items-center gap-3">
+          <Sparkles className="h-8 w-8 text-cyan-400" />
+          Welcome back, <span className="capitalize">{userName}</span>!
+        </h1>
+
+        {/* Quote */}
+        <blockquote className="mt-4 max-w-3xl text-xl md:text-2xl italic font-semibold bg-gradient-to-r from-purple-300 to-cyan-300 bg-clip-text text-transparent">
+          {quote}
+        </blockquote>
+        <p className="text-right text-gray-200 opacity-80 font-medium">
+          {author}
+        </p>
       </div>
     </section>
   );

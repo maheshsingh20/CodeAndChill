@@ -1,97 +1,60 @@
-import React from 'react';
-import { Card, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card.tsx";
+import React from "react";
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button.tsx";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 
-type ProblemSet = {
-  id: string;
-  icon: React.ReactNode;
-  title: string;
-  description: string;
-  problemsCount: number;
-  author: string;
-};
-
 interface ProblemSetCardProps {
-  set: ProblemSet;
+  set: {
+    slug: string;
+    title: string;
+    author: string;
+    description: string;
+    problemsCount: number;
+    icon: React.ReactNode;
+  };
 }
 
 export function ProblemSetCard({ set }: ProblemSetCardProps) {
   return (
-    <Link to={`/problems/${set.id}`} className="group block focus:outline-none">
+    <Link to={`/problems/${set.slug}`} className="group">
       <Card
         className="
-          rounded-2xl
-          bg-gradient-to-br from-white via-cyan-50 to-blue-50
-          border border-cyan-100
-          shadow-lg
-          transition-all
-          duration-300
-          ease-in-out
-          flex flex-col
-          h-full
-          hover:shadow-xl
-          hover:scale-[1.02]
-          focus-within:shadow-xl
+          flex flex-col h-full rounded-2xl border-2 border-cyan-500
+          bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900
+          shadow-lg hover:shadow-2xl hover:scale-[1.03]
+          transition-all duration-300
+          backdrop-blur-sm
         "
       >
-        {/* Card Header */}
         <CardHeader className="p-6">
           <div className="flex items-start gap-4">
-            {/* Icon bubble */}
-            <div
-              className="
-                p-4
-                bg-gradient-to-br from-cyan-100 to-cyan-200
-                text-cyan-900
-                rounded-xl
-                mt-1
-                shadow-inner
-                transition-transform
-                group-hover:scale-105
-                group-focus-within:scale-105
-              "
-            >
+            <div className="p-3 bg-cyan-700 text-white rounded-xl mt-1 shadow-md group-hover:bg-cyan-600 transition-colors">
               {set.icon}
             </div>
-
-            {/* Title & author */}
             <div>
-              <CardTitle className="text-xl font-bold text-cyan-900 group-hover:text-cyan-800 transition-colors">
+              <CardTitle className="text-xl font-bold text-cyan-400 group-hover:text-cyan-300 transition-colors">
                 {set.title}
               </CardTitle>
-              <CardDescription className="mt-1 text-cyan-800/80">
+              <CardDescription className="mt-1 text-cyan-300/80 text-sm">
                 by {set.author}
               </CardDescription>
             </div>
           </div>
-
-          {/* Description */}
-          <p className="text-cyan-800/70 text-sm pt-4">{set.description}</p>
+          <p className="text-cyan-200/70 text-sm pt-4">{set.description}</p>
         </CardHeader>
 
-        {/* Footer */}
-        <CardFooter
-          className="
-            p-6 mt-auto
-            flex justify-between items-center
-            bg-gradient-to-r from-cyan-50 to-blue-50
-            rounded-b-2xl
-            border-t border-cyan-100
-          "
-        >
-          <span className="font-semibold text-cyan-700">
+        <CardFooter className="p-6 mt-auto flex justify-between items-center bg-gray-800/50 border-t border-cyan-600 rounded-b-2xl">
+          <span className="font-semibold text-cyan-300/90">
             {set.problemsCount} Problems
           </span>
-          <div
-            className="
-              flex items-center
-              text-cyan-700
-              font-semibold
-              transition
-              group-hover:text-cyan-800
-            "
-          >
+          <div className="flex items-center text-cyan-400 font-semibold group-hover:text-cyan-300 transition-colors">
             View Set
             <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
           </div>

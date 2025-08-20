@@ -32,47 +32,57 @@ export function StoryCard({ story }: StoryCardProps) {
   return (
     <Card
       className={`
-        rounded-2xl border-2 border-cyan-200
-        bg-gradient-to-br from-lime-100 via-gray-100 to-cyan-100
-        shadow-xl hover:shadow-2xl hover:scale-[1.02]
-        transition-all duration-300 ease-in-out
+        rounded-2xl border border-gray-700
+        bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800
+        shadow-xl hover:shadow-cyan-500/20 hover:border-cyan-400
+        hover:scale-[1.02] transition-all duration-300 ease-in-out
         flex flex-col
       `}
       role="article"
       aria-label={`Success story: ${story.name} placed at ${story.company}`}
     >
+      {/* Header */}
       <CardHeader className="p-6 text-center">
-        <Avatar className="h-20 w-20 mb-4 ring-2 ring-cyan-200">
+        <Avatar className="h-20 w-20 mb-4 ring-2 ring-cyan-400/70 shadow-md mx-auto">
           <AvatarImage src={story.image} alt={story.name} />
-          <AvatarFallback>{story.name.charAt(0)}</AvatarFallback>
+          <AvatarFallback className="bg-cyan-700 text-white">
+            {story.name.charAt(0)}
+          </AvatarFallback>
         </Avatar>
 
-        <CardTitle className="text-xl font-bold text-cyan-900">
+        <CardTitle className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
           {story.name}
         </CardTitle>
-        <CardDescription className="mt-1 text-cyan-800 font-medium">
-          Placed at <span className="text-cyan-700 font-semibold">{story.company}</span>
+        <CardDescription className="mt-1 text-gray-300 font-medium">
+          Placed at{" "}
+          <span className="text-emerald-300 font-semibold">
+            {story.company}
+          </span>
         </CardDescription>
       </CardHeader>
 
+      {/* Quote */}
       <CardContent className="p-6 pt-0 flex-grow">
         <blockquote
-          className="text-cyan-800/95 italic border-l-2 border-cyan-200 pl-4 ml-0
-                     bg-white/40 dark:bg-black/10 p-3 rounded-md"
+          className="text-gray-200 italic border-l-2 border-cyan-400/60 pl-4
+                     bg-gray-800/60 p-3 rounded-md shadow-inner"
         >
           “{story.quote}”
         </blockquote>
       </CardContent>
 
+      {/* Footer */}
       <CardFooter className="p-6 pt-4 flex-col items-start gap-4">
         <div className="w-full">
-          <h4 className="text-sm font-semibold text-cyan-900 mb-2">Skills Learned</h4>
+          <h4 className="text-sm font-semibold text-cyan-300 mb-2">
+            Skills Learned
+          </h4>
 
           <div className="flex flex-wrap gap-2">
             {story.skills.map((skill) => (
               <Badge
                 key={skill}
-                className="bg-lime-100 text-lime-900 border-lime-200 px-3 py-1 rounded-full"
+                className="bg-gray-800 border border-gray-600 text-gray-200 hover:border-cyan-400 hover:text-cyan-300 transition rounded-full px-3 py-1"
               >
                 {skill}
               </Badge>
@@ -82,7 +92,7 @@ export function StoryCard({ story }: StoryCardProps) {
 
         <Button
           asChild
-          className="w-full bg-cyan-700 hover:bg-cyan-800 text-white font-semibold rounded-xl shadow"
+          className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg"
         >
           <a
             href="#"
