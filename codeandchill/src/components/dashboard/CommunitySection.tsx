@@ -39,43 +39,58 @@ export function CommunitySection() {
     <Section title="From the Community" viewAllLink="/community">
       <Card
         className="
-          rounded-2xl shadow-xl border-2 border-cyan-200
-          bg-gradient-to-br from-lime-200 via-gray-200 to-cyan-100
-          p-6 space-y-4
-          "
+          rounded-xl border border-gray-800 
+          bg-gradient-to-r from-gray-950 via-gray-900 to-black
+          shadow-lg
+          p-6 divide-y divide-gray-800
+        "
         role="list"
       >
-        {posts.map((post) => (
+        {posts.map((post, index) => (
           <article
             key={post.title}
             className="
-              flex items-start gap-4
-              hover:bg-cyan-50/80 p-4 -mx-6 rounded-xl transition-colors duration-300
-              border-b last:border-b-0 border-cyan-100 cursor-pointer
-              focus-within:ring-2 focus-within:ring-cyan-400 focus-within:outline-none
-              sm:gap-6 sm:p-5 sm:-mx-5
+              group flex items-start gap-4 
+              py-5 transition-all duration-300 
+              cursor-pointer 
+              hover:bg-gradient-to-r hover:from-purple-900/20 hover:to-pink-900/20
+              rounded-lg px-3
+              focus-within:ring-2 focus-within:ring-purple-500 focus-within:outline-none
             "
             tabIndex={0}
             role="listitem"
             aria-label={`${post.title} by ${post.user}, ${post.likes} likes, ${post.comments} comments`}
           >
-            <Avatar className="mt-1 ring-2 ring-cyan-300 shrink-0 flex-none">
+            {/* Avatar */}
+            <Avatar className="mt-1 border-2 border-purple-500/40 group-hover:border-pink-500/50 transition-all duration-300">
               <AvatarImage src={post.userImg} alt={`Avatar of ${post.user}`} />
               <AvatarFallback>{post.user.charAt(0)}</AvatarFallback>
             </Avatar>
+
+            {/* Content */}
             <div className="flex-grow min-w-0">
-              <p className="font-semibold text-base text-cyan-900 leading-tight truncate">
+              <p className="font-medium text-gray-200 leading-tight truncate group-hover:text-purple-400 transition-colors">
                 {post.title}
               </p>
-              <p className="text-xs text-gray-600 mt-1 truncate">by {post.user}</p>
+              <p className="text-sm text-gray-400 mt-1 truncate">
+                by {post.user}
+              </p>
             </div>
-            <div className="flex-shrink-0 flex flex-col items-end gap-3 text-xs text-cyan-800 min-w-[48px]">
-              <span className="flex items-center gap-1" aria-label={`${post.likes} likes`}>
-                <ThumbsUp size={16} className="text-cyan-600" />
+
+            {/* Stats */}
+            <div className="flex flex-col items-end gap-3 text-sm text-gray-400 min-w-[56px]">
+              <span
+                className="flex items-center gap-1 group-hover:text-purple-400 transition-colors"
+                aria-label={`${post.likes} likes`}
+              >
+                <ThumbsUp size={16} className="text-purple-400" />
                 {post.likes}
               </span>
-              <span className="flex items-center gap-1" aria-label={`${post.comments} comments`}>
-                <MessageSquare size={16} className="text-cyan-600" />
+              <span
+                className="flex items-center gap-1 group-hover:text-pink-400 transition-colors"
+                aria-label={`${post.comments} comments`}
+              >
+                <MessageSquare size={16} className="text-pink-400" />
                 {post.comments}
               </span>
             </div>

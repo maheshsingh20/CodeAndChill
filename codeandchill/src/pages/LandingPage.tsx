@@ -9,24 +9,36 @@ import { NewsletterSection } from "@/components/landing/NewsletterSection";
 
 export function LandingPage() {
   return (
-    <main className="flex flex-col w-full min-h-screen bg-gradient-to-br from-lime-100 via-white to-cyan-100">
-      {/* Hero */}
-      <HeroSection />
+    <main className="flex flex-col w-full min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 text-cyan-200">
+      {/* Hero Section */}
+      <section className="w-full py-16 bg-gradient-to-b from-gray-900 via-gray-900/90 to-gray-950">
+        <HeroSection />
+      </section>
 
       {/* Key Features */}
-      <KeyFeatures />
+      <section className="w-full py-16 px-4 md:px-12">
+        <KeyFeatures />
+      </section>
 
       {/* Popular Topics */}
-      <PopularTopics />
+      <section className="w-full py-16 px-4 md:px-12">
+        <PopularTopics />
+      </section>
 
-      {/* Contests */}
-      <ContestsPreview />
+      {/* Contests Preview */}
+      <section className="w-full py-16 px-4 md:px-12">
+        <ContestsPreview />
+      </section>
 
-      {/* Testimonials */}
-      <TestimonialsSection />
+      {/* Testimonials Section */}
+      <section className="w-full py-16 px-4 md:px-12 bg-gradient-to-b from-gray-900/80 to-gray-950/90">
+        <TestimonialsSection />
+      </section>
 
       {/* Newsletter Signup */}
-      <NewsletterSection />
+      <section className="w-full py-16 px-4 md:px-12">
+        <NewsletterSection />
+      </section>
     </main>
   );
 }

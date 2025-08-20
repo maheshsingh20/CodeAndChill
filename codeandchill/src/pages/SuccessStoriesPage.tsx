@@ -1,9 +1,9 @@
 import React from "react";
 import { Button } from "@/components/ui/button.tsx";
 import { StoryCard } from "@/components/success/StoryCard.tsx";
-import { PenSquare } from "lucide-react";
+import { PenSquare, Sparkles } from "lucide-react";
 
-// Mock data for success stories
+// Success stories mock data
 const stories = [
   {
     name: "Priya Sharma",
@@ -60,22 +60,39 @@ export function SuccessStoriesPage() {
     <div
       className={`
         w-full min-h-screen
-        bg-gradient-to-br from-lime-100 via-gray-100 to-cyan-100
-        border-t-4 border-cyan-200
+        bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800
+        border-t border-cyan-400/40
       `}
     >
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
         {/* Page Header */}
-        <header className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-cyan-900">
+        <header className="text-center mb-14">
+          <div className="flex items-center justify-center gap-3 mb-4">
+            <Sparkles className="w-6 h-6 text-cyan-400 animate-pulse" />
+            <span className="uppercase tracking-wide text-cyan-400 font-semibold text-sm">
+              Real Journeys
+            </span>
+            <Sparkles className="w-6 h-6 text-purple-400 animate-pulse" />
+          </div>
+          <h1
+            className="text-4xl md:text-5xl font-extrabold tracking-tight 
+            bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent drop-shadow-lg"
+          >
             Success Stories
           </h1>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-cyan-800/80">
-            Read how <span className="font-semibold text-cyan-900">Code &amp; Chill</span> has helped learners achieve their career dreams.
+          <p className="mt-4 max-w-2xl mx-auto text-lg text-gray-300 leading-relaxed">
+            Read how{" "}
+            <span className="font-semibold text-cyan-400">
+              Code &amp; Chill
+            </span>{" "}
+            has helped learners achieve their{" "}
+            <span className="font-semibold text-purple-400">dream careers</span>
+            .
           </p>
           <Button
             size="lg"
-            className="mt-6 font-semibold bg-cyan-700 hover:bg-cyan-800 text-white shadow-md rounded-xl"
+            className="mt-8 font-semibold bg-cyan-600 hover:bg-cyan-700 text-white 
+            shadow-lg shadow-cyan-500/30 rounded-xl px-6 py-3 transition-transform hover:scale-[1.02]"
           >
             <PenSquare className="mr-2 h-5 w-5" />
             Share Your Story
@@ -83,7 +100,7 @@ export function SuccessStoriesPage() {
         </header>
 
         {/* Stories Grid */}
-        <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        <main className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-10">
           {stories.map((story) => (
             <StoryCard key={story.name} story={story} />
           ))}

@@ -1,6 +1,5 @@
-import React from 'react';
-import { useParams } from "react-router-dom";
-import { Card } from "@/components/ui/card.tsx";
+import React, { useState, useEffect } from "react";
+import { useParams, Link } from "react-router-dom";
 import {
   Table,
   TableBody,
@@ -9,102 +8,111 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table.tsx";
+import { Card } from "@/components/ui/card.tsx";
 import { Badge } from "@/components/ui/badge.tsx";
-import { Link } from "react-router-dom";
-import { CheckCircle } from 'lucide-react';
-
-const problemSetDetails = {
-  id: "sda-sheet",
-  name: "SDA Problem Set",
-  description:
-    "A curated list of 450+ DSA problems to master data structures and algorithms, curated by Striver.",
-  problems: [
-    { id: "arrays-1", title: "Sort an array of 0s, 1s and 2s", difficulty: "Easy", topic: "Arrays", solved: true },
-    { id: "arrays-2", title: "Find the duplicate in an array of N+1 integers", difficulty: "Easy", topic: "Arrays", solved: true },
-    { id: "strings-1", title: "Reverse a String", difficulty: "Easy", topic: "Strings", solved: false },
-    { id: "dp-1", title: "Longest Common Subsequence", difficulty: "Medium", topic: "Dynamic Programming", solved: false },
-    { id: "graphs-1", title: "BFS of graph", difficulty: "Medium", topic: "Graphs", solved: false },
-  ]
-};
+import { CheckCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton.tsx";
 
 export function ProblemSetDetailPage() {
   const { setId } = useParams<{ setId: string }>();
+  const [problemSet, setProblemSet] = useState<any>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchProblemSet = async () => {
+      setLoading(true);
+      try {
+        const response = await fetch(
+          `http://localhost:3001/api/problem-sets/${setId}`
+        );
+        const data = await response.json();
+        setProblemSet(data);
+      } catch (err) {
+        console.error(err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    if (setId) fetchProblemSet();
+  }, [setId]);
 
   const difficultyColors: Record<string, string> = {
-    Easy: "text-green-600",
-    Medium: "text-yellow-600",
-    Hard: "text-red-600",
+    Easy: "text-green-400",
+    Medium: "text-yellow-400",
+    Hard: "text-red-400",
   };
 
+  if (loading || !problemSet) {
+    return (
+      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 min-h-screen flex items-center justify-center px-8">
+        <Skeleton className="h-[60vh] w-full rounded-2xl bg-gray-700/30 animate-pulse" />
+      </div>
+    );
+  }
+
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-lime-100 via-gray-100 to-cyan-100">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-12">
+    <div className="w-full min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 text-cyan-200">
+      <div className="container mx-auto max-w-7xl px-4 py-16">
         {/* Header */}
         <header className="mb-12 text-center">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-cyan-900">
-            {problemSetDetails.name}
+          <h1 className="text-4xl font-extrabold tracking-tight text-cyan-400 drop-shadow-md">
+            {problemSet.title}
           </h1>
-          <p className="mt-4 max-w-3xl mx-auto text-lg text-cyan-800/90">
-            {problemSetDetails.description}
+          <p className="mt-4 text-lg text-cyan-300/80 max-w-2xl mx-auto">
+            {problemSet.description}
           </p>
         </header>
 
-        {/* Table Card */}
+        {/* Problems Table */}
         <main>
-          <Card
-            className="
-              rounded-2xl
-              shadow-xl
-              border-2 border-cyan-200
-              bg-gradient-to-br from-lime-100 via-gray-100 to-cyan-100
-              overflow-hidden
-              transition-all duration-300 ease-in-out
-              hover:shadow-2xl hover:scale-[1.02]
-            "
-            role="region"
-            aria-label={`${problemSetDetails.name} problems`}
-          >
+          <Card className="rounded-2xl shadow-2xl overflow-hidden border border-cyan-700 backdrop-blur-lg bg-gray-900/50">
             <Table>
-              <TableHeader className="bg-cyan-100/40">
-                <TableRow>
-                  <TableHead className="w-[80px] text-cyan-900">Status</TableHead>
-                  <TableHead className="text-cyan-900">Problem</TableHead>
-                  <TableHead className="hidden md:table-cell text-cyan-900">Topic</TableHead>
-                  <TableHead className="text-right text-cyan-900">Difficulty</TableHead>
+              <TableHeader>
+                <TableRow className="bg-gray-800/70">
+                  <TableHead className="w-[80px] text-cyan-400">
+                    Status
+                  </TableHead>
+                  <TableHead className="text-cyan-300">Problem</TableHead>
+                  <TableHead className="hidden md:table-cell text-cyan-300">
+                    Topic
+                  </TableHead>
+                  <TableHead className="text-right text-cyan-300">
+                    Difficulty
+                  </TableHead>
                 </TableRow>
               </TableHeader>
-
               <TableBody>
-                {problemSetDetails.problems.map((problem) => (
+                {problemSet.problems.map((problem: any) => (
                   <TableRow
-                    key={problem.id}
-                    className={`
-                      transition-colors
-                      hover:bg-cyan-50/60
-                      ${problem.solved ? 'bg-lime-50/60' : ''}
-                    `}
+                    key={problem.slug}
+                    className="hover:bg-gray-800/50 transition-colors"
                   >
                     <TableCell className="text-center">
-                      {problem.solved && <CheckCircle className="h-5 w-5 text-green-500" aria-hidden />}
+                      {problem.solved && (
+                        <CheckCircle className="h-5 w-5 text-green-400" />
+                      )}
                     </TableCell>
-
                     <TableCell>
                       <Link
-                        to={`/solve/${problem.id}`}
-                        className="font-semibold text-cyan-800 hover:text-cyan-900 hover:underline"
-                        aria-label={`Open problem ${problem.title}`}
+                        to={`/solve/${problem.slug}`}
+                        className="font-semibold text-cyan-300 hover:text-cyan-400 transition-colors"
                       >
                         {problem.title}
                       </Link>
                     </TableCell>
-
                     <TableCell className="hidden md:table-cell">
-                      <Badge variant="secondary" className="bg-lime-100 text-lime-900 border-lime-200">
+                      <Badge
+                        variant="secondary"
+                        className="bg-cyan-700 text-cyan-200"
+                      >
                         {problem.topic}
                       </Badge>
                     </TableCell>
-
-                    <TableCell className={`text-right font-medium ${difficultyColors[problem.difficulty]}`}>
+                    <TableCell
+                      className={`text-right font-medium ${
+                        difficultyColors[problem.difficulty]
+                      }`}
+                    >
                       {problem.difficulty}
                     </TableCell>
                   </TableRow>

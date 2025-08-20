@@ -8,23 +8,25 @@ import {
 } from "@/components/ui/navigation-menu";
 
 export function NavMenu() {
+  const menuItems = [
+    { label: "Home", to: "/" },
+    { label: "Courses", to: "/courses" },
+    { label: "Problem Sets", to: "/problems" },
+    { label: "Blog", to: "/blog" },
+    { label: "About Us", to: "/about" },
+  ];
+
   return (
     <NavigationMenu>
-      <NavigationMenuList className="gap-2">
-        {[
-          { label: "Home", to: "/" },
-          { label: "Courses", to: "/courses" },
-          { label: "Problem Sets", to: "/problems" },
-          { label: "Blog", to: "/blog" },
-          { label: "About Us", to: "/about" },
-        ].map((item) => (
+      <NavigationMenuList className="flex gap-4">
+        {menuItems.map((item) => (
           <NavigationMenuItem key={item.to}>
             <Link
               to={item.to}
               className={`${navigationMenuTriggerStyle()} 
-                px-4 py-2 rounded-lg text-cyan-900 font-medium
-                hover:bg-gradient-to-r hover:from-cyan-100 hover:to-lime-100 
-                hover:text-cyan-950 transition-all duration-200
+                px-4 py-2 font-semibold text-cyan-300 drop-shadow-neon
+                hover:text-cyan-100 hover:scale-[1.05] 
+                transition-all duration-300
               `}
             >
               {item.label}
