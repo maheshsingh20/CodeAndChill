@@ -223,7 +223,7 @@ function App() {
               }
             />
             <Route
-              path="/quizzes/results/:resultId"
+              path="/quizzes/results/:attemptId"
               element={
                 isAuthenticated ? <QuizResultPage /> : <Navigate to="/auth" />
               }

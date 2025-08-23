@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { WelcomeBack } from "@/components/dashboard/Dash.tsx";
 import { LearningPaths } from "@/components/dashboard/LearningPaths.tsx";
@@ -22,15 +23,54 @@ const animationProps = {
 };
 
 export function HomePage(): JSX.Element {
+  const [userName, setUserName] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchUserProfile() {
+      try {
+        const token = localStorage.getItem("token"); // or wherever you store JWT
+        const response = await fetch("http://localhost:3001/api/user/profile", {
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`, // send JWT
+          },
+        });
+
+        if (!response.ok) throw new Error("Failed to fetch profile");
+
+        const data = await response.json();
+        console.log("Profile data:", data); // check API response
+        setUserName(data.name || "User"); // adjust based on your API
+      } catch (error) {
+        console.error("Error fetching user profile:", error);
+        setUserName("User");
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    fetchUserProfile();
+  }, []);
+
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 text-foreground">
       {/* Welcome Section */}
-      <WelcomeBack
-        userName="Mahesh"
-        coursesInProgress={3}
-        problemsSolved={7}
-        achievements={2}
-      />
+      {loading ? (
+        <WelcomeBack
+          userName="Loading..."
+          coursesInProgress={0}
+          problemsSolved={0}
+          achievements={0}
+        />
+      ) : (
+        <WelcomeBack
+          userName={userName || "User"}
+          coursesInProgress={3}
+          problemsSolved={7}
+          achievements={2}
+        />
+      )}
 
       <div className="container mx-auto max-w-7xl px-6 md:px-12 py-16 space-y-20">
         <motion.div {...animationProps}>
