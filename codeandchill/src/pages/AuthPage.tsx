@@ -37,7 +37,6 @@ export function AuthPage({ login }: AuthPageProps) {
       type === "login"
         ? "http://localhost:3001/api/auth/login"
         : "http://localhost:3001/api/auth/signup";
-
     const payload =
       type === "login" ? { email, password } : { name, email, password };
 
@@ -49,11 +48,17 @@ export function AuthPage({ login }: AuthPageProps) {
       });
 
       const data = await response.json();
-
       if (!response.ok) {
-        throw new Error(data.message || "An unknown error occurred.");
+        throw new Error(data.message || "Authentication failed");
       }
 
+      // =================================================================
+      // ## THE FIX IS HERE ##
+      // We must save the token to localStorage so other pages can use it.
+      // =================================================================
+      localStorage.setItem("authToken", data.token);
+
+      // Now, call the login function passed from the parent component
       login(data.token);
     } catch (err: any) {
       setError(err.message);
@@ -63,78 +68,55 @@ export function AuthPage({ login }: AuthPageProps) {
   };
 
   return (
-    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 bg-gradient-to-br from-gray-900 via-gray-950 to-black">
+    <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] px-4 bg-background">
       <Tabs defaultValue="login" className="w-full max-w-md">
         <div className="flex justify-center mb-6">
-          <div className="flex items-center gap-2 text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400">
-            <Code className="h-7 w-7" />
+          <div className="flex items-center gap-2 text-2xl font-bold">
+            <Code className="h-7 w-7 text-primary" />
             <span>Code & Chill</span>
           </div>
         </div>
-
-        <TabsList className="grid w-full grid-cols-2 border-b border-gray-800">
-          <TabsTrigger
-            className="text-gray-300 hover:text-cyan-400 data-[state=active]:text-cyan-400"
-            value="login"
-          >
-            Log In
-          </TabsTrigger>
-          <TabsTrigger
-            className="text-gray-300 hover:text-cyan-400 data-[state=active]:text-cyan-400"
-            value="signup"
-          >
-            Sign Up
-          </TabsTrigger>
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="login">Log In</TabsTrigger>
+          <TabsTrigger value="signup">Sign Up</TabsTrigger>
         </TabsList>
 
         <TabsContent value="login">
-          <Card className="bg-gray-900/80 border border-gray-700 shadow-neon rounded-2xl">
+          <Card>
             <CardHeader>
-              <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400">
-                Welcome Back
-              </CardTitle>
-              <CardDescription className="text-gray-300">
+              <CardTitle>Welcome Back</CardTitle>
+              <CardDescription>
                 Enter your credentials to access your account.
               </CardDescription>
             </CardHeader>
-
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="email-login" className="text-gray-200">
-                  Email
-                </Label>
+                <Label htmlFor="email-login">Email</Label>
                 <Input
                   id="email-login"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-gray-800 text-gray-100 border-gray-700 focus:border-cyan-400 focus:ring-cyan-400"
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="password-login" className="text-gray-200">
-                  Password
-                </Label>
+                <Label htmlFor="password-login">Password</Label>
                 <Input
                   id="password-login"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-gray-800 text-gray-100 border-gray-700 focus:border-cyan-400 focus:ring-cyan-400"
                 />
               </div>
-
               {error && (
-                <p className="text-sm text-red-500 font-semibold">{error}</p>
+                <p className="text-sm text-destructive font-medium">{error}</p>
               )}
-
               <Button
                 onClick={() => handleAuth("login")}
                 disabled={loading}
-                className="w-full bg-cyan-700 hover:bg-cyan-600 text-white font-bold shadow-neon transition-all duration-300"
+                className="w-full"
               >
                 {loading ? "Logging In..." : "Log In"}
               </Button>
@@ -143,66 +125,50 @@ export function AuthPage({ login }: AuthPageProps) {
         </TabsContent>
 
         <TabsContent value="signup">
-          <Card className="bg-gray-900/80 border border-gray-700 shadow-neon rounded-2xl">
+          <Card>
             <CardHeader>
-              <CardTitle className="bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-purple-400 to-pink-400">
-                Create an Account
-              </CardTitle>
-              <CardDescription className="text-gray-300">
+              <CardTitle>Create an Account</CardTitle>
+              <CardDescription>
                 Enter your details to start your learning journey.
               </CardDescription>
             </CardHeader>
-
             <CardContent className="space-y-4">
               <div className="space-y-2">
-                <Label htmlFor="name" className="text-gray-200">
-                  Full Name
-                </Label>
+                <Label htmlFor="name-signup">Full Name</Label>
                 <Input
-                  id="name"
+                  id="name-signup"
                   value={name}
                   onChange={(e) => setName(e.target.value)}
                   required
-                  className="bg-gray-800 text-gray-100 border-gray-700 focus:border-purple-400 focus:ring-purple-400"
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="email-signup" className="text-gray-200">
-                  Email
-                </Label>
+                <Label htmlFor="email-signup">Email</Label>
                 <Input
                   id="email-signup"
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required
-                  className="bg-gray-800 text-gray-100 border-gray-700 focus:border-purple-400 focus:ring-purple-400"
                 />
               </div>
-
               <div className="space-y-2">
-                <Label htmlFor="password-signup" className="text-gray-200">
-                  Password
-                </Label>
+                <Label htmlFor="password-signup">Password</Label>
                 <Input
                   id="password-signup"
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
-                  className="bg-gray-800 text-gray-100 border-gray-700 focus:border-purple-400 focus:ring-purple-400"
                 />
               </div>
-
               {error && (
-                <p className="text-sm text-red-500 font-semibold">{error}</p>
+                <p className="text-sm text-destructive font-medium">{error}</p>
               )}
-
               <Button
                 onClick={() => handleAuth("signup")}
                 disabled={loading}
-                className="w-full bg-purple-700 hover:bg-purple-600 text-white font-bold shadow-neon transition-all duration-300"
+                className="w-full"
               >
                 {loading ? "Signing Up..." : "Sign Up"}
               </Button>

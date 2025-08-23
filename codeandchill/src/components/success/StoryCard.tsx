@@ -22,6 +22,7 @@ type Story = {
   image: string;
   quote: string;
   skills: string[];
+  linkedinUrl?: string; // Add the optional linkedinUrl
 };
 
 interface StoryCardProps {
@@ -41,7 +42,6 @@ export function StoryCard({ story }: StoryCardProps) {
       role="article"
       aria-label={`Success story: ${story.name} placed at ${story.company}`}
     >
-      {/* Header */}
       <CardHeader className="p-6 text-center">
         <Avatar className="h-20 w-20 mb-4 ring-2 ring-cyan-400/70 shadow-md mx-auto">
           <AvatarImage src={story.image} alt={story.name} />
@@ -61,7 +61,6 @@ export function StoryCard({ story }: StoryCardProps) {
         </CardDescription>
       </CardHeader>
 
-      {/* Quote */}
       <CardContent className="p-6 pt-0 flex-grow">
         <blockquote
           className="text-gray-200 italic border-l-2 border-cyan-400/60 pl-4
@@ -71,7 +70,6 @@ export function StoryCard({ story }: StoryCardProps) {
         </blockquote>
       </CardContent>
 
-      {/* Footer */}
       <CardFooter className="p-6 pt-4 flex-col items-start gap-4">
         <div className="w-full">
           <h4 className="text-sm font-semibold text-cyan-300 mb-2">
@@ -90,20 +88,23 @@ export function StoryCard({ story }: StoryCardProps) {
           </div>
         </div>
 
-        <Button
-          asChild
-          className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg"
-        >
-          <a
-            href="#"
-            target="_blank"
-            rel="noopener noreferrer"
-            aria-label={`Open ${story.name}'s LinkedIn profile`}
-            className="inline-flex items-center justify-center gap-2"
+        {/* Conditionally render the LinkedIn button */}
+        {story.linkedinUrl && (
+          <Button
+            asChild
+            className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg"
           >
-            <Linkedin className="w-4 h-4" /> View LinkedIn
-          </a>
-        </Button>
+            <a
+              href={story.linkedinUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              aria-label={`Open ${story.name}'s LinkedIn profile`}
+              className="inline-flex items-center justify-center gap-2"
+            >
+              <Linkedin className="w-4 h-4" /> View LinkedIn
+            </a>
+          </Button>
+        )}
       </CardFooter>
     </Card>
   );
