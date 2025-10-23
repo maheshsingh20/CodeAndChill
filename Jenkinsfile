@@ -2,12 +2,13 @@ pipeline {
     agent any
 
     tools {
-        nodejs "node18"   // Name must match NodeJS tool configured in Jenkins
+        nodejs "node18"   // Must match name in Jenkins Tools config
     }
 
     environment {
         BACKEND_DIR = "Backend/server"
         FRONTEND_DIR = "codeandchill"
+        DEPLOY_DIR = "E:\\CodeChill\\DeployedFrontend"
     }
 
     stages {
@@ -25,7 +26,7 @@ pipeline {
                     bat 'npm install'
 
                     echo "🧠 Checking backend TypeScript compilation..."
-                    bat 'npx tsc --noEmit'
+                    bat 'npx tsc --noEmit || exit 1'
                 }
             }
         }
@@ -37,7 +38,7 @@ pipeline {
                     bat 'npm install'
 
                     echo "⚙️  Building frontend with Vite..."
-                    bat 'npm run build'
+                    bat 'npm run build || exit 1'
                 }
             }
         }
@@ -58,7 +59,10 @@ pipeline {
                 // === Frontend (Static Files) ===
                 dir("${FRONTEND_DIR}") {
                     echo "📂 Copying frontend build output to deploy folder..."
-                    bat 'xcopy /E /I /Y dist "E:\\CodeChill\\DeployedFrontend\\"'
+                    bat '''
+                    if not exist "%DEPLOY_DIR%" mkdir "%DEPLOY_DIR%"
+                    xcopy /E /I /Y dist "%DEPLOY_DIR%"
+                    '''
                 }
             }
         }
