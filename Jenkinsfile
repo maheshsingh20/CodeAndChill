@@ -36,7 +36,6 @@ pipeline {
                 dir("${FRONTEND_DIR}") {
                     echo "📦 Installing frontend dependencies..."
                     bat 'npm install'
-
                     echo "⚙️  Building frontend with Vite..."
                     bat 'npm run build || exit 1'
                 }
@@ -46,8 +45,6 @@ pipeline {
         stage('Deploy Locally') {
             steps {
                 echo "🚀 Deploying Code&Chill locally..."
-
-                // === Backend (Node + PM2) ===
                 dir("${BACKEND_DIR}") {
                     echo "🔁 Restarting backend with PM2..."
                     bat '''
@@ -55,8 +52,6 @@ pipeline {
                     pm2 start server.ts --interpreter ts-node-esm --name codeandchill-backend
                     '''
                 }
-
-                // === Frontend (Static Files) ===
                 dir("${FRONTEND_DIR}") {
                     echo "📂 Copying frontend build output to deploy folder..."
                     bat '''
@@ -69,11 +64,7 @@ pipeline {
     }
 
     post {
-        success {
-            echo "✅ Build & Deploy successful!"
-        }
-        failure {
-            echo "❌ Build failed — check console logs."
-        }
+        success { echo "✅ Build & Deploy successful!" }
+        failure { echo "❌ Build failed — check console logs." }
     }
 }
