@@ -1,25 +1,24 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button.tsx";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.tsx";
+} from "@/components/ui/card";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/components/ui/avatar.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
-import { Input } from "@/components/ui/input.tsx";
-import { Textarea } from "@/components/ui/textarea.tsx";
+} from "@/components/ui/avatar";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   ChartContainer,
   ChartTooltip,
   ChartTooltipContent,
-} from "@/components/ui/chart.tsx";
+} from "@/components/ui/chart";
 import {
   Bar,
   BarChart,
@@ -32,15 +31,11 @@ import {
 import {
   Edit,
   Save,
-  Award,
-  Medal,
-  Star,
-  Target,
   Mail,
   MapPin,
   Briefcase,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { Skeleton } from "@/components/ui/skeleton";
 
 // --- TypeScript Interfaces for Fetched Data ---
 interface ProfileData {

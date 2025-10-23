@@ -4,7 +4,7 @@ import {
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
-} from "@/components/ui/accordion.tsx";
+} from "@/components/ui/accordion";
 
 type Subtopic = {
   id: string;

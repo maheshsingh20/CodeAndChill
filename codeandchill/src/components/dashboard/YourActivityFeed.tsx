@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Section } from "./Section";
 import { Card } from "@/components/ui/card";
 import { Award, CheckCircle, Flame } from "lucide-react";

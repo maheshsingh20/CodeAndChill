@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { Card, CardContent } from "@/components/ui/card.tsx";
-import { CourseContentSidebar } from "@/components/engineering/CourseContentSidebar.tsx";
-import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { Card, CardContent } from "@/components/ui/card";
+import { CourseContentSidebar } from "@/components/engineering/CourseContentSidebar";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Subtopic {
   id: string;

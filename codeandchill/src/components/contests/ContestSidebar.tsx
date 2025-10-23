@@ -1,14 +1,14 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button.tsx";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.tsx";
+} from "@/components/ui/card";
 import { Trophy } from "lucide-react";
-import { Badge } from "@/components/ui/badge.tsx";
+import { Badge } from "@/components/ui/badge";
 
 const calculateTimeLeft = (endDate: string) => {
   const difference = +new Date(endDate) - +new Date();

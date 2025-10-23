@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button.tsx";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Clock } from "lucide-react";
 

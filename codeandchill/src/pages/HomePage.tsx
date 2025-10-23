@@ -1,18 +1,18 @@
-import React, { useState, useEffect } from "react";
-import { motion } from "framer-motion";
-import { WelcomeBack } from "@/components/dashboard/Dash.tsx";
-import { LearningPaths } from "@/components/dashboard/LearningPaths.tsx";
-import { ContestsPreview } from "@/components/dashboard/ContestsPreview.tsx";
-import { ContinueLearning } from "@/components/dashboard/ContinueLearning.tsx";
-import { CommunitySection } from "@/components/dashboard/CommunitySection.tsx";
-import { BlogSection } from "@/components/dashboard/BlogSection.tsx";
-import { SuccessStories } from "@/components/dashboard/SuccessStories.tsx";
-import { YourActivityFeed } from "@/components/dashboard/YourActivityFeed.tsx";
-import { QuizzesSection } from "@/components/dashboard/QuizzesSection.tsx";
+import React, { useState, useEffect, JSX } from "react";
+import { motion, Variants } from "framer-motion";
+import { WelcomeBack } from "@/components/dashboard/Dash";
+import { LearningPaths } from "@/components/dashboard/LearningPaths";
+import { ContestsPreview } from "@/components/dashboard/ContestsPreview";
+import { ContinueLearning } from "@/components/dashboard/ContinueLearning";
+import { CommunitySection } from "@/components/dashboard/CommunitySection";
+import { BlogSection } from "@/components/dashboard/BlogSection";
+import { SuccessStories } from "@/components/dashboard/SuccessStories";
+import { YourActivityFeed } from "@/components/dashboard/YourActivityFeed";
+import { QuizzesSection } from "@/components/dashboard/QuizzesSection";
 
-const sectionVariants = {
+const sectionVariants:Variants = {
   hidden: { opacity: 0, y: 30 },
-  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeInOut" } },
 };
 
 const animationProps = {
@@ -56,21 +56,7 @@ export function HomePage(): JSX.Element {
   return (
     <div className="min-h-screen w-full bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 text-foreground">
       {/* Welcome Section */}
-      {loading ? (
-        <WelcomeBack
-          userName="Loading..."
-          coursesInProgress={0}
-          problemsSolved={0}
-          achievements={0}
-        />
-      ) : (
-        <WelcomeBack
-          userName={userName || "User"}
-          coursesInProgress={3}
-          problemsSolved={7}
-          achievements={2}
-        />
-      )}
+      <WelcomeBack userName={loading ? "Loading..." : (userName || "User")} />
 
       <div className="container mx-auto max-w-7xl px-6 md:px-12 py-16 space-y-20">
         <motion.div {...animationProps}>

@@ -257,7 +257,15 @@ export function Navbar({ logout }) {
   );
 }
 
-const ListItem = React.forwardRef(
+interface ListItemProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
+  className?: string;
+  title: string;
+  icon: React.ReactNode;
+  color?: string;
+  children?: React.ReactNode;
+}
+
+const ListItem = React.forwardRef<HTMLAnchorElement, ListItemProps>(
   ({ className, title, icon, color, children, ...props }, ref) => (
     <li>
       <NavigationMenuLink asChild>
@@ -283,3 +291,4 @@ const ListItem = React.forwardRef(
     </li>
   )
 );
+ListItem.displayName = "ListItem";

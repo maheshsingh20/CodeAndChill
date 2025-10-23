@@ -1,5 +1,5 @@
 import React from "react";
-import { CodeEditor } from "@/components/playground/CodeEditor.tsx";
+import { CodeEditor } from "@/components/playground/CodeEditor";
 
 export function PlaygroundPage() {
   return (

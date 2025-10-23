@@ -1,5 +1,5 @@
 import React from "react";
-import { PathCard } from "@/components/LearningPath/PathCard.tsx";
+import { PathCard } from "@/components/LearningPath/PathCard";
 import { Code, Bot, Server, Cpu } from "lucide-react";
 
 const paths = [
@@ -72,7 +72,9 @@ export function LearningPathsPage() {
 
         <main className="grid grid-cols-1 md:grid-cols-2 gap-8">
           {paths.map((path) => (
-            <PathCard key={path.id} path={path} className="bg-card-dark" />
+            <div key={path.id} className="bg-card-dark">
+              <PathCard path={path} />
+            </div>
           ))}
         </main>
       </div>

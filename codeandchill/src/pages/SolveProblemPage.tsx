@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
-import { ProblemDescription } from "@/components/solve/ProblemDescription.tsx";
-import { CodeEditorPanel } from "@/components/solve/CodeEditorPanel.tsx";
-import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { ProblemDescription } from "@/components/solve/ProblemDescription";
+import { CodeEditorPanel } from "@/components/solve/CodeEditorPanel";
+import { Skeleton } from "@/components/ui/skeleton";
 
 export function SolveProblemPage() {
   const { problemId } = useParams<{ problemId: string }>();

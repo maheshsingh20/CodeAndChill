@@ -7,7 +7,7 @@ export function AuthButtons() {
       {/* Log In Button */}
       <Button
         variant="outline"
-        size="md"
+        size="default"
         className="min-w-[110px] rounded-lg font-semibold border border-cyan-500 text-cyan-400
                    hover:bg-cyan-500/10 hover:text-cyan-300 shadow-neon hover:shadow-neon
                    transition-all duration-300"
@@ -20,7 +20,7 @@ export function AuthButtons() {
 
       {/* Sign Up Button */}
       <Button
-        size="md"
+        size="default"
         className="min-w-[110px] rounded-lg font-semibold
                    bg-gradient-to-r from-purple-500 via-pink-500 to-cyan-500
                    text-white shadow-neon hover:shadow-neon-lg

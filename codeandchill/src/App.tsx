@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { JSX, useState } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -6,7 +6,7 @@ import {
   Navigate,
 } from "react-router-dom";
 
-// Import all pages (no .tsx extensions needed)
+// Import all pages (no  extensions needed)
 import { LandingPage } from "./pages/LandingPage";
 import { AuthPage } from "./pages/AuthPage";
 import { HomePage } from "./pages/HomePage";
@@ -25,10 +25,10 @@ import { BlogDetailPage } from "./pages/BlogDetailPage";
 import { EngineeringCoursesPage } from "./page2/EngineeringCoursesPage";
 import { EngineeringCourseDetailPage } from "./page2/EngineeringCourseDetailPage";
 import { PlaygroundPage } from "./page2/PlaygroundPage";
-import { ProblemSetsPage } from "./pages/ProblemSetsPage.tsx";
-import { ProblemSetDetailPage } from "./pages/ProblemSetDetailPage.tsx";
-import { SolveProblemPage } from "./pages/SolveProblemPage.tsx";
-import { SettingsPage } from "./page2/Settings.tsx";
+import { ProblemSetsPage } from "./pages/ProblemSetsPage";
+import { ProblemSetDetailPage } from "./pages/ProblemSetDetailPage";
+import { SolveProblemPage } from "./pages/SolveProblemPage";
+import { SettingsPage } from "./page2/Settings";
 
 // Layout components
 import { Navbar as PublicNavbar } from "./components/layout/Navbar";
@@ -107,7 +107,7 @@ function App() {
               element={<PrivateRoute element={<CoursesPage />} />}
             />
             <Route
-              path="/courses/:courseId"
+              path="/courses/:slug"
               element={<PrivateRoute element={<CourseDetailPage />} />}
             />
             <Route

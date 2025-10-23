@@ -1,11 +1,12 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useRef, useEffect } from "react";
-import { Button } from "@/components/ui/button.tsx";
-import { Card, CardContent } from "@/components/ui/card.tsx";
-import { Input } from "@/components/ui/input.tsx";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar.tsx";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Send, Bot, User, Square } from "lucide-react";
-import { ScrollArea } from "@/components/ui/scroll-area.tsx";
-import { cn } from "@/lib/utils.ts";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { cn } from "@/lib/utils";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
 import vsDark from "react-syntax-highlighter/dist/esm/styles/prism/vs-dark";
 

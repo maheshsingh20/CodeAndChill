@@ -1,5 +1,5 @@
 import React from "react";
-import { Card, CardTitle } from "@/components/ui/card.tsx";
+import { Card, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Lock, PlayCircle } from "lucide-react";
 

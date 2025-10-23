@@ -1,12 +1,12 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { CourseRoadmap } from "@/components/LearningPath/CourseRoadmap.tsx";
+import { CourseRoadmap } from "@/components/LearningPath/CourseRoadmap";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/components/ui/avatar.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
+} from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Code } from "lucide-react";
 
 const pathsData = {

@@ -1,12 +1,13 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Card, CardTitle } from "@/components/ui/card.tsx";
-import { Button } from "@/components/ui/button.tsx";
+import { Card, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { CheckCircle } from "lucide-react";
 
 export function QuizListPage() {
   const { subjectSlug } = useParams();
-  const [data, setData] = useState({ subject: null, quizzes: [] });
+  const [data, setData] = useState<{ subject: { name: string } | null; quizzes: any[] }>({ subject: null, quizzes: [] });
   const token = localStorage.getItem("authToken");
 
   useEffect(() => {

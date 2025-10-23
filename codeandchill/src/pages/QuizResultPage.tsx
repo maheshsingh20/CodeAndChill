@@ -1,11 +1,11 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
-import { Card, CardTitle } from "@/components/ui/card.tsx";
-import { Button } from "@/components/ui/button.tsx";
-import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { Card, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle, XCircle } from "lucide-react";
-import { cn } from "@/lib/utils.ts";
-
+import { cn } from "@/lib/utils";
 interface Option {
   text: string;
   isCorrect: boolean;
