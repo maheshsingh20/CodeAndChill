@@ -1,8 +1,9 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button.tsx";
-import { StoryCard } from "@/components/success/StoryCard.tsx";
-import { PenSquare, Sparkles } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { Button } from "@/components/ui/button";
+import { StoryCard } from "@/components/success/StoryCard";
+import { PenSquare} from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import {
   Dialog,
   DialogContent,
@@ -10,10 +11,10 @@ import {
   DialogHeader,
   DialogTitle,
   DialogTrigger,
-} from "@/components/ui/dialog.tsx";
-import { Input } from "@/components/ui/input.tsx";
-import { Textarea } from "@/components/ui/textarea.tsx";
-import { Label } from "@/components/ui/label.tsx";
+} from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
 
 export function SuccessStoriesPage() {
   const [stories, setStories] = useState([]);

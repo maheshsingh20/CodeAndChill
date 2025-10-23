@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { Code, Menu, Search } from "lucide-react";
-import { Input } from "@/components/ui/input";
+import { Code, Menu} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { NavMenu } from "./NavMenu";
@@ -45,14 +44,14 @@ export function Navbar() {
           <div className="hidden md:flex items-center gap-2">
             <Button
               variant="outline"
-              size="md"
+              size="default"
               className="min-w-[110px] font-semibold border-cyan-500 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 transition-all duration-300 shadow-neon"
               asChild
             >
               <Link to="/auth?tab=login">Log In</Link>
             </Button>
             <Button
-              size="md"
+              size="default"
               className="min-w-[110px] font-semibold bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 text-white hover:shadow-neon-lg hover:scale-[1.03] transition-all duration-300"
               asChild
             >
@@ -80,14 +79,14 @@ export function Navbar() {
                 <div className="flex flex-col gap-4 mt-6">
                   <Button
                     variant="outline"
-                    size="md"
+                    size="default"
                     className="min-w-[110px] font-semibold border-cyan-500 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 transition-all duration-300 shadow-neon"
                     asChild
                   >
                     <Link to="/auth?tab=login">Log In</Link>
                   </Button>
                   <Button
-                    size="md"
+                    size="default"
                     className="min-w-[110px] font-semibold bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 text-white hover:shadow-neon-lg hover:scale-[1.03] transition-all duration-300"
                     asChild
                   >

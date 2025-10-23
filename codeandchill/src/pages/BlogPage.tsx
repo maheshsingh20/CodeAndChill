@@ -1,5 +1,5 @@
 import React from "react";
-import { BlogHeader } from "@/components/blog/BlogHeader.tsx";
+import { BlogHeader } from "@/components/blog/BlogHeader";
 import {
   Card,
   CardContent,
@@ -7,9 +7,9 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.tsx";
+} from "@/components/ui/card";
 import { Link } from "react-router-dom";
-import { Badge } from "@/components/ui/badge.tsx";
+import { Badge } from "@/components/ui/badge";
 
 const featuredPost = {
   id: "system-design-guide",

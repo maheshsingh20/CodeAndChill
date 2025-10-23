@@ -4,6 +4,7 @@ import mongoose, { Schema, Types, Document } from "mongoose";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import cors from "cors";
+import Razorpay from "razorpay";
 import dotenv from "dotenv";
 import fetch from "node-fetch";
 import { GoogleGenerativeAI } from "@google/generative-ai";
@@ -14,10 +15,23 @@ dotenv.config();
 // ## SETUP & CONFIGURATION ##
 // =======================================================
 
-if (!process.env.GEMINI_API_KEY || !process.env.JWT_SECRET) {
-  console.error("FATAL ERROR: API keys are not defined in .env file.");
+
+// +++ FIX: Add Razorpay environment variable checks
+if (
+  !process.env.GEMINI_API_KEY ||
+  !process.env.JWT_SECRET ||
+  !process.env.RAZORPAY_KEY_ID ||
+  !process.env.RAZORPAY_KEY_SECRET
+) {
+  console.error("FATAL ERROR: API or Payment keys are not defined in .env file.");
   process.exit(1);
 }
+
+// +++ FIX: Initialize Razorpay instance correctly
+const razorpay = new Razorpay({
+  key_id: process.env.RAZORPAY_KEY_ID,
+  key_secret: process.env.RAZORPAY_KEY_SECRET,
+});
 
 const app = express();
 app.use(cors({ origin: "http://localhost:5173" }));
@@ -31,7 +45,9 @@ mongoose
   .catch((err) => console.error("MongoDB connection error:", err));
 
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
-const geminiModel = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+const geminiModel = genAI.getGenerativeModel({
+  model: "models/gemini-2.5-pro",
+});
 
 // =======================================================
 // ## DATABASE MODELS ##
@@ -137,6 +153,12 @@ const QuestionSchema = new Schema({
   options: [OptionSchema],
   explanation: String,
 });
+// Added IQuestion interface to match the QuestionSchema
+interface IQuestion {
+  questionText: string;
+  options: IOption[];
+  explanation?: string;
+}
 interface IQuiz extends Document {
   title: string;
   slug: string;
@@ -166,8 +188,6 @@ const QuizAttempt = mongoose.model("QuizAttempt", QuizAttemptSchema);
 
 
 // NEW: SuccessStory Model// NEW: SuccessStory Model
-
-
 const SuccessStorySchema = new mongoose.Schema(
   {
     name: { type: String, required: true },
@@ -183,7 +203,67 @@ const SuccessStorySchema = new mongoose.Schema(
 );
 const SuccessStory = mongoose.model("SuccessStory", SuccessStorySchema);
 
+//General Courses schema 
+// Mirrors your seeding schema; guarded to avoid OverwriteModelError
+const GeneralTopicSchema = new Schema({
+  title: { type: String, required: true },
+  contentType: { type: String, enum: ["video", "text", "table"], required: true },
+  videoUrl: String,
+  textContent: String,
+  tableData: [[String]],
+});
+const GeneralLessonSchema = new Schema({
+  title: { type: String, required: true },
+  topics: [GeneralTopicSchema],
+});
+const GeneralModuleSchema = new Schema({
+  title: { type: String, required: true },
+  lessons: [GeneralLessonSchema],
+});
+const GeneralCourseSchema = new Schema({
+  title: { type: String, required: true },
+  slug: { type: String, required: true, unique: true },
+  description: { type: String, required: true },
+  tutor: { name: String, image: String },
+  cost: { type: Number, required: true },
+  modules: [GeneralModuleSchema],
+});
+const GeneralCourse =
+  mongoose.models.GenralCourse ||
+  mongoose.model("GenralCourse", GeneralCourseSchema);
 
+const EnrollmentSchema = new Schema(
+  {
+    userId: { type: Schema.Types.ObjectId, ref: "User", required: true },
+    courseId: {
+      type: Schema.Types.ObjectId,
+      ref: "GenralCourse",
+      required: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "enrolled", "paid", "cancelled"],
+      default: "pending",
+    },
+    price: { type: Number, required: true }, // snapshot (in INR)
+    payment: {
+      orderId: String,
+      paymentId: String,
+      signature: String,
+      currency: String,
+      method: String,
+    },
+  },
+  { timestamps: true }
+);
+EnrollmentSchema.index({ userId: 1, courseId: 1 }, { unique: true });
+const Enrollment =
+  mongoose.models.Enrollment || mongoose.model("Enrollment", EnrollmentSchema);
+const canAccessCourse = async (userId: string, courseId: string) => {
+  const enr = await Enrollment.findOne({ userId, courseId });
+  if (!enr) return false;
+  return enr.status === "paid" || enr.status === "enrolled";
+};
 // =======================================================
 // ## AUTHENTICATION MIDDLEWARE ##
 // =======================================================
@@ -624,6 +704,159 @@ storyRouter.post("/", authMiddleware, async (req: AuthRequest, res: Response) =>
 
 app.use("/api/stories", storyRouter);
 
+
+
+
+// ---------- General Courses: Catalog & Description ----------
+const generalCourseRouter = express.Router();
+
+// ... (your existing GET /api/general-courses route is fine)
+generalCourseRouter.get("/", async (_req, res) => {
+  try {
+    const courses = await GeneralCourse.find({})
+      .select("title slug description tutor cost")
+      .lean();
+    res.json(courses);
+  } catch (e) {
+    res.status(500).json({ message: "Error fetching courses" });
+  }
+});
+
+
+// +++ FIX: Modify this route to send the full course object for the detail page
+// The content will be protected by the /learn/:slug route later anyway.
+generalCourseRouter.get("/:slug", async (req, res) => {
+  try {
+    const course = await GeneralCourse.findOne({ slug: req.params.slug }).lean();
+    if (!course) return res.status(404).json({ message: "Course not found" });
+    res.json(course); // Send the full course object
+  } catch (e) {
+    res.status(500).json({ message: "Error fetching course detail" });
+  }
+});
+
+app.use("/api/general-courses", generalCourseRouter);
+
+// ---------- Enrollment & Payment ----------
+const enrollmentRouter = express.Router();
+
+// +++ ADD: New route to check enrollment status for a specific course
+enrollmentRouter.get("/status/:slug", authMiddleware, async (req: AuthRequest, res: Response) => {
+    try {
+        const course = await GeneralCourse.findOne({ slug: req.params.slug }).select("_id");
+        if (!course) return res.status(404).json({ message: "Course not found" });
+
+        const enrollment = await Enrollment.findOne({
+            userId: req.user._id,
+            courseId: course._id,
+        });
+
+        if (enrollment && (enrollment.status === 'paid' || enrollment.status === 'enrolled')) {
+            return res.json({ isEnrolled: true });
+        }
+        
+        res.json({ isEnrolled: false });
+    } catch (error) {
+        res.status(500).json({ message: "Server error checking enrollment status" });
+    }
+});
+
+
+// POST /api/enrollment/free/:slug -> enroll free courses (Your existing code is fine)
+// CORRECTED: The route is now /api/enroll/free and accepts a POST request
+app.post("/api/enroll/free", authMiddleware, async (req: AuthRequest, res) => {
+    const { courseId } = req.body;
+    try {
+        const course = await GeneralCourse.findById(courseId);
+        if (!course || course.cost > 0) {
+            return res.status(400).json({ message: "This course is not free." });
+        }
+        await Enrollment.findOneAndUpdate(
+            { userId: req.user._id, courseId: courseId },
+            { status: 'enrolled' },
+            { upsert: true }
+        );
+        res.status(201).json({ message: "Enrollment successful!" });
+    } catch (error) {
+        res.status(500).json({ message: "Enrollment failed." });
+    }
+});
+
+// POST /api/enrollment/payment/create-order -> for paid courses
+enrollmentRouter.post("/payment/create-order", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { courseSlug } = req.body;
+    const course = await GeneralCourse.findOne({ slug: courseSlug });
+    if (!course) return res.status(404).json({ message: "Course not found" });
+    if (course.cost <= 0) return res.status(400).json({ message: "Course is free" });
+
+    const amount = Math.round(course.cost * 100); // INR to paise
+    // +++ FIX: Changed `azorpay` to `razorpay`
+    const order = await razorpay.orders.create({
+      amount,
+      currency: "INR",
+      receipt: `rcpt_${course._id}_${Date.now()}`,
+      notes: { courseId: course._id.toString(), userId: req.user._id.toString() },
+    });
+
+    await Enrollment.findOneAndUpdate(
+      { userId: req.user._id, courseId: course._id },
+      { $set: { status: "pending", price: course.cost, "payment.orderId": order.id } },
+      { upsert: true, new: true }
+    );
+
+    res.json({
+      key: process.env.RAZORPAY_KEY_ID,
+      orderId: order.id,
+      amount: order.amount,
+      currency: order.currency,
+      user: { name: req.user.name, email: req.user.email }, // Pass user info
+      course: { title: course.title, slug: course.slug, cost: course.cost },
+    });
+  } catch (e) {
+    console.error("Create order error:", e);
+    res.status(500).json({ message: "Failed to create order" });
+  }
+});
+
+// POST /api/enrollment/payment/verify -> verify signature and mark paid
+enrollmentRouter.post("/payment/verify", authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { razorpay_order_id, razorpay_payment_id, razorpay_signature, courseSlug } = req.body;
+    const course = await GeneralCourse.findOne({ slug: courseSlug });
+    if (!course) return res.status(404).json({ message: "Course not found" });
+
+    const body = `${razorpay_order_id}|${razorpay_payment_id}`;
+    const expectedSignature = crypto
+      .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET as string)
+      .update(body)
+      .digest("hex");
+
+    if (expectedSignature !== razorpay_signature) {
+      return res.status(400).json({ message: "Invalid payment signature" });
+    }
+
+    // Find and update the enrollment
+    const enr = await Enrollment.findOneAndUpdate(
+       { userId: req.user._id, courseId: course._id, "payment.orderId": razorpay_order_id },
+       {
+         $set: {
+           status: "paid",
+           "payment.paymentId": razorpay_payment_id,
+           "payment.signature": razorpay_signature,
+         },
+       },
+       { new: true }
+    );
+    if (!enr) return res.status(404).json({ message: "Enrollment not found for this order" });
+
+    res.json({ success: true, message: "Payment successful!" });
+  } catch (e) {
+    res.status(500).json({ message: "Payment verification failed" });
+  }
+});
+// ... (rest of your enrollmentRouter and server code)
+app.use("/api/enrollment", enrollmentRouter);
 
 // --- Start the Server ---
 const PORT = 3001;

@@ -1,12 +1,12 @@
 import React from "react";
-import { Input } from "@/components/ui/input.tsx";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select.tsx";
+} from "@/components/ui/select";
 import { Search } from "lucide-react";
 
 export function CoursePageHeader() {

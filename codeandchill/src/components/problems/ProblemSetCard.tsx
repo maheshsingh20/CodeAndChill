@@ -5,8 +5,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.tsx";
-import { Button } from "@/components/ui/button.tsx";
+} from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 

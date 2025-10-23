@@ -6,7 +6,7 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.tsx";
+} from "@/components/ui/card";
 import { Link } from "react-router-dom";
 import { Star } from "lucide-react";
 

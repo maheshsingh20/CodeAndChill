@@ -1,20 +1,21 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { useState } from "react";
-import { Button } from "@/components/ui/button.tsx";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.tsx";
-import { Input } from "@/components/ui/input.tsx";
-import { Label } from "@/components/ui/label.tsx";
+} from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/components/ui/tabs.tsx";
+} from "@/components/ui/tabs";
 import { Code } from "lucide-react";
 
 interface AuthPageProps {

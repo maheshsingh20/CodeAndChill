@@ -1,17 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button.tsx";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.tsx";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group.tsx";
-import { Label } from "@/components/ui/label.tsx";
-import { Progress } from "@/components/ui/progress.tsx";
-import { Skeleton } from "@/components/ui/skeleton.tsx";
+} from "@/components/ui/card";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Label } from "@/components/ui/label";
+import { Progress } from "@/components/ui/progress";
+import { Skeleton } from "@/components/ui/skeleton";
 
 interface Quiz {
   _id: string;

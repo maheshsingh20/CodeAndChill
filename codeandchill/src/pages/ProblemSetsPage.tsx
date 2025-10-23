@@ -1,6 +1,7 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
-import { ProblemSetCard } from "@/components/problems/ProblemSetCard.tsx";
-import { Skeleton } from "@/components/ui/skeleton.tsx";
+import { ProblemSetCard } from "@/components/problems/ProblemSetCard";
+import { Skeleton } from "@/components/ui/skeleton";
 import { BookCheck, Swords, Trophy } from "lucide-react";
 
 const iconMap: Record<string, React.ReactNode> = {

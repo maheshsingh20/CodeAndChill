@@ -1,5 +1,5 @@
 import React from "react";
-import { SubjectCard } from "@/components/engineering/SubjectCard.tsx";
+import { SubjectCard } from "@/components/engineering/SubjectCard";
 import { Cpu, Database, Network, Server } from "lucide-react";
 
 // Mock data for the engineering subjects
@@ -42,6 +42,9 @@ const subjects = [
    {
       id: "web-development",
       icon: <Cpu />,
+      title: "Web Development",
+      description:
+         "Build responsive and accessible web applications using modern frameworks, HTML, CSS, and JavaScript/TypeScript.",
    }
 ];
 

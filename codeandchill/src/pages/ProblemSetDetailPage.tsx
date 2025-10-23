@@ -1,7 +1,8 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import { useParams, Link } from "react-router-dom";
 // FIX: Import Card from its own file
-import { Card } from "@/components/ui/card.tsx";
+import { Card } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -9,9 +10,9 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
-import { Skeleton } from "@/components/ui/skeleton.tsx";
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Skeleton } from "@/components/ui/skeleton";
 import { CheckCircle } from "lucide-react";
 
 export function ProblemSetDetailPage() {

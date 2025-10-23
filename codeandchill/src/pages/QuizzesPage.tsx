@@ -1,5 +1,6 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
-import { Card, CardDescription, CardTitle } from "@/components/ui/card.tsx";
+import { Card, CardDescription, CardTitle } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
 export function QuizzesPage() {

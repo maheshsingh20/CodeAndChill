@@ -1,14 +1,15 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState } from "react";
 import Editor from "@monaco-editor/react";
-import { Button } from "@/components/ui/button.tsx";
-import { Card } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/components/ui/tabs.tsx";
-import { Textarea } from "@/components/ui/textarea.tsx";
+} from "@/components/ui/tabs";
+import { Textarea } from "@/components/ui/textarea";
 import { Play, Upload, Loader2, CheckCircle, XCircle } from "lucide-react";
 
 interface TestCase {
@@ -31,7 +32,7 @@ export function CodeEditorPanel({ testCases }: CodeEditorPanelProps) {
   );
   const [isRunning, setIsRunning] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submissionResult, setSubmissionResult] = useState<any[] | null>(null);
+  const [submissionResult, setSubmissionResult] = useState<{ passed: boolean; status: string }[] | null>(null);
   const [activeTab, setActiveTab] = useState("custom");
 
   const executeCode = async (sourceCode: string, stdin: string) => {
@@ -88,8 +89,8 @@ export function CodeEditorPanel({ testCases }: CodeEditorPanelProps) {
     setOutput("Submitting against test cases...");
     setSubmissionResult(null);
     setActiveTab("result");
-    try {
-      const results = [];
+      try {
+      const results: { passed: boolean; status: string }[] = [];
       for (const testCase of testCases) {
         const result = await executeCode(code, testCase.input);
         if (result.stderr || result.compile_output) {

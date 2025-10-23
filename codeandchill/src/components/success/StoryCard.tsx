@@ -6,15 +6,15 @@ import {
   CardFooter,
   CardHeader,
   CardTitle,
-} from "@/components/ui/card.tsx";
+} from "@/components/ui/card";
 import {
   Avatar,
   AvatarFallback,
   AvatarImage,
-} from "@/components/ui/avatar.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
+} from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
 import { Linkedin } from "lucide-react";
-import { Button } from "@/components/ui/button.tsx";
+import { Button } from "@/components/ui/button";
 
 type Story = {
   name: string;

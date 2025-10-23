@@ -1,18 +1,17 @@
 import React, { useState } from "react";
 import Editor from "@monaco-editor/react";
-import { Button } from "@/components/ui/button.tsx";
-import { Card } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
-} from "@/components/ui/select.tsx";
-import { Textarea } from "@/components/ui/textarea.tsx";
+} from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
 import { Play, Loader2 } from "lucide-react";
 
-// Language options supported by Judge0
 const languages = [
   { id: 71, name: "Python (3.8.1)", value: "python" },
   { id: 62, name: "Java (OpenJDK 13.0.1)", value: "java" },
@@ -29,11 +28,14 @@ export function CodeEditor() {
   const [output, setOutput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLanguageChange = (value: string) => {
+  // ✅ Load keys from .env file
+  const RAPID_API_KEY = import.meta.env.VITE_RAPID_API_KEY;
+  const RAPID_API_HOST = import.meta.env.VITE_RAPID_API_HOST;
+
+  const handleLanguageChange = (value) => {
     const selectedLang = languages.find((lang) => lang.value === value);
     if (selectedLang) {
       setLanguage(selectedLang);
-      // Set default code snippets for each language
       if (value === "java")
         setCode(
           'public class Main {\n    public static void main(String[] args) {\n        System.out.println("Hello, Code & Chill!");\n    }\n}'
@@ -53,23 +55,21 @@ export function CodeEditor() {
     setIsLoading(true);
     setOutput("");
 
-    // This options object contains your corrected API key and host
     const options = {
       method: "POST",
       headers: {
         "content-type": "application/json",
-        "X-RapidAPI-Key": "b6d4982d07msh833ff3a46406480p1d6adcjsn8d469455de38",
-        "X-RapidAPI-Host": "judge0-ce.p.rapidapi.com",
+        "X-RapidAPI-Key": RAPID_API_KEY,
+        "X-RapidAPI-Host": RAPID_API_HOST,
       },
       body: JSON.stringify({
         language_id: language.id,
-        source_code: btoa(code), // Base64 encode the code
-        stdin: btoa(input), // Base64 encode the input
+        source_code: btoa(code),
+        stdin: btoa(input),
       }),
     };
 
     try {
-      // 1. Submit the code to get a token
       const response = await fetch(
         "https://judge0-ce.p.rapidapi.com/submissions?base64_encoded=true&wait=false",
         options
@@ -83,33 +83,27 @@ export function CodeEditor() {
         );
       }
 
-      // 2. Poll for the result using the token
       let resultResponse;
       let result;
       do {
-        await new Promise((resolve) => setTimeout(resolve, 1000)); // Wait for 1 second between checks
+        await new Promise((resolve) => setTimeout(resolve, 1000));
         resultResponse = await fetch(
           `https://judge0-ce.p.rapidapi.com/submissions/${submission.token}?base64_encoded=true`,
           {
             headers: {
-              "X-RapidAPI-Key": options.headers["X-RapidAPI-Key"],
-              "X-RapidAPI-Host": options.headers["X-RapidAPI-Host"],
+              "X-RapidAPI-Key": RAPID_API_KEY,
+              "X-RapidAPI-Host": RAPID_API_HOST,
             },
           }
         );
         result = await resultResponse.json();
-      } while (result.status.id <= 2); // Status 1: In Queue, Status 2: Processing
+      } while (result.status.id <= 2);
 
-      // 3. Display the final output
-      if (result.stdout) {
-        setOutput(atob(result.stdout));
-      } else if (result.stderr) {
-        setOutput(`Error:\n${atob(result.stderr)}`);
-      } else if (result.compile_output) {
+      if (result.stdout) setOutput(atob(result.stdout));
+      else if (result.stderr) setOutput(`Error:\n${atob(result.stderr)}`);
+      else if (result.compile_output)
         setOutput(`Compilation Error:\n${atob(result.compile_output)}`);
-      } else {
-        setOutput(`Execution Status: ${result.status.description}`);
-      }
+      else setOutput(`Execution Status: ${result.status.description}`);
     } catch (error) {
       console.error(error);
       setOutput(

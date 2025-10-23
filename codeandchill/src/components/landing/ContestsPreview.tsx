@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
-import { Button } from "@/components/ui/button.tsx";
-import { Card } from "@/components/ui/card.tsx";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Link } from "react-router-dom";
 
 const calculateTimeLeft = () => {

@@ -1,6 +1,6 @@
-import React from "react";
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { useParams, Link } from "react-router-dom";
-import { Card, CardContent, CardTitle } from "@/components/ui/card.tsx";
+import { Card, CardTitle } from "@/components/ui/card";
 import {
   Table,
   TableBody,
@@ -8,15 +8,15 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@/components/ui/table.tsx";
+} from "@/components/ui/table";
 import {
   Tabs,
   TabsContent,
   TabsList,
   TabsTrigger,
-} from "@/components/ui/tabs.tsx";
-import { Badge } from "@/components/ui/badge.tsx";
-import { ContestSidebar } from "@/components/contests/ContestSidebar.tsx";
+} from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
+import { ContestSidebar } from "@/components/contests/ContestSidebar";
 
 const contestDetails = {
   id: "algomaster-aug25",
@@ -78,7 +78,6 @@ const contestDetails = {
 
 export function ContestDetailPage() {
   const { contestId } = useParams<{ contestId: string }>();
-
   const difficultyColors: Record<string, string> = {
     Easy: "text-pink-400 font-semibold",
     Medium: "text-red-400 font-semibold",
