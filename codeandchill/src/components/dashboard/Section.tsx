@@ -1,4 +1,4 @@
-import React, { ReactNode } from "react";
+import { ReactNode } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
@@ -17,7 +17,7 @@ export function Section({ title, viewAllLink, children }: SectionProps) {
       <div className="flex items-center justify-between mb-6">
         <h2
           id={headingId}
-          className="text-2xl md:text-3xl font-bold tracking-tight text-white"
+          className="text-2xl md:text-3xl font-bold tracking-tight text-foreground"
         >
           {title}
         </h2>
@@ -26,7 +26,7 @@ export function Section({ title, viewAllLink, children }: SectionProps) {
           <Button
             asChild
             variant="ghost"
-            className="hidden sm:flex text-sm text-white hover:text-primary transition-colors duration-200"
+            className="btn-ghost hidden sm:flex text-sm transition-colors duration-200"
             aria-label={`View all ${title.toLowerCase()}`}
           >
             <Link to={viewAllLink}>

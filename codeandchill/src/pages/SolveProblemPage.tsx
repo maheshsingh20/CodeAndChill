@@ -50,7 +50,10 @@ export function SolveProblemPage() {
 
       {/* Code Editor */}
       <div className="h-full overflow-auto">
-        <CodeEditorPanel testCases={problemData.testCases} />
+        <CodeEditorPanel 
+          testCases={problemData.testCases} 
+          problemId={problemData._id || problemId || ''} 
+        />
       </div>
     </div>
   );

@@ -1,97 +1,136 @@
 import { Link } from "react-router-dom";
-import { Code, Menu} from "lucide-react";
+import { Code, Menu, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { NavMenu } from "./NavMenu";
 
 export function Navbar() {
   return (
-    <header className="sticky top-0 z-50 w-full bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 shadow-neon">
-      <div className="container flex h-16 items-center justify-between px-4 md:px-6">
-        {/* Left: Logo & Desktop Menu */}
-        <div className="flex items-center gap-6">
+    <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-gradient-to-r from-gray-950 via-gray-900 to-black text-gray-100 shadow-lg">
+      <div className="container flex h-18 items-center justify-between px-4 md:px-6">
+        {/* Left: Enhanced Logo & Desktop Menu */}
+        <div className="flex items-center gap-8">
           <Link
             to="/"
-            className="flex items-center gap-2"
+            className="flex items-center gap-3 group"
             aria-label="Homepage"
           >
-            <Code className="h-6 w-6 text-cyan-400 drop-shadow-neon" />
-            <span className="text-lg font-bold text-cyan-300 drop-shadow-neon">
-              Code and Chill
+            <Code className="h-8 w-8 text-purple-400 group-hover:rotate-12 transition-transform" />
+            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+              Code & Chill
             </span>
           </Link>
+          
           <div className="hidden md:flex">
             <NavMenu />
           </div>
         </div>
 
-        {/* Center: Search Bar (optional) */}
-        <div className="hidden flex-1 justify-center px-8 lg:flex">
-          {/* Uncomment if search needed */}
-          {/* <div className="relative w-full max-w-md">
-            <Input
-              type="text"
-              placeholder="Search courses, topics, or users"
-              className="pl-10 pr-4 py-2 bg-gray-800/70 text-cyan-200 placeholder:text-cyan-400 rounded-lg border border-cyan-700 shadow-neon focus:border-cyan-400 focus:ring-2 focus:ring-cyan-500"
-            />
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-cyan-400" />
-          </div> */}
-        </div>
-
-        {/* Right: Auth Buttons / Mobile Menu */}
+        {/* Right: Enhanced Auth Buttons / Mobile Menu */}
         <div className="flex items-center gap-4">
-          {/* Desktop */}
-          <div className="hidden md:flex items-center gap-2">
+          {/* Desktop Auth Buttons */}
+          <div className="hidden md:flex items-center gap-3">
             <Button
               variant="outline"
               size="default"
-              className="min-w-[110px] font-semibold border-cyan-500 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 transition-all duration-300 shadow-neon"
+              className="border border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800 hover:text-purple-400 hover:border-purple-500/50 font-medium rounded-xl px-6 py-2 transition-all duration-200"
               asChild
             >
-              <Link to="/auth?tab=login">Log In</Link>
+              <Link to="/auth?tab=login">
+                <Zap className="w-4 h-4 mr-2" />
+                Log In
+              </Link>
             </Button>
             <Button
               size="default"
-              className="min-w-[110px] font-semibold bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 text-white hover:shadow-neon-lg hover:scale-[1.03] transition-all duration-300"
+              className="bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg hover:shadow-purple-500/25 font-medium rounded-xl px-6 py-2 transition-all duration-200"
               asChild
             >
-              <Link to="/auth?tab=signup">Sign Up</Link>
+              <Link to="/auth?tab=signup">
+                <Sparkles className="w-4 h-4 mr-2" />
+                Sign Up
+              </Link>
             </Button>
           </div>
 
-          {/* Mobile */}
+          {/* Enhanced Mobile Menu */}
           <div className="md:hidden">
             <Sheet>
               <SheetTrigger asChild>
                 <Button
                   variant="outline"
                   size="icon"
-                  className="bg-gray-900/80 border border-cyan-700 hover:bg-gray-800 rounded-none shadow-neon"
+                  className="border border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800 hover:text-purple-400 rounded-xl"
                 >
-                  <Menu className="h-5 w-5 text-cyan-400" />
+                  <Menu className="h-5 w-5" />
                   <span className="sr-only">Open menu</span>
                 </Button>
               </SheetTrigger>
               <SheetContent
-                side="left"
-                className="bg-gradient-to-r from-gray-900 via-gray-800 to-gray-900 p-6"
+                side="right"
+                className="bg-gradient-to-br from-gray-950 via-gray-900 to-black text-gray-200 border-l border-gray-800 p-0 w-80"
               >
-                <div className="flex flex-col gap-4 mt-6">
-                  <Button
-                    variant="outline"
-                    size="default"
-                    className="min-w-[110px] font-semibold border-cyan-500 text-cyan-400 hover:bg-cyan-500/10 hover:text-cyan-300 transition-all duration-300 shadow-neon"
-                    asChild
-                  >
-                    <Link to="/auth?tab=login">Log In</Link>
-                  </Button>
-                  <Button
-                    size="default"
-                    className="min-w-[110px] font-semibold bg-gradient-to-r from-cyan-500 via-purple-500 to-pink-500 text-white hover:shadow-neon-lg hover:scale-[1.03] transition-all duration-300"
-                    asChild
-                  >
-                    <Link to="/auth?tab=signup">Sign Up</Link>
-                  </Button>
+                <SheetHeader className="p-6 border-b border-gray-800">
+                  <SheetTitle>
+                    <Link to="/" className="flex items-center gap-3">
+                      <Code className="h-8 w-8 text-purple-400" />
+                      <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent font-bold">
+                        Code & Chill
+                      </span>
+                    </Link>
+                  </SheetTitle>
+                </SheetHeader>
+                
+                <div className="p-6 space-y-6">
+                  {/* Mobile Navigation */}
+                  <nav className="space-y-2">
+                    <Link
+                      to="/courses"
+                      className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 hover:text-purple-400 hover:bg-gray-800 transition-all duration-200 font-medium"
+                    >
+                      <Code className="w-4 h-4" />
+                      Courses
+                    </Link>
+                    <Link
+                      to="/about"
+                      className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 hover:text-purple-400 hover:bg-gray-800 transition-all duration-200 font-medium"
+                    >
+                      <Sparkles className="w-4 h-4" />
+                      About
+                    </Link>
+                    <Link
+                      to="/contact"
+                      className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 hover:text-purple-400 hover:bg-gray-800 transition-all duration-200 font-medium"
+                    >
+                      <Zap className="w-4 h-4" />
+                      Contact
+                    </Link>
+                  </nav>
+                  
+                  {/* Mobile Auth Buttons */}
+                  <div className="space-y-3 pt-4 border-t border-gray-800">
+                    <Button
+                      variant="outline"
+                      size="default"
+                      className="w-full border border-gray-700 bg-transparent text-gray-300 hover:bg-gray-800 hover:text-purple-400 font-medium rounded-xl"
+                      asChild
+                    >
+                      <Link to="/auth?tab=login">
+                        <Zap className="w-4 h-4 mr-2" />
+                        Log In
+                      </Link>
+                    </Button>
+                    <Button
+                      size="default"
+                      className="w-full bg-gradient-to-r from-purple-600 to-pink-600 text-white hover:from-purple-700 hover:to-pink-700 shadow-lg font-medium rounded-xl"
+                      asChild
+                    >
+                      <Link to="/auth?tab=signup">
+                        <Sparkles className="w-4 h-4 mr-2" />
+                        Sign Up
+                      </Link>
+                    </Button>
+                  </div>
                 </div>
               </SheetContent>
             </Sheet>

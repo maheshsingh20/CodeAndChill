@@ -1,5 +1,7 @@
 import { Section } from "./Section";
 import { Link } from "react-router-dom";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 
 export function ContestsPreview() {
   const contests = [
@@ -53,77 +55,64 @@ export function ContestsPreview() {
     },
   ];
 
-  const badgeColors = [
-    "bg-cyan-900/70 text-cyan-300",
-    "bg-purple-900/70 text-purple-300",
-    "bg-green-900/70 text-green-300",
-    "bg-orange-900/70 text-orange-300",
-    "bg-pink-900/70 text-pink-300",
-    "bg-blue-900/70 text-blue-300",
-  ];
+  const levelVariants: Record<string, "default" | "secondary" | "outline"> = {
+    Beginner: "secondary",
+    Intermediate: "default",
+    Advanced: "outline",
+  };
 
   return (
     <Section title="Upcoming Contests" viewAllLink="/contests">
       <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
-        {contests.map((contest, idx) => (
+        {contests.map((contest) => (
           <div
             key={contest.name}
-            className="relative flex flex-col min-h-[320px] p-6 rounded-2xl
-                       border border-gray-800 shadow-lg
-                       bg-gradient-to-br from-gray-950 via-gray-900 to-gray-950
-                       backdrop-blur-xl transition-all duration-300
-                       hover:shadow-neon hover:scale-[1.02]"
+            className="card glass-card hover-lift relative flex flex-col min-h-[320px] p-6"
           >
             <div className="flex items-center mb-4 gap-3 flex-wrap">
-              <span
-                className={`font-semibold rounded-md px-3 py-1 text-sm ${
-                  badgeColors[idx % badgeColors.length]
-                } backdrop-blur-md`}
-              >
+              <Badge className="badge badge-default">
                 {contest.endsIn}
-              </span>
-              <span className="bg-gray-800/50 text-gray-300 border border-gray-700 rounded-md px-2 py-1 text-xs font-semibold select-none">
+              </Badge>
+              <Badge className={`badge badge-${levelVariants[contest.level]}`}>
                 {contest.level}
-              </span>
+              </Badge>
             </div>
 
-            <h3 className="text-2xl font-bold mb-2 leading-tight text-gray-100 drop-shadow-md">
+            <h3 className="text-2xl font-bold mb-2 leading-tight text-foreground">
               {contest.name}
             </h3>
 
-            <p className="mb-6 font-medium text-gray-300 drop-shadow-sm">
+            <p className="mb-6 font-medium text-muted-foreground">
               {contest.date} &bull; {contest.participants}
             </p>
 
             <div className="mt-auto">
-              <Link
-                to={contest.link}
-                aria-label={`View details for ${contest.name}`}
+              <Button
+                asChild
+                className="btn btn-default w-full"
               >
-                <button
-                  className="w-full rounded-xl bg-gradient-to-r from-primary/80 to-secondary/80
-                             text-primary-foreground font-semibold py-3 shadow-lg
-                             hover:from-primary hover:to-secondary hover:shadow-neon
-                             transition duration-300"
+                <Link
+                  to={contest.link}
+                  aria-label={`View details for ${contest.name}`}
                 >
                   View Contest
-                </button>
-              </Link>
+                </Link>
+              </Button>
             </div>
           </div>
         ))}
       </div>
 
       <div className="mt-10 text-center">
-        <Link
-          to="/contests"
-          className="inline-block px-8 py-3 rounded-full font-bold
-                     bg-gradient-to-r from-primary/80 to-secondary/80
-                     text-primary-foreground shadow-lg hover:from-primary hover:to-secondary
-                     transition duration-300"
+        <Button
+          asChild
+          size="lg"
+          className="btn btn-default"
         >
-          See All Contests
-        </Link>
+          <Link to="/contests">
+            See All Contests
+          </Link>
+        </Button>
       </div>
     </Section>
   );

@@ -1,4 +1,4 @@
-import { JSX, useState } from "react";
+import React, { JSX, useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -6,52 +6,124 @@ import {
   Navigate,
 } from "react-router-dom";
 
-// Import all pages (no  extensions needed)
-import { LandingPage } from "./pages/LandingPage";
-import { AuthPage } from "./pages/AuthPage";
-import { HomePage } from "./pages/HomePage";
-import { CoursesPage } from "./pages/CoursesPage";
-import { CourseDetailPage } from "./pages/CourseDetailPage";
-import { CoursePlayerPage } from "./pages/CoursePlayerPage";
-import { LearningPathsPage } from "./pages/LearningPathsPage";
-import { PathDetailPage } from "./pages/PathDetailPage";
-import { ContestsPage } from "./pages/ContestsPage";
-import { ContestDetailPage } from "./pages/ContestDetailPage";
-import { SuccessStoriesPage } from "./pages/SuccessStoriesPage";
-import { ProfilePage } from "./pages/ProfilePage";
-import { AiAssistantPage } from "./pages/AiAssistantPage";
-import { BlogPage } from "./pages/BlogPage";
-import { BlogDetailPage } from "./pages/BlogDetailPage";
-import { EngineeringCoursesPage } from "./page2/EngineeringCoursesPage";
-import { EngineeringCourseDetailPage } from "./page2/EngineeringCourseDetailPage";
-import { PlaygroundPage } from "./page2/PlaygroundPage";
-import { ProblemSetsPage } from "./pages/ProblemSetsPage";
-import { ProblemSetDetailPage } from "./pages/ProblemSetDetailPage";
-import { SolveProblemPage } from "./pages/SolveProblemPage";
-import { SettingsPage } from "./page2/Settings";
+// Import NoirSystem
+import { initNoirAccentSystem } from "./utils/noir-accent";
+
+// Import all pages using barrel exports
+import {
+  LandingPage,
+  AuthPage,
+  HomePage,
+  CoursesPage,
+  CourseDetailPage,
+  CoursePlayerPage,
+  GeneralCoursesPage,
+  GeneralCourseDetailPage,
+  LearningPathsPage,
+  LearningPathDetailPage,
+  PathDetailPage,
+  ContestsPage,
+  ContestDetailPage,
+  ContestCompetePage,
+  SuccessStoriesPage,
+  ProfilePage,
+  AiAssistantPage,
+  BlogPage,
+  BlogDetailPage,
+  PlaygroundPage,
+  ProblemSetsPage,
+  ProblemSetDetailPage,
+  SolveProblemPage,
+  SettingsPage,
+  QuizzesPage,
+  QuizListPage,
+  QuizPlayerPage,
+  QuizResultPage,
+  ProblemSolverPage,
+  QuizPage,
+  DashboardPage,
+  ForumPage,
+  SkillTestsPage,
+  SkillTestTakingPage,
+} from "./pages";
+
+import { EnhancedCourseDetailPage } from "./pages/EnhancedCourseDetailPage";
+
+import { CollaborativePage } from "./pages/CollaborativePage";
+import { performAppCleanup } from "@/utils/cleanup";
+import { AuthDebug } from "./components/debug/AuthDebug";
+
+import { ShadcnShowcasePage } from "./pages/ShadcnShowcasePage";
 
 // Layout components
 import { Navbar as PublicNavbar } from "./components/layout/Navbar";
 import { Navbar as DashboardNavbar } from "./components/dashboard/Navbar";
 import { Footer } from "./components/dashboard/Footer";
-import { QuizzesPage } from "./pages/QuizzesPage";
-import { QuizListPage } from "./pages/QuizListPage";
-import { QuizPlayerPage } from "./pages/QuizPlayerPage";
-import { QuizResultPage } from "./pages/QuizResultPage";
+
+// Context providers
+import { UserProvider } from "./contexts/UserContext";
+
+// Hooks
+
+// Constants
+import { STORAGE_KEYS } from "./constants";
+
+// Import Activity Tracker
+import { ActivityTracker } from "./components/activity/ActivityTracker";
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem("isAuthenticated") === "true";
+    return localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === "true";
   });
 
-  const login = () => {
-    localStorage.setItem("isAuthenticated", "true");
+  // Activity tracking will be initialized inside Router context
+
+  // Initialize NoirSystem
+  useEffect(() => {
+    document.body.classList.add('noir-theme');
+    initNoirAccentSystem();
+    return () => document.body.classList.remove('noir-theme');
+  }, []);
+
+  // Initialize NoirSystem
+  useEffect(() => {
+    // Add noir-theme class to body
+    document.body.classList.add('noir-theme');
+    
+    // Initialize dynamic accent system
+    initNoirAccentSystem();
+    
+    return () => {
+      document.body.classList.remove('noir-theme');
+    };
+  }, []);
+
+  const login = (token?: string) => {
+    if (token) {
+      localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
+    }
+    localStorage.setItem(STORAGE_KEYS.IS_AUTHENTICATED, "true");
     setIsAuthenticated(true);
+    
+    // Trigger a storage event to refresh user data
+    window.dispatchEvent(new StorageEvent('storage', {
+      key: 'authToken',
+      newValue: token || localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN),
+      oldValue: null
+    }));
   };
 
-  const logout = () => {
-    localStorage.removeItem("isAuthenticated");
-    setIsAuthenticated(false);
+  const logout = async () => {
+    try {
+      await performAppCleanup();
+      setIsAuthenticated(false);
+    } catch (error) {
+      console.error('Error during logout:', error);
+      // Fallback cleanup
+      localStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
+      localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+      setIsAuthenticated(false);
+    }
   };
 
   // Wrapper for protected routes
@@ -61,20 +133,26 @@ function App() {
 
   return (
     <Router>
-      <div
-        className={`min-h-screen flex flex-col ${
-          isAuthenticated ? "bg-muted/30" : "bg-background"
-        }`}
-      >
-        {/* Navbar */}
-        {isAuthenticated ? (
-          <DashboardNavbar logout={logout} />
-        ) : (
-          <PublicNavbar />
-        )}
+      <UserProvider>
+        {/* <AuthDebug /> */}
+        <ActivityTracker isAuthenticated={isAuthenticated} />
+        <div className="min-h-screen flex flex-col bg-background">
+          {/* Shadcn Dark Background */}
+          <div className="fixed inset-0 -z-10">
+            <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/30 to-background" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,hsl(var(--primary)/0.1),transparent_50%)]" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,hsl(var(--accent)/0.1),transparent_50%)]" />
+          </div>
 
-        {/* Main content */}
-        <main className="flex-grow">
+          {/* Navbar */}
+          {isAuthenticated ? (
+            <DashboardNavbar logout={logout} />
+          ) : (
+            <PublicNavbar />
+          )}
+
+          {/* Main content */}
+          <main className="flex-grow relative">
           <Routes>
             {/* Public Routes */}
             <Route
@@ -123,12 +201,24 @@ function App() {
               element={<PrivateRoute element={<PathDetailPage />} />}
             />
             <Route
+              path="/learning-paths"
+              element={<PrivateRoute element={<LearningPathsPage />} />}
+            />
+            <Route
+              path="/learning-paths/:pathId"
+              element={<PrivateRoute element={<LearningPathDetailPage />} />}
+            />
+            <Route
               path="/contests"
               element={<PrivateRoute element={<ContestsPage />} />}
             />
             <Route
               path="/contests/:contestId"
               element={<PrivateRoute element={<ContestDetailPage />} />}
+            />
+            <Route
+              path="/contests/:contestId/compete"
+              element={<PrivateRoute element={<ContestCompetePage />} />}
             />
             <Route
               path="/success-stories"
@@ -152,12 +242,12 @@ function App() {
             />
             <Route
               path="/engineering-courses"
-              element={<PrivateRoute element={<EngineeringCoursesPage />} />}
+              element={<PrivateRoute element={<GeneralCoursesPage />} />}
             />
             <Route
               path="engineering-courses/:courseId"
               element={
-                <PrivateRoute element={<EngineeringCourseDetailPage />} />
+                <PrivateRoute element={<EnhancedCourseDetailPage />} />
               }
             />
             <Route
@@ -186,29 +276,51 @@ function App() {
                 isAuthenticated ? <SolveProblemPage /> : <Navigate to="/auth" />
               }
             />
+            <Route
+              path="/problem-solver"
+              element={<PrivateRoute element={<ProblemSolverPage />} />}
+            />
+            <Route
+              path="/quiz-system"
+              element={<PrivateRoute element={<QuizPage />} />}
+            />
+            <Route
+              path="/user-dashboard"
+              element={<PrivateRoute element={<DashboardPage />} />}
+            />
+            <Route
+              path="/forum"
+              element={<PrivateRoute element={<ForumPage />} />}
+            />
+            <Route
+              path="/skill-tests"
+              element={<PrivateRoute element={<SkillTestsPage />} />}
+            />
+            <Route
+              path="/skill-test/:testId"
+              element={<PrivateRoute element={<SkillTestTakingPage />} />}
+            />
+            <Route
+              path="/collaborative"
+              element={<PrivateRoute element={<CollaborativePage />} />}
+            />
+            <Route
+              path="/collaborative/:sessionToken"
+              element={<PrivateRoute element={<CollaborativePage />} />}
+            />
+            <Route
+              path="/settings"
+              element={<PrivateRoute element={<SettingsPage />} />}
+            />
+            <Route
+              path="/quizzes"
+              element={<PrivateRoute element={<QuizzesPage />} />}
+            />
             {/* Special Routes */}
             {/* Catch-all Redirect */}
             <Route
               path="*"
               element={<Navigate to={isAuthenticated ? "/dashboard" : "/"} />}
-            />
-            <Route
-              path="/profile"
-              element={
-                isAuthenticated ? <ProfilePage /> : <Navigate to="/auth" />
-              }
-            />
-            <Route
-              path="/settings"
-              element={
-                isAuthenticated ? <SettingsPage /> : <Navigate to="/auth" />
-              }
-            />
-            <Route
-              path="/quizzes"
-              element={
-                isAuthenticated ? <QuizzesPage /> : <Navigate to="/auth" />
-              }
             />
             <Route
               path="/quizzes/subjects/:subjectSlug"
@@ -228,12 +340,19 @@ function App() {
                 isAuthenticated ? <QuizResultPage /> : <Navigate to="/auth" />
               }
             />
+            <Route
+              path="/showcase"
+              element={
+                isAuthenticated ? <ShadcnShowcasePage /> : <Navigate to="/auth" />
+              }
+            />
           </Routes>
         </main>
 
-        {/* Footer */}
-        {isAuthenticated && <Footer />}
-      </div>
+          {/* Footer */}
+          {isAuthenticated && <Footer />}
+        </div>
+      </UserProvider>
     </Router>
   );
 }

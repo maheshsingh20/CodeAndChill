@@ -17,10 +17,9 @@ module.exports = {
     },
     extend: {
       colors: {
-        // use CSS vars defined in index.css (shadcn standard)
+        // Existing shadcn colors
         background: "hsl(var(--background))",
         foreground: "hsl(var(--foreground))",
-
         primary: {
           DEFAULT: "hsl(var(--primary))",
           foreground: "hsl(var(--primary-foreground))",
@@ -52,17 +51,84 @@ module.exports = {
         border: "hsl(var(--border))",
         input: "hsl(var(--input))",
         ring: "hsl(var(--ring))",
+
+        // NoirSystem Colors
+        noir: {
+          bg: {
+            1: "hsl(var(--bg-1))",
+            2: "hsl(var(--bg-2))",
+            3: "hsl(var(--bg-3))",
+            4: "hsl(var(--bg-4))",
+          },
+          surface: {
+            1: "hsl(var(--surface-1))",
+            2: "hsl(var(--surface-2))",
+            3: "hsl(var(--surface-3))",
+            4: "hsl(var(--surface-4))",
+          },
+          text: {
+            primary: "var(--text-primary)",
+            secondary: "var(--text-secondary)",
+            muted: "var(--text-muted)",
+            disabled: "var(--text-disabled)",
+          },
+          accent: {
+            1: "var(--accent-1)",
+            2: "var(--accent-2)",
+            3: "var(--accent-3)",
+            4: "var(--accent-4)",
+            5: "var(--accent-5)",
+            6: "var(--accent-6)",
+            complement: {
+              1: "var(--accent-complement-1)",
+              2: "var(--accent-complement-2)",
+            },
+          },
+          glass: "var(--glass)",
+          "glass-strong": "var(--glass-strong)",
+          border: "var(--border)",
+          "border-strong": "var(--border-strong)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
         md: "calc(var(--radius) - 2px)",
         sm: "calc(var(--radius) - 4px)",
+        // NoirSystem radius
+        "noir-sm": "var(--radius-sm)",
+        "noir-md": "var(--radius-md)",
+        "noir-lg": "var(--radius-lg)",
+        "noir-xl": "var(--radius-xl)",
+      },
+      spacing: {
+        // NoirSystem spacing scale
+        "noir-1": "var(--space-1)",
+        "noir-2": "var(--space-2)",
+        "noir-3": "var(--space-3)",
+        "noir-4": "var(--space-4)",
+        "noir-5": "var(--space-5)",
+        "noir-6": "var(--space-6)",
+        "noir-8": "var(--space-8)",
+        "noir-12": "var(--space-12)",
       },
       boxShadow: {
         platform: "0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06)",
         "platform-hover":
           "0 10px 15px rgba(0,0,0,0.15), 0 4px 6px rgba(0,0,0,0.1)",
         neon: "0 0 10px rgba(109, 40, 217, 0.7), 0 0 20px rgba(37, 99, 235, 0.5)",
+        // NoirSystem shadows
+        "noir-sm": "var(--shadow-small)",
+        "noir-md": "var(--shadow-medium)",
+        "noir-lg": "var(--shadow-large)",
+        "noir-inset": "var(--shadow-inset)",
+      },
+      transitionDuration: {
+        "noir-fast": "var(--duration-fast)",
+        "noir-normal": "var(--duration-normal)",
+        "noir-slow": "var(--duration-slow)",
+      },
+      transitionTimingFunction: {
+        "noir": "var(--easing)",
       },
       keyframes: {
         "accordion-down": {

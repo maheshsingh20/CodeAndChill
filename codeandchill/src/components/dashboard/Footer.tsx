@@ -1,55 +1,56 @@
-import { Code, Github, Twitter, Linkedin } from "lucide-react";
+import { Code, Github, Twitter, Linkedin, MessageSquare } from "lucide-react";
 import { Link } from "react-router-dom";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
+import { FeedbackModal } from "@/components/feedback/FeedbackModal";
 
 export function Footer() {
   return (
-    <footer className="bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 text-gray-200 border-t border-gray-700">
-      <div className="container mx-auto px-6 py-14">
-        <div className="grid gap-10 sm:grid-cols-2 md:grid-cols-4">
+    <footer className="gradient-bg border-t border-slate-700/50">
+      <div className="container mx-auto px-6 py-16">
+        <div className="grid gap-12 sm:grid-cols-2 md:grid-cols-4">
           {/* Brand & Social */}
-          <div className="space-y-4 md:col-span-1">
+          <div className="space-y-6 md:col-span-1">
             <Link to="/dashboard" className="flex items-center gap-3">
-              <Code className="h-8 w-8 text-cyan-400" />
-              <span className="text-2xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+              <Code className="h-8 w-8 text-blue-400" />
+              <span className="text-2xl font-extrabold tracking-tight text-slate-100">
                 Code & Chill
               </span>
             </Link>
-            <p className="text-sm opacity-70 max-w-xs">
+            <p className="text-sm text-slate-400 max-w-xs leading-relaxed">
               Your partner in lifelong learning and skill development.
             </p>
             <div className="flex items-center gap-4 mt-2">
               <a
                 href="#"
-                className="opacity-70 hover:opacity-100 hover:text-cyan-400 transition"
+                className="text-slate-500 hover:text-blue-400 transition-colors duration-200 p-2 rounded-lg hover:bg-slate-800/50"
               >
                 <Twitter />
               </a>
               <a
                 href="#"
-                className="opacity-70 hover:opacity-100 hover:text-purple-400 transition"
+                className="text-slate-500 hover:text-blue-400 transition-colors duration-200 p-2 rounded-lg hover:bg-slate-800/50"
               >
                 <Github />
               </a>
               <a
                 href="#"
-                className="opacity-70 hover:opacity-100 hover:text-blue-400 transition"
+                className="text-slate-500 hover:text-blue-400 transition-colors duration-200 p-2 rounded-lg hover:bg-slate-800/50"
               >
                 <Linkedin />
               </a>
             </div>
           </div>
           {/* Quick Links */}
-          <div className="space-y-3">
-            <h4 className="font-semibold uppercase tracking-wider text-cyan-300">
+          <div className="space-y-4">
+            <h4 className="font-bold uppercase tracking-wider text-slate-200 text-sm">
               Quick Links
             </h4>
-            <ul className="space-y-2 text-sm">
+            <ul className="space-y-3 text-sm">
               <li>
                 <Link
                   to="/courses"
-                  className="opacity-70 hover:opacity-100 hover:text-cyan-400 transition"
+                  className="text-slate-400 hover:text-slate-200 transition-colors duration-200"
                 >
                   Courses
                 </Link>
@@ -57,7 +58,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/problems"
-                  className="opacity-70 hover:opacity-100 hover:text-cyan-400 transition"
+                  className="text-muted-foreground hover:text-primary transition"
                 >
                   Problem Sets
                 </Link>
@@ -65,7 +66,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/contests"
-                  className="opacity-70 hover:opacity-100 hover:text-cyan-400 transition"
+                  className="text-muted-foreground hover:text-primary transition"
                 >
                   Contests
                 </Link>
@@ -74,14 +75,14 @@ export function Footer() {
           </div>
           {/* Resources */}
           <div className="space-y-3">
-            <h4 className="font-semibold uppercase tracking-wider text-purple-300">
+            <h4 className="font-semibold uppercase tracking-wider text-foreground">
               Resources
             </h4>
             <ul className="space-y-2 text-sm">
               <li>
                 <Link
                   to="/blog"
-                  className="opacity-70 hover:opacity-100 hover:text-purple-400 transition"
+                  className="text-muted-foreground hover:text-primary transition"
                 >
                   Blog
                 </Link>
@@ -89,7 +90,7 @@ export function Footer() {
               <li>
                 <Link
                   to="/community"
-                  className="opacity-70 hover:opacity-100 hover:text-purple-400 transition"
+                  className="text-muted-foreground hover:text-primary transition"
                 >
                   Community
                 </Link>
@@ -97,31 +98,38 @@ export function Footer() {
               <li>
                 <Link
                   to="/success"
-                  className="opacity-70 hover:opacity-100 hover:text-purple-400 transition"
+                  className="text-muted-foreground hover:text-primary transition"
                 >
                   Success Stories
                 </Link>
+              </li>
+              <li>
+                <FeedbackModal>
+                  <button className="text-muted-foreground hover:text-primary transition flex items-center gap-2">
+                    <MessageSquare className="w-4 h-4" />
+                    Send Feedback
+                  </button>
+                </FeedbackModal>
               </li>
             </ul>
           </div>
           {/* Newsletter */}
           <div className="space-y-3">
-            <h4 className="font-semibold uppercase tracking-wider text-emerald-300">
+            <h4 className="font-semibold uppercase tracking-wider text-foreground">
               Stay Connected
             </h4>
-            <p className="text-sm opacity-70">
+            <p className="text-sm text-muted-foreground">
               Subscribe to our newsletter for the latest updates.
             </p>
             <form className="flex gap-2">
               <Input
                 type="email"
                 placeholder="Enter your email"
-                className="bg-gray-800/70 border border-gray-700 text-gray-200 placeholder:text-gray-400 rounded-lg focus-visible:ring-2 focus-visible:ring-cyan-400"
+                className="input"
               />
               <Button
                 type="submit"
-                variant="default"
-                className="bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold rounded-lg shadow-md transition-all duration-300"
+                className="btn btn-default"
               >
                 Subscribe
               </Button>
@@ -129,9 +137,23 @@ export function Footer() {
           </div>
         </div>
       </div>
-      <div className="bg-gray-900/80 border-t border-gray-700">
-        <div className="container mx-auto py-4 px-6 text-center text-sm text-gray-400">
-          © 2025 Code and Chill, Inc. All rights reserved.
+      <div className="bg-muted/20 border-t border-border">
+        <div className="container mx-auto py-4 px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div className="text-sm text-muted-foreground">
+            © 2025 Code and Chill, Inc. All rights reserved.
+          </div>
+          <div className="flex items-center gap-4">
+            <FeedbackModal>
+              <Button 
+                variant="outline" 
+                size="sm" 
+                className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
+              >
+                <MessageSquare className="w-4 h-4 mr-2" />
+                Give Feedback
+              </Button>
+            </FeedbackModal>
+          </div>
         </div>
       </div>
     </footer>
