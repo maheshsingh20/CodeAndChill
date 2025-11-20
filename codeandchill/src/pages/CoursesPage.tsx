@@ -97,37 +97,44 @@ export function CoursesPage() {
   }
 
   return (
-    <div className="bg-muted/30 w-full min-h-screen">
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
-        <header className="text-center mb-12">
-          <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight text-foreground">
+    <div className="w-full min-h-screen bg-background relative">
+      {/* Professional Background */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 gradient-secondary opacity-5" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,rgba(120,119,198,0.1),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,rgba(45,212,191,0.1),transparent_50%)]" />
+      </div>
+
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 section-professional">
+        <header className="text-center mb-16">
+          <h1 className="heading-gradient text-4xl md:text-5xl xl:text-6xl font-bold tracking-tight mb-6">
             Explore Our Courses
           </h1>
-          <p className="mt-4 max-w-2xl mx-auto text-lg text-muted-foreground">
-            Choose a path and master the in-demand skills for a career in tech.
+          <p className="text-xl text-muted-foreground max-w-3xl mx-auto leading-relaxed">
+            Choose a path and master the in-demand skills for a career in tech with our comprehensive course catalog.
           </p>
         </header>
 
-        {/* +++ ADDED: Search and Filter controls */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        {/* Professional Search and Filter controls */}
+        <div className="flex flex-col sm:flex-row gap-6 mb-12">
           <div className="relative flex-grow">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
+            <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
             <Input
               type="search"
               placeholder="Search by title or description..."
-              className="pl-10 w-full"
+              className="input-professional pl-12 h-14 text-base"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />
           </div>
           <Select value={filterOption} onValueChange={setFilterOption}>
-            <SelectTrigger className="w-full sm:w-[180px]">
+            <SelectTrigger className="w-full sm:w-[200px] h-14 text-base border-2 border-border focus:border-primary">
               <SelectValue placeholder="Filter by price" />
             </SelectTrigger>
-            <SelectContent>
+            <SelectContent className="border-border">
               <SelectItem value="all">All Prices</SelectItem>
-              <SelectItem value="free">Free</SelectItem>
-              <SelectItem value="paid">Paid</SelectItem>
+              <SelectItem value="free">Free Courses</SelectItem>
+              <SelectItem value="paid">Paid Courses</SelectItem>
             </SelectContent>
           </Select>
         </div>
@@ -142,7 +149,7 @@ export function CoursesPage() {
                 ) => (
                   <Card
                     key={course._id}
-                    className="rounded-2xl shadow-lg bg-card hover:shadow-xl hover:border-primary transition-all duration-300 ease-in-out h-full flex flex-col group"
+                    className="card-professional hover-lift professional-shadow border-gradient h-full flex flex-col group overflow-hidden"
                   >
                     <CardHeader className="p-6">
                       <CardTitle className="text-2xl font-bold">

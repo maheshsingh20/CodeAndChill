@@ -53,9 +53,9 @@ export function BlogDetailPage() {
   const { postId } = useParams<{ postId: string }>();
 
   return (
-    <div className="bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 min-h-screen w-full py-12 text-gray-200">
+    <div className="min-h-screen w-full py-12 text-gray-200">
       <div className="container mx-auto max-w-4xl px-6 space-y-16">
-        <article className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 rounded-2xl shadow-xl shadow-cyan-500/20 border border-gray-700 p-10">
+        <article className="glass-card rounded-2xl shadow-xl shadow-cyan-500/20 border border-gray-700 p-10">
           {/* Post Header */}
           <header className="mb-8">
             <Badge

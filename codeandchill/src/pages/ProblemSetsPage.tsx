@@ -32,7 +32,7 @@ export function ProblemSetsPage() {
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 w-full min-h-screen flex items-center justify-center">
+      <div className="w-full min-h-screen flex items-center justify-center">
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 p-8">
           {Array.from({ length: 6 }).map((_, i) => (
             <Skeleton
@@ -46,7 +46,7 @@ export function ProblemSetsPage() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900 w-full min-h-screen">
+    <div className="w-full min-h-screen">
       <div className="container mx-auto max-w-7xl px-4 py-16">
         <header className="text-center mb-12">
           <h1 className="text-4xl font-extrabold tracking-tight text-cyan-400 drop-shadow-md">

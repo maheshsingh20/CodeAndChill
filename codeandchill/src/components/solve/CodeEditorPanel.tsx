@@ -10,7 +10,14 @@ import {
   TabsTrigger,
 } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
-import { Play, Upload, Loader2, CheckCircle, XCircle } from "lucide-react";
+import { Play, Upload, Loader2, CheckCircle, XCircle, Code } from "lucide-react";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 
 interface TestCase {
   input: string;
@@ -19,13 +26,15 @@ interface TestCase {
 
 interface CodeEditorPanelProps {
   testCases: TestCase[];
+  problemId: string;
 }
 
-export function CodeEditorPanel({ testCases }: CodeEditorPanelProps) {
+export function CodeEditorPanel({ testCases, problemId }: CodeEditorPanelProps) {
   const [code, setCode] = useState(
     "def solve():\n  # Read input and write to standard output\n  pass\n\nsolve()"
   );
-  const [languageId] = useState(71); // Python
+  const [language, setLanguage] = useState('python');
+  const [languageId, setLanguageId] = useState(71); // Python
   const [customInput, setCustomInput] = useState(testCases[0]?.input || "");
   const [output, setOutput] = useState(
     "Click 'Run' or 'Submit' to see the result."
@@ -89,33 +98,120 @@ export function CodeEditorPanel({ testCases }: CodeEditorPanelProps) {
     setOutput("Submitting against test cases...");
     setSubmissionResult(null);
     setActiveTab("result");
-      try {
-      const results: { passed: boolean; status: string }[] = [];
-      for (const testCase of testCases) {
-        const result = await executeCode(code, testCase.input);
-        if (result.stderr || result.compile_output) {
-          results.push({ passed: false, status: "Error" });
-          continue;
-        }
-        const passed = result.stdout
-          ? atob(result.stdout).trim() === testCase.expectedOutput.trim()
-          : false;
-        results.push({ passed, status: passed ? "Accepted" : "Wrong Answer" });
+    
+    try {
+      const token = localStorage.getItem('authToken');
+      
+      // Validate inputs
+      if (!problemId) {
+        throw new Error('Problem ID is required');
       }
+      
+      if (!token) {
+        throw new Error('Authentication token is missing');
+      }
+      
+      console.log('Submitting code for problem:', problemId);
+      console.log('Language:', language);
+      console.log('Code length:', code.length);
+      
+      const response = await fetch('http://localhost:3001/api/submissions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({
+          problemId,
+          code,
+          language
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        throw new Error(`Submission failed: ${response.status} - ${errorData.error || 'Unknown error'}`);
+      }
+
+      const result = await response.json();
+      
+      // Convert backend response to frontend format
+      const results = result.testResults.map((testResult: any) => ({
+        passed: testResult.passed,
+        status: testResult.passed ? "Accepted" : "Wrong Answer"
+      }));
+      
       setSubmissionResult(results);
+      
+      if (result.status === 'accepted') {
+        setOutput(`🎉 All test cases passed! Score: ${result.score}%\nExecution Time: ${result.executionTime.toFixed(2)}ms`);
+      } else {
+        setOutput(`Submission completed. Score: ${result.score}% (${result.passedTestCases}/${result.totalTestCases} test cases passed)`);
+      }
+      
     } catch (error: any) {
       setOutput(`An error occurred during submission: ${error.message}`);
+      console.error('Submission error:', error);
     }
     setIsSubmitting(false);
   };
 
   return (
     <Card className="flex flex-col h-full border border-cyan-700 bg-black text-white">
+      {/* Language Selector */}
+      <div className="p-3 border-b border-cyan-700 bg-gray-900">
+        <div className="flex items-center gap-3">
+          <Code className="w-4 h-4 text-cyan-400" />
+          <Select value={language} onValueChange={(value) => {
+            setLanguage(value);
+            // Update language ID and default code based on selection
+            const languageMap: Record<string, { id: number; code: string; monaco: string }> = {
+              python: { 
+                id: 71, 
+                code: "def solve():\n    # Read input and write to standard output\n    pass\n\nsolve()",
+                monaco: "python"
+              },
+              javascript: { 
+                id: 63, 
+                code: "function solve() {\n    // Read input and write to standard output\n}\n\nsolve();",
+                monaco: "javascript"
+              },
+              java: { 
+                id: 62, 
+                code: "public class Solution {\n    public static void main(String[] args) {\n        // Read input and write to standard output\n    }\n}",
+                monaco: "java"
+              },
+              cpp: { 
+                id: 54, 
+                code: "#include <iostream>\nusing namespace std;\n\nint main() {\n    // Read input and write to standard output\n    return 0;\n}",
+                monaco: "cpp"
+              }
+            };
+            
+            const selected = languageMap[value];
+            if (selected) {
+              setLanguageId(selected.id);
+              setCode(selected.code);
+            }
+          }}>
+            <SelectTrigger className="w-40 bg-gray-800 border-gray-600 text-white">
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="bg-gray-800 border-gray-600">
+              <SelectItem value="python" className="text-white hover:bg-gray-700">Python</SelectItem>
+              <SelectItem value="javascript" className="text-white hover:bg-gray-700">JavaScript</SelectItem>
+              <SelectItem value="java" className="text-white hover:bg-gray-700">Java</SelectItem>
+              <SelectItem value="cpp" className="text-white hover:bg-gray-700">C++</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
+
       {/* Editor Section */}
       <div className="h-[50%] border-b border-cyan-700">
         <Editor
           height="100%"
-          language="python"
+          language={language === 'cpp' ? 'cpp' : language}
           theme="vs-dark"
           value={code}
           onChange={(value) => setCode(value || "")}

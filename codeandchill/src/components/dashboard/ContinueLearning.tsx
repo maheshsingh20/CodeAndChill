@@ -20,14 +20,6 @@ export function ContinueLearning() {
       progress: 75,
       image:
         "https://images.unsplash.com/photo-1633356122544-f134324a6cee?q=80&w=2070&auto=format&fit=crop",
-      gradient: "from-gray-900/80 via-gray-800/70 to-gray-900/90",
-      border: "border-gray-700",
-      progressBar: "bg-cyan-500/60",
-      titleGradient:
-        "bg-clip-text text-transparent bg-gradient-to-r from-cyan-400 via-cyan-300 to-cyan-500",
-      descGradient:
-        "bg-clip-text text-transparent bg-gradient-to-r from-cyan-300 via-cyan-200 to-cyan-400",
-      button: "bg-cyan-700 hover:bg-cyan-800",
     },
     {
       title: "Data Structures in Python",
@@ -35,14 +27,6 @@ export function ContinueLearning() {
       progress: 40,
       image:
         "https://images.unsplash.com/photo-1526374965328-7f61d4dc18c5?q=80&w=2070&auto=format&fit=crop",
-      gradient: "from-gray-900/80 via-gray-800/70 to-gray-900/90",
-      border: "border-gray-700",
-      progressBar: "bg-blue-500/60",
-      titleGradient:
-        "bg-clip-text text-transparent bg-gradient-to-r from-blue-400 via-blue-300 to-blue-500",
-      descGradient:
-        "bg-clip-text text-transparent bg-gradient-to-r from-blue-300 via-blue-200 to-blue-400",
-      button: "bg-blue-700 hover:bg-blue-800",
     },
     {
       title: "The Complete DevOps Bootcamp",
@@ -50,14 +34,6 @@ export function ContinueLearning() {
       progress: 90,
       image:
         "https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop",
-      gradient: "from-gray-900/80 via-gray-800/70 to-gray-900/90",
-      border: "border-gray-700",
-      progressBar: "bg-lime-500/60",
-      titleGradient:
-        "bg-clip-text text-transparent bg-gradient-to-r from-lime-400 via-lime-300 to-lime-500",
-      descGradient:
-        "bg-clip-text text-transparent bg-gradient-to-r from-lime-300 via-lime-200 to-lime-400",
-      button: "bg-lime-700 hover:bg-lime-800",
     },
   ];
 
@@ -67,52 +43,41 @@ export function ContinueLearning() {
         {ongoingCourses.map((course) => (
           <Card
             key={course.title}
-            className={`
-              rounded-2xl shadow-xl ${course.border}
-              bg-gradient-to-br ${course.gradient}
-              hover:shadow-neon hover:scale-[1.03] transition-all duration-300 ease-in-out
-              flex flex-col group
-            `}
+            className="card hover-lift glass-card flex flex-col group"
             role="article"
             aria-label={`Continue learning ${course.title} by ${course.author}, progress ${course.progress} percent`}
           >
-            <CardHeader className="p-0">
+            <CardHeader className="card-header p-0">
               <img
                 src={course.image}
                 alt={`Cover image for ${course.title}`}
-                className="w-full h-44 object-cover rounded-t-2xl"
+                className="w-full h-44 object-cover rounded-t-lg"
                 loading="lazy"
               />
             </CardHeader>
 
-            <CardContent className="p-6 flex flex-col flex-grow">
-              <CardTitle
-                className={`text-xl mb-1 font-bold ${course.titleGradient} drop-shadow-md transition-all duration-300 group-hover:scale-105`}
-              >
+            <CardContent className="card-content p-6 flex flex-col flex-grow">
+              <CardTitle className="card-title text-xl mb-1 font-bold transition-all duration-300 group-hover:text-primary">
                 {course.title}
               </CardTitle>
-              <CardDescription
-                className={`${course.descGradient} opacity-90 mb-4 truncate`}
-              >
+              <CardDescription className="card-description mb-4 truncate">
                 by {course.author}
               </CardDescription>
               <div className="flex items-center gap-3 mt-auto">
                 <Progress
                   value={course.progress}
-                  className={`flex-1 h-2 rounded-full ${course.progressBar} transition-all duration-300`}
+                  className="flex-1 h-2 rounded-full transition-all duration-300"
                 />
-                <span
-                  className={`text-sm font-semibold text-gray-100 w-12 text-right tabular-nums`}
-                >
+                <span className="text-sm font-semibold text-foreground w-12 text-right tabular-nums">
                   {course.progress}%
                 </span>
               </div>
             </CardContent>
 
-            <CardFooter className="p-6 pt-0">
+            <CardFooter className="card-footer p-6 pt-0">
               <Button
                 asChild
-                className={`w-full ${course.button} text-white font-semibold rounded-xl shadow-neon flex items-center justify-center gap-2 transition-all duration-300`}
+                className="btn btn-default w-full flex items-center justify-center gap-2"
                 aria-label={`Continue learning ${course.title}`}
               >
                 <Link to="#">

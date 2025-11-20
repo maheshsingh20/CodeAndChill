@@ -1,9 +1,9 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Code, Menu, Search, User, Bell, Cpu, Server, Bot } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { Input } from "@/components/ui/input";
+import { Code, Menu, User, Bell, Sparkles, Zap, Users } from "lucide-react";
+// Removed cn import as it's no longer needed
 import { Button } from "@/components/ui/button";
+import { SearchBox } from "@/components/search/SearchBox";
 import {
   Sheet,
   SheetContent,
@@ -13,11 +13,9 @@ import {
 } from "@/components/ui/sheet";
 import {
   NavigationMenu,
-  NavigationMenuContent,
   NavigationMenuItem,
   NavigationMenuLink,
   NavigationMenuList,
-  NavigationMenuTrigger,
 } from "@/components/ui/navigation-menu";
 import {
   DropdownMenu,
@@ -28,52 +26,25 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useUser } from "@/contexts/UserContext";
 
-const paths = [
-  {
-    title: "AI & Machine Learning",
-    href: "/paths",
-    description:
-      "Dive into the world of AI, neural networks, and data science.",
-    icon: <Bot />,
-    color: "bg-cyan-900/40 text-cyan-400",
-  },
-  {
-    title: "Full-Stack Development",
-    href: "/paths",
-    description: "Master the MERN stack from scratch to deployment.",
-    icon: <Code />,
-    color: "bg-lime-900/40 text-lime-400",
-  },
-  {
-    title: "Competitive Programming",
-    href: "/paths/cp",
-    description: "Hone your DSA skills for top-tier competitions.",
-    icon: <Cpu />,
-    color: "bg-gray-800/50 text-gray-300",
-  },
-  {
-    title: "Cloud & DevOps",
-    href: "/paths/devops",
-    description: "Learn to deploy, scale, and manage modern applications.",
-    icon: <Server />,
-    color: "bg-indigo-900/40 text-indigo-400",
-  },
-];
+// Removed paths array as we're no longer using the dropdown
 
 export function Navbar({ logout }) {
   const navigate = useNavigate();
+  const { user } = useUser();
+  
   const handleLogout = () => {
     logout();
     navigate("/");
   };
 
+  // Keep only essential navigation items
   const navLinks = [
-    { href: "/problems", text: "Problemset" },
-    { href: "/contests", text: "Contests" },
-    { href: "/courses", text: "Courses" },
-    { href: "/blogpage", text: "Blog" },
-    { href: "/success-stories", text: "Success Stories" },
+    { href: "/problems", text: "Problems", icon: <Zap className="w-4 h-4" /> },
+    { href: "/courses", text: "Courses", icon: <Code className="w-4 h-4" /> },
+    { href: "/contests", text: "Contests", icon: <Sparkles className="w-4 h-4" /> },
+    { href: "/collaborative", text: "Live Coding", icon: <Users className="w-4 h-4" /> },
   ];
 
   return (
@@ -88,36 +59,7 @@ export function Navbar({ logout }) {
           </Link>
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList>
-              {navLinks.slice(0, 1).map((link) => (
-                <NavigationMenuItem key={link.text}>
-                  <Link to={link.href}>
-                    <NavigationMenuLink className="bg-transparent text-gray-300 font-medium opacity-80 transition hover:opacity-100 hover:text-purple-400 px-3 py-2">
-                      {link.text}
-                    </NavigationMenuLink>
-                  </Link>
-                </NavigationMenuItem>
-              ))}
-              <NavigationMenuItem>
-                <NavigationMenuTrigger className="bg-transparent text-gray-300 font-medium opacity-80 hover:opacity-100 hover:text-purple-400">
-                  Learning Paths
-                </NavigationMenuTrigger>
-                <NavigationMenuContent className="bg-gray-900 border border-gray-800 shadow-xl">
-                  <ul className="grid w-[400px] gap-3 p-4 md:w-[500px] md:grid-cols-2 lg:w-[600px]">
-                    {paths.map((component) => (
-                      <ListItem
-                        key={component.title}
-                        title={component.title}
-                        href={component.href}
-                        icon={component.icon}
-                        color={component.color}
-                      >
-                        {component.description}
-                      </ListItem>
-                    ))}
-                  </ul>
-                </NavigationMenuContent>
-              </NavigationMenuItem>
-              {navLinks.slice(1).map((link) => (
+              {navLinks.map((link) => (
                 <NavigationMenuItem key={link.text}>
                   <Link to={link.href}>
                     <NavigationMenuLink className="bg-transparent text-gray-300 font-medium opacity-80 transition hover:opacity-100 hover:text-purple-400 px-3 py-2">
@@ -131,16 +73,7 @@ export function Navbar({ logout }) {
         </div>
         <div className="flex items-center gap-3">
           <div className="hidden md:block">
-            <form>
-              <div className="relative w-full max-w-sm">
-                <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-gray-400" />
-                <Input
-                  className="w-full rounded-xl bg-gray-800 pl-12 h-10 text-gray-100 placeholder:text-gray-500 border border-gray-700 focus-visible:ring-2 focus-visible:ring-purple-500"
-                  placeholder="Search..."
-                  type="search"
-                />
-              </div>
-            </form>
+            <SearchBox />
           </div>
           <Button
             variant="ghost"
@@ -155,11 +88,11 @@ export function Navbar({ logout }) {
               <Button variant="ghost" size="icon" className="rounded-full">
                 <Avatar className="h-10 w-10 border-2 border-purple-500/40">
                   <AvatarImage
-                    src="https://github.com/shadcn.png"
+                    src={user?.profilePicture || "https://github.com/shadcn.png"}
                     alt="User Avatar"
                   />
                   <AvatarFallback>
-                    <User className="text-gray-400" />
+                    {user ? user.name.slice(0, 2).toUpperCase() : <User className="text-gray-400" />}
                   </AvatarFallback>
                 </Avatar>
               </Button>
@@ -169,7 +102,7 @@ export function Navbar({ logout }) {
               className="w-56 mt-2 bg-gray-900 border border-gray-800"
             >
               <DropdownMenuLabel className="text-gray-200">
-                My Account
+                {user ? user.name : 'My Account'}
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-gray-700" />
               <DropdownMenuItem asChild>
@@ -181,8 +114,16 @@ export function Navbar({ logout }) {
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
+                <Link
+                  to="/user-dashboard"
+                  className="text-gray-300 hover:text-purple-400"
+                >
+                  Dashboard
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
                 <Link to="/Ai" className="text-gray-300 hover:text-purple-400">
-                  Ai Assistant
+                  AI Assistant
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -191,6 +132,22 @@ export function Navbar({ logout }) {
                   className="text-gray-300 hover:text-purple-400"
                 >
                   Playground
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  to="/problem-solver"
+                  className="text-gray-300 hover:text-purple-400"
+                >
+                  Problem Solver
+                </Link>
+              </DropdownMenuItem>
+              <DropdownMenuItem asChild>
+                <Link
+                  to="/quiz-system"
+                  className="text-gray-300 hover:text-purple-400"
+                >
+                  Quiz System
                 </Link>
               </DropdownMenuItem>
               <DropdownMenuItem asChild>
@@ -236,6 +193,9 @@ export function Navbar({ logout }) {
                   </SheetTitle>
                 </SheetHeader>
                 <div className="p-4">
+                  <div className="mb-4">
+                    <SearchBox />
+                  </div>
                   <nav className="grid gap-2 text-lg font-medium">
                     {navLinks.map((link) => (
                       <Link
@@ -257,38 +217,4 @@ export function Navbar({ logout }) {
   );
 }
 
-interface ListItemProps extends React.AnchorHTMLAttributes<HTMLAnchorElement> {
-  className?: string;
-  title: string;
-  icon: React.ReactNode;
-  color?: string;
-  children?: React.ReactNode;
-}
-
-const ListItem = React.forwardRef<HTMLAnchorElement, ListItemProps>(
-  ({ className, title, icon, color, children, ...props }, ref) => (
-    <li>
-      <NavigationMenuLink asChild>
-        <a
-          ref={ref}
-          className={cn(
-            "block select-none space-y-1 rounded-md p-3 leading-none no-underline outline-none transition-colors hover:bg-gray-800 hover:text-purple-400 focus:bg-gray-800 focus:text-purple-400",
-            className
-          )}
-          {...props}
-        >
-          <div className="flex items-center gap-3">
-            <div className={`rounded-lg p-2 ${color}`}>{icon}</div>
-            <div className="text-sm font-medium leading-none text-gray-200">
-              {title}
-            </div>
-          </div>
-          <p className="line-clamp-2 text-sm leading-snug text-gray-400">
-            {children}
-          </p>
-        </a>
-      </NavigationMenuLink>
-    </li>
-  )
-);
-ListItem.displayName = "ListItem";
+// Removed ListItem component as it's no longer needed

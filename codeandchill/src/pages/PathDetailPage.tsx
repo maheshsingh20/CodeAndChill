@@ -1,6 +1,6 @@
 import React from "react";
 import { useParams } from "react-router-dom";
-import { CourseRoadmap } from "@/components/LearningPath/CourseRoadmap";
+import { CourseRoadmap } from "@/components/learning-path/CourseRoadmap";
 import {
   Avatar,
   AvatarFallback,

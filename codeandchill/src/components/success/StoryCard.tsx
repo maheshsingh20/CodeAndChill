@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Card,
   CardContent,
@@ -22,7 +21,7 @@ type Story = {
   image: string;
   quote: string;
   skills: string[];
-  linkedinUrl?: string; // Add the optional linkedinUrl
+  linkedinUrl?: string;
 };
 
 interface StoryCardProps {
@@ -32,47 +31,38 @@ interface StoryCardProps {
 export function StoryCard({ story }: StoryCardProps) {
   return (
     <Card
-      className={`
-        rounded-2xl border border-gray-700
-        bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800
-        shadow-xl hover:shadow-cyan-500/20 hover:border-cyan-400
-        hover:scale-[1.02] transition-all duration-300 ease-in-out
-        flex flex-col
-      `}
+      className="card glass-card hover-lift flex flex-col"
       role="article"
       aria-label={`Success story: ${story.name} placed at ${story.company}`}
     >
-      <CardHeader className="p-6 text-center">
-        <Avatar className="h-20 w-20 mb-4 ring-2 ring-cyan-400/70 shadow-md mx-auto">
+      <CardHeader className="card-header p-6 text-center">
+        <Avatar className="h-20 w-20 mb-4 ring-2 ring-primary/70 shadow-md mx-auto">
           <AvatarImage src={story.image} alt={story.name} />
-          <AvatarFallback className="bg-cyan-700 text-white">
+          <AvatarFallback className="bg-primary text-primary-foreground">
             {story.name.charAt(0)}
           </AvatarFallback>
         </Avatar>
 
-        <CardTitle className="text-xl font-bold bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent">
+        <CardTitle className="card-title text-xl font-bold">
           {story.name}
         </CardTitle>
-        <CardDescription className="mt-1 text-gray-300 font-medium">
+        <CardDescription className="card-description mt-1 font-medium">
           Placed at{" "}
-          <span className="text-emerald-300 font-semibold">
+          <span className="text-primary font-semibold">
             {story.company}
           </span>
         </CardDescription>
       </CardHeader>
 
-      <CardContent className="p-6 pt-0 flex-grow">
-        <blockquote
-          className="text-gray-200 italic border-l-2 border-cyan-400/60 pl-4
-                     bg-gray-800/60 p-3 rounded-md shadow-inner"
-        >
-          “{story.quote}”
+      <CardContent className="card-content p-6 pt-0 flex-grow">
+        <blockquote className="text-muted-foreground italic border-l-2 border-primary/60 pl-4 bg-muted/20 p-3 rounded-md">
+          "{story.quote}"
         </blockquote>
       </CardContent>
 
-      <CardFooter className="p-6 pt-4 flex-col items-start gap-4">
+      <CardFooter className="card-footer p-6 pt-4 flex-col items-start gap-4">
         <div className="w-full">
-          <h4 className="text-sm font-semibold text-cyan-300 mb-2">
+          <h4 className="text-sm font-semibold text-foreground mb-2">
             Skills Learned
           </h4>
 
@@ -80,7 +70,7 @@ export function StoryCard({ story }: StoryCardProps) {
             {story.skills.map((skill) => (
               <Badge
                 key={skill}
-                className="bg-gray-800 border border-gray-600 text-gray-200 hover:border-cyan-400 hover:text-cyan-300 transition rounded-full px-3 py-1"
+                className="badge badge-outline"
               >
                 {skill}
               </Badge>
@@ -88,11 +78,10 @@ export function StoryCard({ story }: StoryCardProps) {
           </div>
         </div>
 
-        {/* Conditionally render the LinkedIn button */}
         {story.linkedinUrl && (
           <Button
             asChild
-            className="w-full bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white font-semibold rounded-xl shadow-lg"
+            className="btn btn-default w-full"
           >
             <a
               href={story.linkedinUrl}

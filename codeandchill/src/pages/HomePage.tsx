@@ -1,4 +1,4 @@
-import React, { useState, useEffect, JSX } from "react";
+import React, { JSX } from "react";
 import { motion, Variants } from "framer-motion";
 import { WelcomeBack } from "@/components/dashboard/Dash";
 import { LearningPaths } from "@/components/dashboard/LearningPaths";
@@ -9,6 +9,11 @@ import { BlogSection } from "@/components/dashboard/BlogSection";
 import { SuccessStories } from "@/components/dashboard/SuccessStories";
 import { YourActivityFeed } from "@/components/dashboard/YourActivityFeed";
 import { QuizzesSection } from "@/components/dashboard/QuizzesSection";
+import { SkillTestsSection } from "@/components/dashboard/SkillTestsSection";
+import { LearningPathsSection } from "@/components/dashboard/LearningPathsSection";
+import { ToolsSection } from "@/components/dashboard/ToolsSection";
+import { QuickAccessSection } from "@/components/dashboard/QuickAccessSection";
+import { useUser } from "@/contexts/UserContext";
 
 const sectionVariants:Variants = {
   hidden: { opacity: 0, y: 30 },
@@ -23,42 +28,25 @@ const animationProps = {
 };
 
 export function HomePage(): JSX.Element {
-  const [userName, setUserName] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    async function fetchUserProfile() {
-      try {
-        const token = localStorage.getItem("token"); // or wherever you store JWT
-        const response = await fetch("http://localhost:3001/api/user/profile", {
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`, // send JWT
-          },
-        });
-
-        if (!response.ok) throw new Error("Failed to fetch profile");
-
-        const data = await response.json();
-        console.log("Profile data:", data); // check API response
-        setUserName(data.name || "User"); // adjust based on your API
-      } catch (error) {
-        console.error("Error fetching user profile:", error);
-        setUserName("User");
-      } finally {
-        setLoading(false);
-      }
-    }
-
-    fetchUserProfile();
-  }, []);
+  const { user, loading } = useUser();
 
   return (
-    <div className="min-h-screen w-full bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 text-foreground">
-      {/* Welcome Section */}
-      <WelcomeBack userName={loading ? "Loading..." : (userName || "User")} />
+    <div className="min-h-screen w-full bg-background relative">
+      {/* Shadcn Background */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute inset-0 gradient-bg" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,hsl(var(--primary)/0.08),transparent_50%)]" />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,hsl(var(--accent)/0.08),transparent_50%)]" />
+      </div>
 
-      <div className="container mx-auto max-w-7xl px-6 md:px-12 py-16 space-y-20">
+      {/* Welcome Section */}
+      <WelcomeBack userName={loading ? "Loading..." : (user?.name || "User")} />
+
+      <div className="container mx-auto max-w-7xl px-6 md:px-12 section-padding space-y-16">
+        <motion.div {...animationProps}>
+          <QuickAccessSection />
+        </motion.div>
+
         <motion.div {...animationProps}>
           <ContinueLearning />
         </motion.div>
@@ -68,11 +56,19 @@ export function HomePage(): JSX.Element {
         </motion.div>
 
         <motion.div {...animationProps}>
-          <LearningPaths />
+          <LearningPathsSection />
+        </motion.div>
+
+        <motion.div {...animationProps}>
+          <SkillTestsSection />
         </motion.div>
 
         <motion.div {...animationProps}>
           <ContestsPreview />
+        </motion.div>
+
+        <motion.div {...animationProps}>
+          <ToolsSection />
         </motion.div>
 
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-16 items-start">

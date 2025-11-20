@@ -62,7 +62,7 @@ export function ChatInterface() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("http://localhost:3001/api/gemini-chat", {
+      const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/gemini-chat`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ prompt: userMessage.text }),
