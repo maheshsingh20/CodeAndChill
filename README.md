@@ -772,4 +772,893 @@ Authorization: Bearer <your_jwt_token>
   name: String,
   email: String (unique),
   password: String (hashed),
-  role: String (default:
+  role: String (default: 'student'),
+  enrolledCourses: [ObjectId],
+  solvedProblems: [ObjectId],
+  achievements: [Object],
+  stats: {
+    problemsSolved: Number,
+    quizzesTaken: Number,
+    totalScore: Number,
+    streak: Number
+  },
+  preferences: {
+    theme: String,
+    language: String,
+    notifications: Boolean
+  },
+  createdAt: Date,
+  updatedAt: Date
+}
+```
+
+### Course Model (Free CS Courses)
+```typescript
+{
+  title: String,
+  slug: String (unique),
+  description: String,
+  category: String,
+  difficulty: String,
+  duration: String,
+  topics: [String],
+  lessons: [{
+    title: String,
+    content: String (markdown),
+    duration: Number,
+    order: Number
+  }],
+  prerequisites: [String],
+  learningOutcomes: [String],
+  isPublished: Boolean
+}
+```
+
+### GeneralCourse Model (Paid Courses)
+```typescript
+{
+  title: String,
+  slug: String (unique),
+  description: String,
+  instructor: String,
+  price: Number,
+  originalPrice: Number,
+  thumbnail: String,
+  category: String,
+  level: String,
+  duration: String,
+  language: String,
+  curriculum: [{
+    section: String,
+    lessons: [{
+      title: String,
+      type: String,
+      duration: String,
+      content: String
+    }]
+  }],
+  features: [String],
+  requirements: [String],
+  targetAudience: [String],
+  rating: Number,
+  enrollmentCount: Number
+}
+```
+
+### Problem Model
+```typescript
+{
+  title: String,
+  slug: String (unique),
+  difficulty: String (Easy/Medium/Hard),
+  topic: String,
+  description: String,
+  inputFormat: String,
+  outputFormat: String,
+  constraints: String,
+  examples: [{
+    input: String,
+    output: String,
+    explanation: String
+  }],
+  testCases: [{
+    input: String,
+    output: String,
+    isHidden: Boolean
+  }],
+  hints: [String],
+  tags: [String],
+  acceptanceRate: Number,
+  submissionCount: Number
+}
+```
+
+### Quiz Model
+```typescript
+{
+  title: String,
+  slug: String (unique),
+  subject: ObjectId (ref: Subject),
+  difficulty: String,
+  duration: Number (minutes),
+  questions: [{
+    question: String,
+    options: [String],
+    correctAnswer: Number,
+    explanation: String,
+    points: Number
+  }],
+  totalPoints: Number,
+  passingScore: Number
+}
+```
+
+### Enrollment Model
+```typescript
+{
+  user: ObjectId (ref: User),
+  course: ObjectId (ref: GeneralCourse),
+  enrolledAt: Date,
+  paymentDetails: {
+    orderId: String,
+    paymentId: String,
+    amount: Number,
+    status: String
+  },
+  progress: Number,
+  completedLessons: [String],
+  certificateIssued: Boolean
+}
+```
+
+### UserProgress Model
+```typescript
+{
+  user: ObjectId (ref: User),
+  course: ObjectId (ref: Course),
+  completedLessons: [String],
+  currentLesson: String,
+  progress: Number,
+  timeSpent: Number (minutes),
+  notes: [{
+    lessonId: String,
+    content: String,
+    timestamp: Number,
+    createdAt: Date
+  }],
+  quizScores: [{
+    quizId: String,
+    score: Number,
+    maxScore: Number,
+    attemptedAt: Date
+  }],
+  lastAccessedAt: Date
+}
+```
+
+### UserProblem Model
+```typescript
+{
+  user: ObjectId (ref: User),
+  problem: ObjectId (ref: Problem),
+  status: String (solved/attempted),
+  submissions: [{
+    code: String,
+    language: String,
+    result: String,
+    testCasesPassed: Number,
+    totalTestCases: Number,
+    executionTime: Number,
+    memory: Number,
+    submittedAt: Date
+  }],
+  solvedAt: Date,
+  attempts: Number
+}
+```
+
+---
+
+## 🏗️ Architecture
+
+### System Architecture
+
+```
+┌─────────────────────────────────────────────────────────────┐
+│                         Frontend (React)                     │
+│  ┌──────────┐  ┌──────────┐  ┌──────────┐  ┌──────────┐   │
+│  │  Pages   │  │Components│  │ Services │  │ Contexts │   │
+│  └────┬─────┘  └────┬─────┘  └────┬─────┘  └────┬─────┘   │
+│       │             │              │             │          │
+│       └─────────────┴──────────────┴─────────────┘          │
+│                         │                                    │
+└─────────────────────────┼────────────────────────────────────┘
+                          │ HTTP/WebSocket
+                          │
+┌─────────────────────────┼────────────────────────────────────┐
+│                         │    Backend (Express)               │
+│                    ┌────▼─────┐                              │
+│                    │  Routes  │                              │
+│                    └────┬─────┘                              │
+│              ┌──────────┼──────────┐                         │
+│         ┌────▼────┐ ┌──▼───┐ ┌────▼─────┐                  │
+│         │Middleware│ │Models│ │ Services │                  │
+│         └─────────┘ └──┬───┘ └────┬─────┘                  │
+│                        │           │                         │
+└────────────────────────┼───────────┼─────────────────────────┘
+                         │           │
+              ┌──────────▼───────────▼──────────┐
+              │        MongoDB Database          │
+              └──────────────────────────────────┘
+                         │
+         ┌───────────────┼───────────────┐
+         │               │               │
+    ┌────▼────┐    ┌────▼────┐    ┌────▼────┐
+    │ Judge0  │    │ Gemini  │    │Razorpay │
+    │   API   │    │   AI    │    │   API   │
+    └─────────┘    └─────────┘    └─────────┘
+```
+
+### Frontend Architecture
+
+**Component Hierarchy**:
+```
+App.tsx
+├── ThemeProvider
+├── UserProvider
+└── Router
+    ├── Layout (Navbar + Footer)
+    └── Pages
+        ├── HomePage
+        ├── CoursesPage
+        │   └── CourseCard[]
+        ├── CourseDetailPage
+        │   ├── CourseContentSidebar
+        │   └── LessonViewer
+        ├── ProblemsPage
+        │   └── ProblemCard[]
+        ├── ProblemDetailPage
+        │   ├── ProblemDescription
+        │   └── CodeEditorPanel
+        ├── QuizzesPage
+        ├── ProfilePage
+        │   └── Dashboard
+        └── LeaderboardPage
+```
+
+**State Management**:
+- **UserContext**: Authentication, user data, login/logout
+- **ThemeContext**: Dark/light mode, theme preferences
+- **Local State**: Component-specific state with useState/useReducer
+
+**API Communication**:
+- Centralized API service with Axios
+- Token-based authentication
+- Error handling and retry logic
+- Request/response interceptors
+
+### Backend Architecture
+
+**Layered Architecture**:
+```
+Routes Layer (API Endpoints)
+      ↓
+Middleware Layer (Auth, Validation)
+      ↓
+Controller Layer (Business Logic)
+      ↓
+Service Layer (External APIs)
+      ↓
+Model Layer (Database Operations)
+      ↓
+Database (MongoDB)
+```
+
+**Key Design Patterns**:
+- **MVC Pattern**: Separation of concerns
+- **Middleware Pattern**: Request processing pipeline
+- **Repository Pattern**: Data access abstraction
+- **Service Pattern**: Business logic encapsulation
+
+### Security Architecture
+
+**Authentication Flow**:
+```
+1. User Login → Credentials Validation
+2. Password Hashing Check (bcrypt)
+3. JWT Token Generation
+4. Token Sent to Client
+5. Client Stores Token (localStorage)
+6. Subsequent Requests Include Token
+7. Server Validates Token (Middleware)
+8. Request Processed if Valid
+```
+
+**Security Measures**:
+- Password hashing with bcrypt (10 rounds)
+- JWT token expiration (7 days)
+- CORS configuration
+- Input validation and sanitization
+- SQL injection prevention (Mongoose)
+- XSS protection
+- Rate limiting (recommended for production)
+
+---
+
+## 💻 Development
+
+### Code Style
+
+**TypeScript**:
+- Strict mode enabled
+- Explicit type annotations
+- Interface over type for objects
+- Avoid `any` type
+
+**React**:
+- Functional components with hooks
+- Custom hooks for reusable logic
+- Props destructuring
+- Meaningful component names
+
+**Naming Conventions**:
+- Components: PascalCase (`UserProfile.tsx`)
+- Files: camelCase (`authService.ts`)
+- Constants: UPPER_SNAKE_CASE (`API_BASE_URL`)
+- Functions: camelCase (`getUserProfile`)
+
+### Project Scripts
+
+**Frontend** (`codeandchill/`):
+```bash
+npm run dev          # Start development server
+npm run build        # Build for production
+npm run preview      # Preview production build
+npm run lint         # Run ESLint
+```
+
+**Backend** (`Backend/server/`):
+```bash
+npm run dev          # Start development server
+npm start            # Start production server
+npm run seed         # Seed database
+```
+
+### Adding New Features
+
+#### Adding a New Page
+1. Create component in `src/pages/`
+2. Add route in `App.tsx`
+3. Create necessary services in `src/services/`
+4. Add types in `src/types/`
+
+#### Adding a New API Endpoint
+1. Create route in `Backend/server/src/routes/`
+2. Add model if needed in `src/models/`
+3. Implement business logic
+4. Add authentication middleware if required
+5. Update API documentation
+
+### Testing
+
+**Recommended Testing Stack**:
+- **Unit Tests**: Jest + React Testing Library
+- **Integration Tests**: Supertest for API
+- **E2E Tests**: Playwright or Cypress
+
+**Test Commands** (to be implemented):
+```bash
+npm test              # Run all tests
+npm run test:watch    # Watch mode
+npm run test:coverage # Coverage report
+```
+
+---
+
+## 🚢 Deployment
+
+### Frontend Deployment (Vercel/Netlify)
+
+#### Vercel
+```bash
+# Install Vercel CLI
+npm i -g vercel
+
+# Deploy
+cd codeandchill
+vercel
+```
+
+**Environment Variables** (Vercel Dashboard):
+- `VITE_API_URL`: Your backend URL
+- `VITE_RAPID_API_KEY`: Judge0 API key
+- `VITE_RAPID_API_HOST`: judge0-ce.p.rapidapi.com
+
+#### Netlify
+```bash
+# Build
+npm run build
+
+# Deploy dist folder via Netlify CLI or Dashboard
+```
+
+**Build Settings**:
+- Build command: `npm run build`
+- Publish directory: `dist`
+
+### Backend Deployment
+
+#### Railway
+1. Connect GitHub repository
+2. Select `Backend/server` as root directory
+3. Add environment variables
+4. Deploy automatically on push
+
+#### Render
+1. Create new Web Service
+2. Connect repository
+3. Set root directory: `Backend/server`
+4. Build command: `npm install`
+5. Start command: `npm start`
+6. Add environment variables
+
+#### DigitalOcean App Platform
+1. Create new app
+2. Select repository
+3. Configure build settings
+4. Add environment variables
+5. Deploy
+
+#### Heroku
+```bash
+# Install Heroku CLI
+npm i -g heroku
+
+# Login
+heroku login
+
+# Create app
+heroku create your-app-name
+
+# Set buildpack
+heroku buildpacks:set heroku/nodejs
+
+# Add MongoDB (Atlas recommended)
+# Set environment variables
+heroku config:set JWT_SECRET=your_secret
+heroku config:set MONGO_URI=your_mongodb_uri
+
+# Deploy
+git push heroku main
+```
+
+### Database Deployment
+
+#### MongoDB Atlas (Recommended)
+1. Create account at [MongoDB Atlas](https://www.mongodb.com/cloud/atlas)
+2. Create new cluster (Free tier available)
+3. Create database user
+4. Whitelist IP addresses (0.0.0.0/0 for all)
+5. Get connection string
+6. Update `MONGO_URI` in environment variables
+
+**Connection String Format**:
+```
+mongodb+srv://username:password@cluster.mongodb.net/codeandchill?retryWrites=true&w=majority
+```
+
+### Production Checklist
+
+- [ ] Environment variables configured
+- [ ] MongoDB Atlas setup and connected
+- [ ] API keys validated (Gemini, Razorpay, Judge0)
+- [ ] CORS configured for production domain
+- [ ] JWT secret is strong and unique
+- [ ] Email service configured
+- [ ] Frontend API URL points to production backend
+- [ ] Database seeded with initial data
+- [ ] SSL/HTTPS enabled
+- [ ] Error logging configured (Sentry recommended)
+- [ ] Rate limiting implemented
+- [ ] Security headers configured
+- [ ] Performance monitoring setup
+
+### Environment-Specific Configuration
+
+**Development**:
+```env
+NODE_ENV=development
+MONGO_URI=mongodb://localhost:27017/codeandchill
+```
+
+**Production**:
+```env
+NODE_ENV=production
+MONGO_URI=mongodb+srv://...
+```
+
+---
+
+## 🔧 Troubleshooting
+
+### Common Issues
+
+#### MongoDB Connection Error
+```
+Error: connect ECONNREFUSED 127.0.0.1:27017
+```
+**Solution**: Ensure MongoDB is running
+```bash
+# Windows
+net start MongoDB
+
+# macOS/Linux
+sudo systemctl start mongod
+```
+
+#### Port Already in Use
+```
+Error: listen EADDRINUSE: address already in use :::3001
+```
+**Solution**: Kill process using the port
+```bash
+# Windows
+netstat -ano | findstr :3001
+taskkill /PID <PID> /F
+
+# macOS/Linux
+lsof -ti:3001 | xargs kill -9
+```
+
+#### CORS Error
+```
+Access to XMLHttpRequest blocked by CORS policy
+```
+**Solution**: Check backend CORS configuration in `server.ts`
+```typescript
+app.use(cors({
+  origin: 'http://localhost:5173',
+  credentials: true
+}));
+```
+
+#### JWT Token Invalid
+```
+Error: jwt malformed
+```
+**Solution**: 
+- Clear localStorage in browser
+- Re-login to get new token
+- Check JWT_SECRET is consistent
+
+#### Judge0 API Error
+```
+Error: 429 Too Many Requests
+```
+**Solution**: 
+- Check RapidAPI subscription limits
+- Implement request throttling
+- Consider upgrading plan
+
+#### Gemini API Error
+```
+Error: API key not valid
+```
+**Solution**:
+- Verify API key in `.env`
+- Check API key permissions in Google AI Studio
+- Ensure billing is enabled (if required)
+
+### Debug Mode
+
+Enable detailed logging:
+
+**Backend**:
+```typescript
+// Add to server.ts
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
+}
+```
+
+**Frontend**:
+```typescript
+// Add to services/api.ts
+axios.interceptors.request.use(request => {
+  console.log('Starting Request', request);
+  return request;
+});
+```
+
+---
+
+## 📖 Learning Resources
+
+### For Developers
+
+**React & TypeScript**:
+- [React Documentation](https://react.dev/)
+- [TypeScript Handbook](https://www.typescriptlang.org/docs/)
+- [React TypeScript Cheatsheet](https://react-typescript-cheatsheet.netlify.app/)
+
+**Node.js & Express**:
+- [Node.js Documentation](https://nodejs.org/docs/)
+- [Express.js Guide](https://expressjs.com/en/guide/routing.html)
+- [MongoDB University](https://university.mongodb.com/)
+
+**UI Libraries**:
+- [shadcn/ui Documentation](https://ui.shadcn.com/)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+- [Radix UI](https://www.radix-ui.com/)
+
+### Project-Specific
+
+**API Documentation**:
+- [Judge0 API Docs](https://ce.judge0.com/)
+- [Google Gemini API](https://ai.google.dev/docs)
+- [Razorpay API](https://razorpay.com/docs/api/)
+
+---
+
+## 🤝 Contributing
+
+We welcome contributions! Here's how you can help:
+
+### Getting Started
+
+1. **Fork the repository**
+2. **Clone your fork**
+   ```bash
+   git clone https://github.com/your-username/code-and-chill.git
+   ```
+3. **Create a feature branch**
+   ```bash
+   git checkout -b feature/amazing-feature
+   ```
+4. **Make your changes**
+5. **Commit your changes**
+   ```bash
+   git commit -m "Add amazing feature"
+   ```
+6. **Push to your fork**
+   ```bash
+   git push origin feature/amazing-feature
+   ```
+7. **Open a Pull Request**
+
+### Contribution Guidelines
+
+**Code Quality**:
+- Follow existing code style
+- Write meaningful commit messages
+- Add comments for complex logic
+- Update documentation if needed
+
+**Pull Request Process**:
+- Describe your changes clearly
+- Reference related issues
+- Ensure all tests pass
+- Update README if needed
+
+**Bug Reports**:
+- Use issue templates
+- Provide reproduction steps
+- Include error messages
+- Specify environment details
+
+**Feature Requests**:
+- Explain the use case
+- Describe expected behavior
+- Consider implementation approach
+
+### Areas for Contribution
+
+- 🐛 Bug fixes
+- ✨ New features
+- 📝 Documentation improvements
+- 🎨 UI/UX enhancements
+- ⚡ Performance optimizations
+- 🧪 Test coverage
+- 🌐 Internationalization
+- ♿ Accessibility improvements
+
+---
+
+## 📝 License
+
+This project is licensed under the **MIT License**.
+
+```
+MIT License
+
+Copyright (c) 2024 Code & Chill
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+```
+
+---
+
+## 👥 Team & Support
+
+### Maintainers
+
+- **Project Lead**: [Mahesh Singh]
+- **Backend Developer**: [Mahesh Singh]
+- **Frontend Developer**: [Mahesh Singh]
+- **UI/UX Designer**: [Mahesh Singh]
+
+### Contact
+
+- **Email**: singhmahesh2924@gmail.com 
+- **GitHub Issues**: [Create an issue](https://github.com/maheshsingh20/codeandchill)
+- **Discord**: [Join our community](https://discord.gg/your-invite)
+- **Twitter**: [@codeandchill](https://twitter.com/codeandchill)
+
+### Acknowledgments
+
+Special thanks to:
+- **shadcn** for the amazing UI component library
+- **Vercel** for Next.js and hosting solutions
+- **MongoDB** for the database platform
+- **Google** for Gemini AI API
+- **Judge0** for code execution API
+- **Razorpay** for payment integration
+- All **contributors** who have helped improve this project
+
+---
+
+## 🗺️ Roadmap
+
+### Current Version (v1.0.0)
+- ✅ User authentication and authorization
+- ✅ Course management system
+- ✅ Problem solving platform
+- ✅ Quiz system
+- ✅ AI-powered chat assistant
+- ✅ Payment integration
+- ✅ Progress tracking
+- ✅ Leaderboards
+
+### Upcoming Features (v1.1.0)
+- 🔄 Real-time collaborative coding
+- 🔄 Video conferencing for mentorship
+- 🔄 Mobile application (React Native)
+- 🔄 Advanced analytics dashboard
+- 🔄 Peer code review system
+- 🔄 Discussion forums
+- 🔄 Live coding contests
+- 🔄 Certificate generation
+
+### Future Plans (v2.0.0)
+- 📅 AI-powered personalized learning paths
+- 📅 Interview preparation module
+- 📅 Company-specific preparation tracks
+- 📅 Resume builder
+- 📅 Job board integration
+- 📅 Mentor matching system
+- 📅 Project showcase platform
+- 📅 API for third-party integrations
+
+---
+
+## 📊 Project Statistics
+
+- **Total Lines of Code**: ~50,000+
+- **Components**: 100+
+- **API Endpoints**: 60+
+- **Database Models**: 15+
+- **Supported Languages**: 10+ (for code execution)
+- **Course Topics**: 20+
+- **Problems**: 300+
+- **Quizzes**: 50+
+
+---
+
+## 🎓 Use Cases
+
+### For Students
+- Learn computer science fundamentals
+- Practice coding problems
+- Take quizzes to test knowledge
+- Track learning progress
+- Get AI assistance for doubts
+- Compete on leaderboards
+
+### For Educators
+- Create and manage courses
+- Design quizzes and assessments
+- Track student progress
+- Provide personalized feedback
+- Share success stories
+
+### For Recruiters
+- Assess candidate skills
+- Create custom skill tests
+- View candidate profiles
+- Track problem-solving abilities
+
+### For Self-Learners
+- Structured learning paths
+- Self-paced courses
+- Practice problems
+- AI-powered assistance
+- Progress tracking
+
+---
+
+## 🔐 Security
+
+### Reporting Security Issues
+
+If you discover a security vulnerability, please email us at:
+**security@codeandchill.com**
+
+Please do NOT create public GitHub issues for security vulnerabilities.
+
+### Security Best Practices
+
+- All passwords are hashed using bcrypt
+- JWT tokens expire after 7 days
+- HTTPS enforced in production
+- Input validation on all endpoints
+- SQL injection prevention
+- XSS protection
+- CSRF protection (recommended for production)
+- Rate limiting (recommended for production)
+
+---
+
+## 📱 Browser Support
+
+- ✅ Chrome (latest)
+- ✅ Firefox (latest)
+- ✅ Safari (latest)
+- ✅ Edge (latest)
+- ⚠️ IE11 (not supported)
+
+---
+
+## 🌟 Star History
+
+If you find this project useful, please consider giving it a ⭐ on GitHub!
+
+---
+
+## 📄 Changelog
+
+### Version 1.0.0 (Current)
+- Initial release
+- Complete authentication system
+- Course management
+- Problem solving platform
+- Quiz system
+- AI integration
+- Payment system
+- Progress tracking
+- Leaderboards
+
+---
+
+<div align="center">
+
+**Made with ❤️ by the Code & Chill Team**
+
+[⬆ Back to Top](#-code--chill---advanced-e-learning-platform)
+
+</div>
