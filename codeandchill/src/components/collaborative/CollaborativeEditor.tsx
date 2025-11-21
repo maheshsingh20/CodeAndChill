@@ -106,27 +106,16 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
   };
 
   const handleCodeChanged = (data: any) => {
-    if (editorRef.current && monacoRef.current) {
-      const editor = editorRef.current;
-      const model = editor.getModel();
+    console.log('[CODE-SYNC] Received code update from:', data.username);
+    
+    // Simply update the code state - Monaco will handle the update
+    if (data.code !== undefined && data.code !== code) {
+      console.log('[CODE-SYNC] Updating code, length:', data.code.length);
+      setCode(data.code);
       
-      if (model) {
-        // Apply the change without triggering our own change event
-        const { change } = data;
-        const range = new monacoRef.current.Range(
-          change.position.line + 1,
-          change.position.column + 1,
-          change.position.line + 1,
-          change.position.column + 1 + (change.length || 0)
-        );
-
-        model.pushEditOperations([], [{
-          range,
-          text: change.content
-        }], () => null);
-      }
+      // Show notification
+      showNotification(`${data.username} updated the code`, 'info');
     }
-    setCode(data.code);
   };
 
   const handleCursorMoved = (data: any) => {
@@ -252,13 +241,15 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
   };
 
   const handleCodeChange = (value: string | undefined) => {
-    if (!canEdit || !value) return;
+    if (!canEdit || value === undefined) return;
 
     const newCode = value;
     const oldCode = code;
 
     // Simple diff to detect changes
     if (newCode !== oldCode) {
+      console.log('[CODE-CHANGE] Local code changed, sending to server. Length:', newCode.length);
+      
       // For simplicity, we'll send the entire new content
       // In a production app, you'd want to implement proper operational transforms
       const change: CodeChange = {
@@ -270,6 +261,8 @@ export const CollaborativeEditor: React.FC<CollaborativeEditorProps> = ({
 
       collaborativeService.sendCodeChange(change, newCode);
       setCode(newCode);
+      
+      console.log('[CODE-CHANGE] Code sent successfully');
     }
   };
 

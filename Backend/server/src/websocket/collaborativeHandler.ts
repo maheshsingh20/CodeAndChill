@@ -369,9 +369,16 @@ export class CollaborativeHandler {
       type: 'message' as const
     };
 
+    if (!session.chat) session.chat = [];
+    if (!session.chatMessages) session.chatMessages = [];
+    
+    session.chat.push(chatMessage);
     session.chatMessages.push(chatMessage);
     
     // Keep only last 100 messages
+    if (session.chat.length > 100) {
+      session.chat = session.chat.slice(-100);
+    }
     if (session.chatMessages.length > 100) {
       session.chatMessages = session.chatMessages.slice(-100);
     }

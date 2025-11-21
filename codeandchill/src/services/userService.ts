@@ -19,7 +19,15 @@ export class UserService {
       throw new Error('Failed to fetch profile');
     }
     
-    return response.json();
+    const result = await response.json();
+    
+    // Convert relative profile picture URL to absolute
+    if (result.user?.profilePicture && !result.user.profilePicture.startsWith('http')) {
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      result.user.profilePicture = `${baseUrl}${result.user.profilePicture}`;
+    }
+    
+    return result;
   }
 
   // Get user dashboard data
@@ -32,7 +40,15 @@ export class UserService {
       throw new Error('Failed to fetch profile dashboard');
     }
     
-    return response.json();
+    const result = await response.json();
+    
+    // Convert relative profile picture URL to absolute
+    if (result.user?.profilePicture && !result.user.profilePicture.startsWith('http')) {
+      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+      result.user.profilePicture = `${baseUrl}${result.user.profilePicture}`;
+    }
+    
+    return result;
   }
 
   // Update user profile
@@ -48,6 +64,35 @@ export class UserService {
     }
     
     return response.json();
+  }
+
+  // Upload profile picture
+  static async uploadProfilePicture(file: File) {
+    const formData = new FormData();
+    formData.append('profilePicture', file);
+
+    const token = localStorage.getItem('authToken');
+    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+    const response = await fetch(`${API_BASE_URL}/user/profile-picture`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`
+      },
+      body: formData
+    });
+    
+    if (!response.ok) {
+      throw new Error('Failed to upload profile picture');
+    }
+    
+    const result = await response.json();
+    
+    // Convert relative URL to absolute URL
+    if (result.profilePicture && !result.profilePicture.startsWith('http')) {
+      result.profilePicture = `${baseUrl}${result.profilePicture}`;
+    }
+    
+    return result;
   }
 
   // Update user preferences

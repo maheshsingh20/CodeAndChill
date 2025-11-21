@@ -127,7 +127,12 @@ export function SuccessStoriesPage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 border-t border-cyan-400/40">
+    <div className="w-full min-h-screen border-t border-cyan-400/40 relative">
+      {/* Consistent Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
+      </div>
       <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
         <header className="text-center mb-14">
           <h1 className="text-4xl md:text-5xl font-extrabold tracking-tight bg-gradient-to-r from-cyan-400 to-purple-400 bg-clip-text text-transparent drop-shadow-lg">

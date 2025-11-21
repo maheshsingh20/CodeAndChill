@@ -23,7 +23,6 @@ import {
   LearningPathDetailPage,
   PathDetailPage,
   ContestsPage,
-  ContestDetailPage,
   ContestCompetePage,
   SuccessStoriesPage,
   ProfilePage,
@@ -47,13 +46,29 @@ import {
   SkillTestTakingPage,
 } from "./pages";
 
+import { RealContestDetailPage } from "./pages/RealContestDetailPage";
+
 import { EnhancedCourseDetailPage } from "./pages/EnhancedCourseDetailPage";
 
 import { CollaborativePage } from "./pages/CollaborativePage";
 import { performAppCleanup } from "@/utils/cleanup";
 import { AuthDebug } from "./components/debug/AuthDebug";
+import { AdminLoginPage } from "./pages/admin/AdminLoginPage";
+import { AdminDashboard } from "./pages/admin/AdminDashboard";
+import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
+import { AdminDataSeedPage } from "./pages/admin/AdminDataSeedPage";
+import { AdminProblemsPage } from "./pages/admin/AdminProblemsPage";
+import { AdminQuizzesPage } from "./pages/admin/AdminQuizzesPage";
+import { AdminContestsPage } from "./pages/admin/AdminContestsPage";
+import { AdminContestFormPage } from "./pages/admin/AdminContestFormPage";
 
 import { ShadcnShowcasePage } from "./pages/ShadcnShowcasePage";
+import { RealTimeTest } from "./components/test/RealTimeTest";
+import { CollaborativeTest } from "./components/test/CollaborativeTest";
+import { SimpleCollaborativeTest } from "./components/test/SimpleCollaborativeTest";
+import { DebugCollaborativeTest } from "./components/test/DebugCollaborativeTest";
+import { CollaborativeSystemTest } from "./components/test/CollaborativeSystemTest";
+import { AuthDiagnostic } from "./components/test/AuthDiagnostic";
 
 // Layout components
 import { Navbar as PublicNavbar } from "./components/layout/Navbar";
@@ -70,6 +85,10 @@ import { STORAGE_KEYS } from "./constants";
 
 // Import Activity Tracker
 import { ActivityTracker } from "./components/activity/ActivityTracker";
+
+// Import PWA components
+import { PWAInstallPrompt } from "./components/pwa/PWAInstallPrompt";
+import "./utils/pwa"; // Initialize PWA manager
 
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(() => {
@@ -99,6 +118,12 @@ function App() {
   }, []);
 
   const login = (token?: string) => {
+    console.log('Login called with new token');
+    
+    // Clear any old user data first
+    localStorage.removeItem('user');
+    localStorage.removeItem('userPreferences');
+    
     if (token) {
       localStorage.setItem(STORAGE_KEYS.AUTH_TOKEN, token);
     }
@@ -111,6 +136,8 @@ function App() {
       newValue: token || localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN),
       oldValue: null
     }));
+    
+    console.log('Login completed, user data will refresh');
   };
 
   const logout = async () => {
@@ -131,24 +158,31 @@ function App() {
     return isAuthenticated ? element : <Navigate to="/auth" />;
   };
 
+  const isAdminRoute = window.location.pathname.startsWith('/admin');
+
   return (
     <Router>
       <UserProvider>
         {/* <AuthDebug /> */}
-        <ActivityTracker isAuthenticated={isAuthenticated} />
-        <div className="min-h-screen flex flex-col bg-background">
-          {/* Shadcn Dark Background */}
-          <div className="fixed inset-0 -z-10">
-            <div className="absolute inset-0 bg-gradient-to-br from-background via-muted/30 to-background" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_30%_30%,hsl(var(--primary)/0.1),transparent_50%)]" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_70%_70%,hsl(var(--accent)/0.1),transparent_50%)]" />
-          </div>
+        {!isAdminRoute && <ActivityTracker isAuthenticated={isAuthenticated} />}
+        <div className="min-h-screen flex flex-col bg-gradient-to-br from-gray-950 via-gray-900 to-black">
+          {/* Consistent Dark Background with subtle animated orbs */}
+          {!isAdminRoute && (
+            <div className="fixed inset-0 -z-10">
+              <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
+              <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
+            </div>
+          )}
 
-          {/* Navbar */}
-          {isAuthenticated ? (
-            <DashboardNavbar logout={logout} />
-          ) : (
-            <PublicNavbar />
+          {/* Navbar - Hide for admin routes */}
+          {!isAdminRoute && (
+            <>
+              {isAuthenticated ? (
+                <DashboardNavbar logout={logout} />
+              ) : (
+                <PublicNavbar />
+              )}
+            </>
           )}
 
           {/* Main content */}
@@ -214,7 +248,7 @@ function App() {
             />
             <Route
               path="/contests/:contestId"
-              element={<PrivateRoute element={<ContestDetailPage />} />}
+              element={<PrivateRoute element={<RealContestDetailPage />} />}
             />
             <Route
               path="/contests/:contestId/compete"
@@ -346,11 +380,61 @@ function App() {
                 isAuthenticated ? <ShadcnShowcasePage /> : <Navigate to="/auth" />
               }
             />
+            <Route
+              path="/test-realtime"
+              element={
+                isAuthenticated ? <RealTimeTest /> : <Navigate to="/auth" />
+              }
+            />
+            <Route
+              path="/test-collaborative"
+              element={
+                isAuthenticated ? <CollaborativeTest /> : <Navigate to="/auth" />
+              }
+            />
+            <Route
+              path="/test-simple-collaborative"
+              element={
+                isAuthenticated ? <SimpleCollaborativeTest /> : <Navigate to="/auth" />
+              }
+            />
+            <Route
+              path="/test-debug-collaborative"
+              element={
+                isAuthenticated ? <DebugCollaborativeTest /> : <Navigate to="/auth" />
+              }
+            />
+            <Route
+              path="/test-collaborative-system"
+              element={
+                isAuthenticated ? <CollaborativeSystemTest /> : <Navigate to="/auth" />
+              }
+            />
+            <Route
+              path="/auth-diagnostic"
+              element={
+                isAuthenticated ? <AuthDiagnostic /> : <Navigate to="/auth" />
+              }
+            />
+            {/* Admin Routes */}
+            <Route path="/admin/login" element={<AdminLoginPage />} />
+            <Route path="/admin/dashboard" element={<AdminDashboard />} />
+            <Route path="/admin/users" element={<AdminUsersPage />} />
+            <Route path="/admin/problems" element={<AdminProblemsPage />} />
+            <Route path="/admin/quizzes" element={<AdminQuizzesPage />} />
+            <Route path="/admin/contests" element={<AdminContestsPage />} />
+            <Route path="/admin/contests/create" element={<AdminContestFormPage />} />
+            <Route path="/admin/contests/edit/:contestId" element={<AdminContestFormPage />} />
+            <Route path="/admin/seed-data" element={<AdminDataSeedPage />} />
+            <Route path="/admin/courses" element={<AdminDashboard />} />
           </Routes>
         </main>
 
-          {/* Footer */}
-          {isAuthenticated && <Footer />}
+          {/* Footer - Hide for admin routes */}
+          {!isAdminRoute && isAuthenticated && <Footer />}
+          
+          {/* PWA Install Prompt */}
+          {!isAdminRoute && <PWAInstallPrompt />}
         </div>
       </UserProvider>
     </Router>

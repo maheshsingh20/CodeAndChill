@@ -12,6 +12,7 @@ import { Server as SocketIOServer } from "socket.io";
 import { connectDatabase } from "./config";
 import routes from "./routes";
 import { CollaborativeHandler } from "./websocket/collaborativeHandler";
+import { setupSocketHandlers } from "./socket/socketHandlers";
 
 // Validate required environment variables
 const requiredEnvVars = [
@@ -38,11 +39,18 @@ const io = new SocketIOServer(server, {
     origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
     methods: ["GET", "POST"],
     credentials: true
-  }
+  },
+  transports: ['websocket', 'polling']
 });
+
+// Make io available to routes
+app.set('io', io);
 
 // Initialize collaborative handler
 const collaborativeHandler = new CollaborativeHandler(io);
+
+// Setup enhanced socket handlers
+setupSocketHandlers(io);
 
 // Cleanup inactive sessions every hour
 setInterval(() => {
@@ -56,11 +64,18 @@ app.use(cors({
 }));
 app.use(express.json());
 
+// Serve static files for uploads
+app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
+
 // Connect to database
 connectDatabase();
 
+// Import additional routes
+import realtimeRoutes from "./routes/realtime";
+
 // Routes
 app.use("/api", routes);
+app.use("/api/realtime", realtimeRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

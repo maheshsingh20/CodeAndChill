@@ -10,6 +10,9 @@ export const performAppCleanup = async () => {
     const keysToRemove = [
       STORAGE_KEYS.AUTH_TOKEN,
       STORAGE_KEYS.IS_AUTHENTICATED,
+      'token', // Old token key
+      'user', // Cached user data
+      'userPreferences', // User preferences
       // Add any other app-specific keys
     ];
     
@@ -52,8 +55,24 @@ export const performFreshLogin = async () => {
   try {
     console.log('Preparing for fresh login...');
     
-    // Only cleanup services, don't clear localStorage yet
-    // (localStorage will be cleared and set by the login process)
+    // Clear all old tokens and user data
+    const keysToRemove = [
+      STORAGE_KEYS.AUTH_TOKEN,
+      STORAGE_KEYS.IS_AUTHENTICATED,
+      'token', // Old token key
+      'user', // Cached user data
+      'userPreferences', // User preferences
+    ];
+    
+    keysToRemove.forEach(key => {
+      try {
+        localStorage.removeItem(key);
+      } catch (error) {
+        console.error(`Error removing localStorage key ${key}:`, error);
+      }
+    });
+    
+    // Cleanup services
     try {
       collaborativeService.disconnect();
     } catch (error) {

@@ -1,4 +1,5 @@
 import { io, Socket } from 'socket.io-client';
+import { TokenManager } from '@/utils/tokenManager';
 
 export interface CollaborativeSession {
   id: string;
@@ -68,13 +69,20 @@ class CollaborativeService {
   connect(token: string): Promise<void> {
     return new Promise((resolve, reject) => {
       try {
+        // Disconnect existing connection if any
+        if (this.socket) {
+          this.socket.disconnect();
+        }
+
         this.socket = io(this.baseURL, {
           auth: { token },
-          transports: ['websocket', 'polling']
+          transports: ['websocket', 'polling'],
+          timeout: 10000,
+          retries: 3
         });
 
         this.socket.on('connect', () => {
-          console.log('Connected to collaborative server');
+          console.log('Connected to collaborative server with socket ID:', this.socket?.id);
           this.setupEventListeners();
           resolve();
         });
@@ -84,10 +92,23 @@ class CollaborativeService {
           reject(error);
         });
 
+        this.socket.on('disconnect', (reason) => {
+          console.log('Disconnected from collaborative server:', reason);
+          this.emit('disconnected', { reason });
+        });
+
         this.socket.on('error', (error) => {
           console.error('Socket error:', error);
           this.emit('error', error);
         });
+
+        // Add timeout for connection
+        setTimeout(() => {
+          if (!this.socket?.connected) {
+            reject(new Error('Connection timeout'));
+          }
+        }, 10000);
+
       } catch (error) {
         reject(error);
       }
@@ -113,7 +134,17 @@ class CollaborativeService {
     maxParticipants?: number;
     settings?: Partial<SessionSettings>;
   }): Promise<CollaborativeSession> {
-    const token = localStorage.getItem('authToken');
+    console.log('Creating session with data:', sessionData);
+    
+    const token = TokenManager.getValidToken();
+    if (!token) {
+      console.error('No auth token found');
+      TokenManager.debugTokenStatus();
+      throw new Error('Authentication token not found');
+    }
+    
+    console.log('Making request to:', `${this.baseURL}/api/collaborative/sessions`);
+    
     const response = await fetch(`${this.baseURL}/api/collaborative/sessions`, {
       method: 'POST',
       headers: {
@@ -123,17 +154,29 @@ class CollaborativeService {
       body: JSON.stringify(sessionData)
     });
 
+    console.log('Response status:', response.status);
+    
     if (!response.ok) {
-      throw new Error('Failed to create session');
+      const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+      console.error('Session creation failed:', errorData);
+      throw new Error(errorData.error || 'Failed to create session');
     }
 
     const data = await response.json();
+    console.log('Session created successfully:', data);
     return data.session;
   }
 
   // Join a collaborative session
   async joinSession(sessionToken: string): Promise<CollaborativeSession> {
-    const token = localStorage.getItem('authToken');
+    console.log('[JOIN-SERVICE] Joining session:', sessionToken);
+    
+    const token = TokenManager.getValidToken();
+    if (!token) {
+      TokenManager.debugTokenStatus();
+      throw new Error('Authentication token not found');
+    }
+    
     const response = await fetch(`${this.baseURL}/api/collaborative/sessions/${sessionToken}/join`, {
       method: 'POST',
       headers: {
@@ -143,16 +186,23 @@ class CollaborativeService {
     });
 
     if (!response.ok) {
-      const error = await response.json();
+      const error = await response.json().catch(() => ({ error: 'Failed to join session' }));
       throw new Error(error.error || 'Failed to join session');
     }
 
     const data = await response.json();
     this.currentSession = data.session;
+    
+    console.log('[JOIN-SERVICE] Session joined successfully');
+    console.log('[JOIN-SERVICE] Current session set to:', this.currentSession);
+    console.log('[JOIN-SERVICE] Session token:', this.currentSession?.sessionToken);
 
     // Join WebSocket room
-    if (this.socket) {
-      this.socket.emit('join-session', { sessionToken });
+    if (this.socket && this.socket.connected) {
+      console.log('[JOIN-SERVICE] Emitting join-collaborative-session via WebSocket');
+      this.socket.emit('join-collaborative-session', { sessionToken });
+    } else {
+      console.warn('[JOIN-SERVICE] WebSocket not connected, cannot join room');
     }
 
     return data.session;
@@ -162,14 +212,16 @@ class CollaborativeService {
   async leaveSession(): Promise<void> {
     if (!this.currentSession) return;
 
-    const token = localStorage.getItem('authToken');
-    await fetch(`${this.baseURL}/api/collaborative/sessions/${this.currentSession.sessionToken}/leave`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      }
-    });
+    const token = TokenManager.getToken();
+    if (token) {
+      await fetch(`${this.baseURL}/api/collaborative/sessions/${this.currentSession.sessionToken}/leave`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        }
+      });
+    }
 
     // Leave WebSocket room
     if (this.socket) {
@@ -181,7 +233,12 @@ class CollaborativeService {
 
   // Get user's sessions
   async getMySessions(): Promise<CollaborativeSession[]> {
-    const token = localStorage.getItem('authToken');
+    const token = TokenManager.getValidToken();
+    if (!token) {
+      TokenManager.debugTokenStatus();
+      throw new Error('Authentication token not found');
+    }
+    
     const response = await fetch(`${this.baseURL}/api/collaborative/sessions/my`, {
       headers: {
         'Authorization': `Bearer ${token}`
@@ -219,14 +276,21 @@ class CollaborativeService {
   // Send code change
   sendCodeChange(change: CodeChange, code: string) {
     if (this.socket && this.currentSession) {
-      this.socket.emit('code-change', { change, code });
+      this.socket.emit('code-change', { 
+        sessionToken: this.currentSession.sessionToken,
+        code,
+        changes: change
+      });
     }
   }
 
   // Send cursor position
   sendCursorPosition(position: { line: number; column: number }) {
     if (this.socket && this.currentSession) {
-      this.socket.emit('cursor-position', { position });
+      this.socket.emit('cursor-position', { 
+        sessionToken: this.currentSession.sessionToken,
+        position 
+      });
     }
   }
 
@@ -244,32 +308,79 @@ class CollaborativeService {
 
   // Send chat message
   async sendChatMessage(message: string): Promise<ChatMessage> {
+    console.log('[CHAT-SERVICE] Attempting to send message');
+    console.log('[CHAT-SERVICE] Current session:', this.currentSession);
+    
     if (!this.currentSession) {
-      throw new Error('No active session');
+      console.error('[CHAT-SERVICE] No active session found!');
+      throw new Error('No active session. Please join a session first.');
     }
 
-    const token = localStorage.getItem('authToken');
-    const response = await fetch(`${this.baseURL}/api/collaborative/sessions/${this.currentSession.sessionToken}/chat`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': `Bearer ${token}`
-      },
-      body: JSON.stringify({ message })
-    });
+    const sessionToken = this.currentSession.sessionToken;
+    console.log('[CHAT-SERVICE] Using session token:', sessionToken);
 
-    if (!response.ok) {
-      throw new Error('Failed to send message');
+    // Send via socket for real-time delivery
+    if (this.socket && this.socket.connected) {
+      console.log('[CHAT-SERVICE] Sending via WebSocket');
+      this.socket.emit('session-chat', {
+        sessionToken: sessionToken,
+        message
+      });
+    } else {
+      console.warn('[CHAT-SERVICE] WebSocket not connected, using REST API only');
     }
 
-    const data = await response.json();
-    return data.message;
+    // Also send via REST API as backup
+    try {
+      const token = TokenManager.getToken();
+      if (!token) {
+        throw new Error('Authentication token not found');
+      }
+      
+      console.log('[CHAT-SERVICE] Sending via REST API to:', `${this.baseURL}/api/collaborative/sessions/${sessionToken}/chat`);
+      
+      const response = await fetch(`${this.baseURL}/api/collaborative/sessions/${sessionToken}/chat`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${token}`
+        },
+        body: JSON.stringify({ message })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ error: 'Unknown error' }));
+        console.error('[CHAT-SERVICE] REST API failed:', errorData);
+        throw new Error(errorData.error || 'Failed to send message');
+      }
+
+      const data = await response.json();
+      console.log('[CHAT-SERVICE] Message sent successfully via REST API');
+      return data.message;
+    } catch (error) {
+      console.error('[CHAT-SERVICE] Error sending message:', error);
+      // If REST API fails but socket worked, return a mock message
+      if (this.socket && this.socket.connected) {
+        console.log('[CHAT-SERVICE] Returning mock message (WebSocket sent)');
+        return {
+          userId: 'current-user',
+          username: 'You',
+          message,
+          timestamp: new Date().toISOString(),
+          type: 'message'
+        };
+      }
+      throw error;
+    }
   }
 
   // Change language (host only)
   changeLanguage(language: string) {
     if (this.socket && this.currentSession) {
-      this.socket.emit('language-change', { language });
+      this.socket.emit('language-change', { 
+        sessionToken: this.currentSession.sessionToken,
+        language 
+      });
     }
   }
 
@@ -279,7 +390,12 @@ class CollaborativeService {
       throw new Error('No active session');
     }
 
-    const token = localStorage.getItem('authToken');
+    const token = TokenManager.getValidToken();
+    if (!token) {
+      TokenManager.debugTokenStatus();
+      throw new Error('Authentication token not found');
+    }
+    
     const response = await fetch(`${this.baseURL}/api/collaborative/sessions/${this.currentSession.sessionToken}/settings`, {
       method: 'PUT',
       headers: {
@@ -326,7 +442,7 @@ class CollaborativeService {
     if (!this.socket) return;
 
     // Session events
-    this.socket.on('session-joined', (data) => {
+    this.socket.on('session-state', (data) => {
       this.emit('session-joined', data);
     });
 
@@ -339,19 +455,19 @@ class CollaborativeService {
     });
 
     // Code events
-    this.socket.on('code-changed', (data) => {
+    this.socket.on('code-update', (data) => {
       this.emit('code-changed', data);
     });
 
-    this.socket.on('cursor-moved', (data) => {
+    this.socket.on('cursor-update', (data) => {
       this.emit('cursor-moved', data);
     });
 
-    this.socket.on('selection-changed', (data) => {
+    this.socket.on('selection-update', (data) => {
       this.emit('selection-changed', data);
     });
 
-    this.socket.on('language-changed', (data) => {
+    this.socket.on('language-update', (data) => {
       this.emit('language-changed', data);
     });
 
@@ -360,8 +476,10 @@ class CollaborativeService {
       this.emit('chat-message', data);
     });
 
-    this.socket.on('chat-history', (data) => {
-      this.emit('chat-history', data);
+    this.socket.on('session-sync', (data) => {
+      if (data.chat) {
+        this.emit('chat-history', { messages: data.chat });
+      }
     });
 
     // Error events

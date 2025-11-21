@@ -30,9 +30,10 @@ const formatDistanceToNow = (date: Date) => {
 interface CollaborativeChatProps {
   isOpen: boolean;
   onToggle: () => void;
+  sessionToken?: string;
 }
 
-export const CollaborativeChat: React.FC<CollaborativeChatProps> = ({ isOpen, onToggle }) => {
+export const CollaborativeChat: React.FC<CollaborativeChatProps> = ({ isOpen, onToggle, sessionToken }) => {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [newMessage, setNewMessage] = useState('');
   const [isLoading, setIsLoading] = useState(false);
@@ -75,14 +76,26 @@ export const CollaborativeChat: React.FC<CollaborativeChatProps> = ({ isOpen, on
   const handleSendMessage = async () => {
     if (!newMessage.trim() || isLoading) return;
 
+    // Get session token from props or service
+    const token = sessionToken || collaborativeService.getCurrentSession()?.sessionToken;
+    
+    if (!token) {
+      console.error('[CHAT] No session token available');
+      showNotification('Not connected to a session', 'error');
+      return;
+    }
+
     const messageText = newMessage.trim();
     setNewMessage('');
     setIsLoading(true);
 
+    console.log('[CHAT] Sending message to session:', token);
+
     try {
       await collaborativeService.sendChatMessage(messageText);
+      console.log('[CHAT] Message sent successfully');
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('[CHAT] Error sending message:', error);
       showNotification('Failed to send message', 'error');
       setNewMessage(messageText); // Restore message on error
     } finally {
@@ -123,58 +136,70 @@ export const CollaborativeChat: React.FC<CollaborativeChatProps> = ({ isOpen, on
     return (
       <Button
         onClick={onToggle}
-        className="fixed bottom-6 right-6 rounded-full w-14 h-14 shadow-lg z-50"
+        className="fixed bottom-6 right-6 rounded-full w-16 h-16 shadow-2xl z-50 bg-blue-600 hover:bg-blue-700 text-white animate-pulse hover:animate-none transition-all"
         size="lg"
       >
-        <MessageCircle size={24} />
+        <div className="relative">
+          <MessageCircle size={28} />
+          {messages.length > 0 && (
+            <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
+              {messages.length > 9 ? '9+' : messages.length}
+            </span>
+          )}
+        </div>
       </Button>
     );
   }
 
   return (
-    <Card className="fixed bottom-6 right-6 w-80 h-96 bg-gray-800/95 backdrop-blur-sm border-gray-700 shadow-xl z-50">
-      <CardHeader className="pb-3">
+    <Card className="fixed bottom-6 right-6 w-96 h-[500px] bg-gray-900/98 backdrop-blur-md border-gray-700 shadow-2xl z-50 flex flex-col">
+      <CardHeader className="pb-3 border-b border-gray-700">
         <div className="flex items-center justify-between">
-          <CardTitle className="text-lg text-white flex items-center">
-            <MessageCircle size={18} className="mr-2" />
+          <CardTitle className="text-lg text-white flex items-center font-semibold">
+            <MessageCircle size={20} className="mr-2 text-blue-400" />
             Chat
+            {messages.length > 0 && (
+              <Badge variant="secondary" className="ml-2 text-xs">
+                {messages.length}
+              </Badge>
+            )}
           </CardTitle>
-          <Button variant="ghost" size="sm" onClick={onToggle}>
+          <Button variant="ghost" size="sm" onClick={onToggle} className="hover:bg-gray-800">
             <X size={16} />
           </Button>
         </div>
       </CardHeader>
       
-      <CardContent className="p-0 flex flex-col h-full">
+      <CardContent className="p-0 flex flex-col flex-1 overflow-hidden">
         {/* Messages */}
-        <ScrollArea className="flex-1 px-4">
-          <div className="space-y-3 pb-4">
+        <ScrollArea className="flex-1 px-4 py-3">
+          <div className="space-y-3">
             {messages.length === 0 ? (
-              <div className="text-center text-gray-500 py-8">
-                <MessageCircle size={32} className="mx-auto mb-2 opacity-50" />
-                <p className="text-sm">No messages yet</p>
-                <p className="text-xs">Start the conversation!</p>
+              <div className="text-center text-gray-500 py-12">
+                <MessageCircle size={48} className="mx-auto mb-3 opacity-30" />
+                <p className="text-sm font-medium">No messages yet</p>
+                <p className="text-xs mt-1 opacity-75">Start the conversation!</p>
               </div>
             ) : (
               messages.map((message, index) => (
-                <div key={index} className="space-y-1">
+                <div key={index} className="animate-in fade-in slide-in-from-bottom-2 duration-200">
                   {message.type === 'system' ? (
-                    <div className="text-center">
-                      <Badge variant="secondary" className="text-xs">
+                    <div className="text-center my-2">
+                      <Badge variant="secondary" className="text-xs bg-blue-500/20 text-blue-300 border-blue-500/30">
                         {getMessageTypeIcon(message.type)} {message.message}
                       </Badge>
                     </div>
                   ) : (
-                    <div className="space-y-1">
-                      <div className="flex items-center justify-between">
-                        <span className="text-sm font-medium text-gray-300">
+                    <div className="bg-gray-800/50 rounded-lg p-3 hover:bg-gray-800/70 transition-colors">
+                      <div className="flex items-center justify-between mb-1">
+                        <span className="text-sm font-semibold text-blue-400">
                           {message.username}
                         </span>
                         <span className="text-xs text-gray-500">
                           {formatDistanceToNow(new Date(message.timestamp))}
                         </span>
                       </div>
-                      <div className={`text-sm ${getMessageTypeColor(message.type)} break-words`}>
+                      <div className={`text-sm ${getMessageTypeColor(message.type)} break-words leading-relaxed`}>
                         {getMessageTypeIcon(message.type) && (
                           <span className="mr-1">{getMessageTypeIcon(message.type)}</span>
                         )}
@@ -190,25 +215,33 @@ export const CollaborativeChat: React.FC<CollaborativeChatProps> = ({ isOpen, on
         </ScrollArea>
 
         {/* Input */}
-        <div className="p-4 border-t border-gray-700">
+        <div className="p-4 border-t border-gray-700 bg-gray-900/50">
           <div className="flex space-x-2">
             <Input
               ref={inputRef}
               value={newMessage}
               onChange={(e) => setNewMessage(e.target.value)}
               onKeyDown={handleKeyPress}
-              placeholder="Type a message..."
-              className="flex-1 bg-gray-700 border-gray-600 text-white text-sm"
+              placeholder="Type a message... (Enter to send)"
+              className="flex-1 bg-gray-800 border-gray-600 text-white text-sm focus:border-blue-500 focus:ring-blue-500"
               disabled={isLoading}
             />
             <Button 
               onClick={handleSendMessage} 
               size="sm" 
               disabled={!newMessage.trim() || isLoading}
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              <Send size={14} />
+              {isLoading ? (
+                <span className="animate-spin">⏳</span>
+              ) : (
+                <Send size={14} />
+              )}
             </Button>
           </div>
+          <p className="text-xs text-gray-500 mt-2">
+            Press Enter to send • Shift+Enter for new line
+          </p>
         </div>
       </CardContent>
     </Card>

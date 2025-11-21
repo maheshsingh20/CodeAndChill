@@ -49,12 +49,11 @@ const subjects = [
 
 export function GeneralCoursesPage() {
   return (
-    <div className="relative w-full min-h-screen bg-background">
-      {/* Shadcn Background */}
+    <div className="relative w-full min-h-screen">
+      {/* Consistent Background */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 gradient-bg" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,hsl(var(--primary)/0.1),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,hsl(var(--accent)/0.1),transparent_50%)]" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       <div className="relative container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 section-padding">

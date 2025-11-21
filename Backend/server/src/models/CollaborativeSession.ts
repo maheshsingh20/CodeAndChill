@@ -26,9 +26,23 @@ export interface ICollaborativeSession extends Document {
   isPublic: boolean;
   maxParticipants: number;
   sessionToken: string;
+  settings: {
+    allowEdit: string;
+    allowChat: boolean;
+    allowVoice: boolean;
+    theme: string;
+    fontSize: number;
+  };
   createdAt: Date;
   lastActivity: Date;
   chat: {
+    userId: mongoose.Types.ObjectId;
+    username: string;
+    message: string;
+    timestamp: Date;
+    type: 'message' | 'system' | 'code_change';
+  }[];
+  chatMessages: {
     userId: mongoose.Types.ObjectId;
     username: string;
     message: string;
@@ -120,11 +134,61 @@ const CollaborativeSessionSchema: Schema = new Schema({
     required: true,
     unique: true
   },
+  settings: {
+    allowEdit: {
+      type: String,
+      enum: ['host-only', 'all-participants'],
+      default: 'all-participants'
+    },
+    allowChat: {
+      type: Boolean,
+      default: true
+    },
+    allowVoice: {
+      type: Boolean,
+      default: false
+    },
+    theme: {
+      type: String,
+      enum: ['light', 'dark'],
+      default: 'dark'
+    },
+    fontSize: {
+      type: Number,
+      default: 14,
+      min: 10,
+      max: 24
+    }
+  },
   lastActivity: {
     type: Date,
     default: Date.now
   },
   chat: [{
+    userId: {
+      type: Schema.Types.ObjectId,
+      ref: 'User',
+      required: true
+    },
+    username: {
+      type: String,
+      required: true
+    },
+    message: {
+      type: String,
+      required: true
+    },
+    timestamp: {
+      type: Date,
+      default: Date.now
+    },
+    type: {
+      type: String,
+      enum: ['message', 'system', 'code_change'],
+      default: 'message'
+    }
+  }],
+  chatMessages: [{
     userId: {
       type: Schema.Types.ObjectId,
       ref: 'User',

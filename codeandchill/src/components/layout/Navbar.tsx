@@ -3,11 +3,12 @@ import { Code, Menu, Sparkles, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { NavMenu } from "./NavMenu";
+import { LiveNotifications } from "@/components/realtime/LiveNotifications";
 
 export function Navbar() {
   return (
     <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-gradient-to-r from-gray-950 via-gray-900 to-black text-gray-100 shadow-lg">
-      <div className="container flex h-18 items-center justify-between px-4 md:px-6">
+      <div className="container flex h-20 items-center justify-between px-6">
         {/* Left: Enhanced Logo & Desktop Menu */}
         <div className="flex items-center gap-8">
           <Link
@@ -28,6 +29,9 @@ export function Navbar() {
 
         {/* Right: Enhanced Auth Buttons / Mobile Menu */}
         <div className="flex items-center gap-4">
+          {/* Live Notifications */}
+          <LiveNotifications />
+          
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <Button

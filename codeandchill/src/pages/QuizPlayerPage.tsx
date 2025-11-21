@@ -75,7 +75,12 @@ export function QuizPlayerPage() {
   const progressPercent = ((currentQ + 1) / quiz.questions.length) * 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-950 via-gray-900 to-black text-gray-100 py-12 px-6">
+    <div className="min-h-screen text-gray-100 py-12 px-6 relative">
+      {/* Consistent Background */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
+      </div>
       <div className="container mx-auto max-w-4xl space-y-12">
         <Card className="rounded-3xl shadow-xl shadow-purple-500/20 bg-gradient-to-br from-black via-gray-900 to-black hover:shadow-2xl hover:shadow-purple-400/30 transition-all duration-500 border border-gray-800">
           <CardHeader>

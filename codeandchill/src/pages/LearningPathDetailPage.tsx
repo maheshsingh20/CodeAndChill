@@ -333,22 +333,24 @@ export const LearningPathDetailPage: React.FC = () => {
             )}
 
             {/* Creator Info */}
-            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
-              <CardHeader>
-                <CardTitle className="text-white text-lg">Created By</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold">
-                    {path.createdBy.name.charAt(0)}
+            {path.createdBy && (
+              <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+                <CardHeader>
+                  <CardTitle className="text-white text-lg">Created By</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-purple-600 flex items-center justify-center text-white font-semibold">
+                      {path.createdBy.name?.charAt(0) || 'A'}
+                    </div>
+                    <div>
+                      <p className="text-white font-medium">{path.createdBy.name || 'Admin'}</p>
+                      <p className="text-gray-400 text-sm">Learning Path Creator</p>
+                    </div>
                   </div>
-                  <div>
-                    <p className="text-white font-medium">{path.createdBy.name}</p>
-                    <p className="text-gray-400 text-sm">Learning Path Creator</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+                </CardContent>
+              </Card>
+            )}
           </div>
         </div>
       </div>

@@ -1,94 +1,100 @@
-import { Button } from "@/components/ui/button";
-import { ArrowRight } from "lucide-react";
-import { Link } from "react-router-dom";
+import React, { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { Code2, Users, Trophy } from 'lucide-react';
 
-export function HeroSection() {
+export const HeroSection: React.FC = () => {
+  const navigate = useNavigate();
+  const [stats, setStats] = useState({ users: 0, courses: 0, problems: 0 });
+
+  useEffect(() => {
+    const animateStats = () => {
+      const duration = 2000;
+      const steps = 60;
+      const interval = duration / steps;
+      
+      const targets = { users: 10000, courses: 150, problems: 5000 };
+      let step = 0;
+
+      const timer = setInterval(() => {
+        step++;
+        const progress = step / steps;
+        
+        setStats({
+          users: Math.floor(targets.users * progress),
+          courses: Math.floor(targets.courses * progress),
+          problems: Math.floor(targets.problems * progress),
+        });
+
+        if (step >= steps) {
+          clearInterval(timer);
+          setStats(targets);
+        }
+      }, interval);
+
+      return () => clearInterval(timer);
+    };
+
+    animateStats();
+  }, []);
+
   return (
-    <section className="w-full py-20 md:py-32 lg:py-40 gradient-bg">
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="grid max-w-5xl mx-auto items-center gap-10 lg:grid-cols-2 lg:gap-16">
-          {/* Text Content */}
-          <div className="space-y-6 text-center lg:text-left">
-            <h1 className="text-4xl font-extrabold tracking-tight sm:text-5xl md:text-6xl text-foreground">
-              Upgrade Your Skills, Anytime, Anywhere.
-            </h1>
-            <p className="max-w-2xl text-muted-foreground md:text-xl lg:text-base mx-auto lg:mx-0">
-              Unlock your potential with our AI-powered learning platform.
-              Interactive coding playgrounds, expert-led video courses, and
-              instant feedback to accelerate your growth.
-            </p>
-            <div className="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start">
-              <Button
-                asChild
-                size="lg"
-                className="btn btn-default group"
-              >
-                <Link to="/signup">
-                  Start Learning Free
-                  <ArrowRight className="inline-block w-4 h-4 ml-2 group-hover:translate-x-1 transition-transform" />
-                </Link>
-              </Button>
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="btn btn-outline"
-              >
-                <Link to="/courses">Browse Courses</Link>
-              </Button>
-            </div>
+    <section className="py-20">
+      <div className="text-center space-y-8">
+          {/* Badge */}
+          <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-purple-500/30">
+            <span className="text-purple-400 text-sm font-medium">🚀 Welcome to CodeNChill</span>
           </div>
 
-          {/* Visual Card */}
-          <div className="flex justify-center">
-            <div className="card glass-card w-full max-w-md h-64 lg:h-80 flex items-center justify-center">
-              <div className="text-center">
-                <svg
-                  width="80"
-                  height="80"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  className="mx-auto mb-4"
-                >
-                  <rect
-                    x="3"
-                    y="5"
-                    width="18"
-                    height="14"
-                    rx="3"
-                    fill="hsl(var(--primary))"
-                    opacity="0.1"
-                  />
-                  <rect
-                    x="3"
-                    y="5"
-                    width="18"
-                    height="14"
-                    rx="3"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth="2"
-                  />
-                  <path
-                    d="M8 13h8M8 17h8"
-                    stroke="hsl(var(--primary))"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                  />
-                  <circle cx="7" cy="9" r="1.5" fill="hsl(var(--accent))" />
-                  <circle cx="12" cy="9" r="1.5" fill="hsl(var(--accent))" />
-                  <circle cx="17" cy="9" r="1.5" fill="hsl(var(--accent))" />
-                </svg>
-                <p className="text-primary font-semibold">
-                  Interactive Coding Playground
-                </p>
-                <p className="text-muted-foreground text-sm">
-                  Try code, see results instantly!
-                </p>
-              </div>
+          {/* Main Heading */}
+          <h1 className="text-5xl md:text-7xl font-bold">
+            <span className="bg-gradient-to-r from-purple-400 via-pink-400 to-blue-400 bg-clip-text text-transparent">
+              Learn to Code
+            </span>
+            <br />
+            <span className="text-white">The Fun Way</span>
+          </h1>
+
+          {/* Description */}
+          <p className="text-xl text-slate-400 max-w-2xl mx-auto">
+            Master programming through interactive courses, real-world projects, and competitive challenges. 
+            Join thousands of developers on their coding journey.
+          </p>
+
+          {/* CTA Buttons */}
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
+            <button
+              onClick={() => navigate('/courses')}
+              className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 hover:scale-105"
+            >
+              Start Learning Free
+            </button>
+            <button
+              onClick={() => navigate('/courses')}
+              className="px-8 py-4 border-2 border-slate-700 rounded-xl font-semibold text-white hover:border-slate-600 transition-all duration-300"
+            >
+              View Courses
+            </button>
+          </div>
+
+          {/* Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mt-16 max-w-4xl mx-auto">
+            <div className="flex flex-col items-center gap-3 p-6 rounded-xl border border-slate-700/30">
+              <Users className="w-8 h-8 text-purple-400" />
+              <div className="text-3xl font-bold text-white">{stats.users.toLocaleString()}+</div>
+              <div className="text-slate-400">Active Learners</div>
+            </div>
+            <div className="flex flex-col items-center gap-3 p-6 rounded-xl border border-slate-700/30">
+              <Code2 className="w-8 h-8 text-pink-400" />
+              <div className="text-3xl font-bold text-white">{stats.courses}+</div>
+              <div className="text-slate-400">Courses</div>
+            </div>
+            <div className="flex flex-col items-center gap-3 p-6 rounded-xl border border-slate-700/30">
+              <Trophy className="w-8 h-8 text-blue-400" />
+              <div className="text-3xl font-bold text-white">{stats.problems.toLocaleString()}+</div>
+              <div className="text-slate-400">Problems Solved</div>
             </div>
           </div>
         </div>
-      </div>
     </section>
   );
-}
+};

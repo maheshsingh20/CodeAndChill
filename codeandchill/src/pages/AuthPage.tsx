@@ -11,6 +11,7 @@ import {
 } from "@/components/ui/tabs";
 import { Code } from "lucide-react";
 import { performFreshLogin } from "@/utils/cleanup";
+import { TokenManager } from "@/utils/tokenManager";
 
 interface AuthPageProps {
   login: (token: string) => void;
@@ -50,7 +51,11 @@ export function AuthPage({ login }: AuthPageProps) {
         throw new Error(data.message || "Authentication failed");
       }
 
-      localStorage.setItem("authToken", data.token);
+      // Use TokenManager for consistent token storage
+      TokenManager.setToken(data.token);
+      console.log('Token stored successfully');
+      TokenManager.debugTokenStatus();
+      
       login(data.token);
     } catch (err: any) {
       setError(err.message);
