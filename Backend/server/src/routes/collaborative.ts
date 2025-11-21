@@ -75,6 +75,8 @@ router.post('/sessions/:sessionToken/join', authMiddleware, async (req: AuthRequ
     const { sessionToken } = req.params;
     const userId = req.user?._id;
 
+    console.log(`User ${userId} attempting to join session ${sessionToken}`);
+
     if (!userId) {
       return res.status(401).json({ error: 'User not authenticated' });
     }
@@ -84,14 +86,19 @@ router.post('/sessions/:sessionToken/join', authMiddleware, async (req: AuthRequ
       return res.status(404).json({ error: 'User not found' });
     }
 
-    const session = await CollaborativeSession.findOne({ sessionToken, isActive: true });
+    const session = await CollaborativeSession.findOne({ sessionToken });
     if (!session) {
-      return res.status(404).json({ error: 'Session not found or inactive' });
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    if (!session.isActive) {
+      return res.status(400).json({ error: 'Session is not active' });
     }
 
     // Check if user is already in session
     const existingParticipant = session.participants.find(p => p.userId.toString() === userId.toString());
     if (existingParticipant) {
+      console.log(`User ${user.name} rejoining session ${sessionToken}`);
       existingParticipant.isActive = true;
       existingParticipant.joinedAt = new Date();
     } else {
@@ -101,6 +108,7 @@ router.post('/sessions/:sessionToken/join', authMiddleware, async (req: AuthRequ
         return res.status(400).json({ error: 'Session is full' });
       }
 
+      console.log(`Adding user ${user.name} to session ${sessionToken}`);
       session.participants.push({
         userId,
         username: user.name,
@@ -109,17 +117,27 @@ router.post('/sessions/:sessionToken/join', authMiddleware, async (req: AuthRequ
       });
 
       // Add system message
-      session.chatMessages.push({
+      if (!session.chat) {
+        session.chat = [];
+      }
+      if (!session.chatMessages) {
+        session.chatMessages = [];
+      }
+      const systemMessage = {
         userId,
         username: 'System',
         message: `${user.name} joined the session`,
         timestamp: new Date(),
-        type: 'system'
-      });
+        type: 'system' as const
+      };
+      session.chat.push(systemMessage);
+      session.chatMessages.push(systemMessage);
     }
 
     session.lastActivity = new Date();
     await session.save();
+
+    console.log(`User ${user.name} successfully joined session ${sessionToken}. Participants: ${session.participants.length}`);
 
     res.json({
       success: true,
@@ -127,11 +145,11 @@ router.post('/sessions/:sessionToken/join', authMiddleware, async (req: AuthRequ
         id: session._id,
         title: session.title,
         description: session.description,
-        code: session.code,
+        code: session.code || '',
         language: session.language,
         participants: session.participants,
         settings: session.settings,
-        chatMessages: session.chatMessages.slice(-50), // Last 50 messages
+        chatMessages: (session.chat || []).slice(-50), // Last 50 messages
         isHost: session.hostId.toString() === userId.toString()
       }
     });
@@ -161,26 +179,32 @@ router.post('/sessions/:sessionToken/leave', authMiddleware, async (req: AuthReq
       participant.isActive = false;
 
       // Add system message
-      session.chatMessages.push({
+      const systemMessage = {
         userId,
         username: 'System',
         message: `${participant.username} left the session`,
         timestamp: new Date(),
-        type: 'system'
-      });
+        type: 'system' as const
+      };
+      if (!session.chat) session.chat = [];
+      if (!session.chatMessages) session.chatMessages = [];
+      session.chat.push(systemMessage);
+      session.chatMessages.push(systemMessage);
 
       // If host leaves, transfer ownership to next active participant
       if (session.hostId.toString() === userId.toString()) {
         const nextHost = session.participants.find(p => p.isActive && p.userId.toString() !== userId.toString());
         if (nextHost) {
           session.hostId = nextHost.userId;
-          session.chatMessages.push({
+          const hostMessage = {
             userId: nextHost.userId,
             username: 'System',
             message: `${nextHost.username} is now the host`,
             timestamp: new Date(),
-            type: 'system'
-          });
+            type: 'system' as const
+          };
+          session.chat.push(hostMessage);
+          session.chatMessages.push(hostMessage);
         } else {
           // No active participants left, deactivate session
           session.isActive = false;
@@ -317,6 +341,182 @@ router.put('/sessions/:sessionToken/settings', authMiddleware, async (req: AuthR
   }
 });
 
+// Update session code
+router.put('/sessions/:sessionToken/code', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { sessionToken } = req.params;
+    const { code, language } = req.body;
+    const userId = req.user?._id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const session = await CollaborativeSession.findOne({ sessionToken, isActive: true });
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Check if user is participant
+    const isParticipant = session.participants.some(p => p.userId.toString() === userId.toString() && p.isActive);
+    if (!isParticipant) {
+      return res.status(403).json({ error: 'Not a participant in this session' });
+    }
+
+    // Check if user can edit (based on settings)
+    const canEdit = session.settings.allowEdit === 'all-participants' || 
+                   session.hostId.toString() === userId.toString();
+    
+    if (!canEdit) {
+      return res.status(403).json({ error: 'Not allowed to edit code in this session' });
+    }
+
+    // Update code and optionally language
+    if (code !== undefined) {
+      session.code = code;
+    }
+    
+    if (language !== undefined) {
+      const validLanguages = ['javascript', 'typescript', 'python', 'java', 'cpp', 'go', 'rust', 'html', 'css'];
+      if (validLanguages.includes(language)) {
+        session.language = language;
+      }
+    }
+    
+    session.lastActivity = new Date();
+    await session.save();
+
+    res.json({ 
+      success: true, 
+      code: session.code,
+      language: session.language,
+      message: 'Code updated successfully'
+    });
+  } catch (error) {
+    console.error('Error updating session code:', error);
+    res.status(500).json({ error: 'Failed to update code' });
+  }
+});
+
+// Update session language
+router.put('/sessions/:sessionToken/language', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { sessionToken } = req.params;
+    const { language } = req.body;
+    const userId = req.user?._id;
+
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
+
+    const session = await CollaborativeSession.findOne({ sessionToken, isActive: true });
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    // Check if user is participant
+    const isParticipant = session.participants.some(p => p.userId.toString() === userId.toString() && p.isActive);
+    if (!isParticipant) {
+      return res.status(403).json({ error: 'Not a participant in this session' });
+    }
+
+    // Check if user can edit (based on settings)
+    const canEdit = session.settings.allowEdit === 'all-participants' || 
+                   session.hostId.toString() === userId.toString();
+    
+    if (!canEdit) {
+      return res.status(403).json({ error: 'Not allowed to change language in this session' });
+    }
+
+    // Validate language
+    const validLanguages = ['javascript', 'typescript', 'python', 'java', 'cpp', 'go', 'rust', 'html', 'css'];
+    if (!validLanguages.includes(language)) {
+      return res.status(400).json({ error: 'Invalid language' });
+    }
+
+    // Update language
+    session.language = language;
+    session.lastActivity = new Date();
+
+    // Add system message
+    const user = await User.findById(userId);
+    if (user) {
+      const langMessage = {
+        userId,
+        username: 'System',
+        message: `${user.name} changed the language to ${language}`,
+        timestamp: new Date(),
+        type: 'system' as const
+      };
+      
+      if (!session.chat) session.chat = [];
+      if (!session.chatMessages) session.chatMessages = [];
+      
+      session.chat.push(langMessage);
+      session.chatMessages.push(langMessage);
+
+      // Keep only last 100 messages
+      if (session.chat.length > 100) {
+        session.chat = session.chat.slice(-100);
+      }
+      if (session.chatMessages.length > 100) {
+        session.chatMessages = session.chatMessages.slice(-100);
+      }
+    }
+
+    await session.save();
+
+    res.json({ 
+      success: true, 
+      language: session.language,
+      message: 'Language updated successfully'
+    });
+  } catch (error) {
+    console.error('Error updating session language:', error);
+    res.status(500).json({ error: 'Failed to update language' });
+  }
+});
+
+// Debug endpoint to check session state
+router.get('/sessions/:sessionToken/debug', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { sessionToken } = req.params;
+    const userId = req.user?._id;
+
+    const session = await CollaborativeSession.findOne({ sessionToken });
+    if (!session) {
+      return res.status(404).json({ error: 'Session not found' });
+    }
+
+    const isParticipant = session.participants.some(p => 
+      p.userId.toString() === userId?.toString()
+    );
+
+    res.json({
+      success: true,
+      debug: {
+        sessionExists: !!session,
+        sessionActive: session.isActive,
+        userIsParticipant: isParticipant,
+        participantCount: session.participants.length,
+        activeParticipants: session.participants.filter(p => p.isActive).length,
+        participants: session.participants.map(p => ({
+          userId: p.userId.toString(),
+          username: p.username,
+          isActive: p.isActive
+        })),
+        settings: session.settings,
+        language: session.language,
+        chatMessageCount: session.chat?.length || 0,
+        currentUserId: userId?.toString()
+      }
+    });
+  } catch (error) {
+    console.error('Error in debug endpoint:', error);
+    res.status(500).json({ error: 'Debug failed' });
+  }
+});
+
 // Send chat message
 router.post('/sessions/:sessionToken/chat', authMiddleware, async (req: AuthRequest, res) => {
   try {
@@ -357,9 +557,16 @@ router.post('/sessions/:sessionToken/chat', authMiddleware, async (req: AuthRequ
       type: 'message' as const
     };
 
+    if (!session.chat) session.chat = [];
+    if (!session.chatMessages) session.chatMessages = [];
+    
+    session.chat.push(chatMessage);
     session.chatMessages.push(chatMessage);
     
     // Keep only last 100 messages
+    if (session.chat.length > 100) {
+      session.chat = session.chat.slice(-100);
+    }
     if (session.chatMessages.length > 100) {
       session.chatMessages = session.chatMessages.slice(-100);
     }

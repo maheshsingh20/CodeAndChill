@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { UserService } from '@/services/userService';
 import { ActivityService } from '@/services/activityService';
+import { TokenManager } from '@/utils/tokenManager';
 
 interface User {
   _id: string;
@@ -42,6 +43,7 @@ interface UserContextType {
   updateUser: (userData: Partial<User>) => Promise<void>;
   updatePreferences: (preferences: any) => Promise<void>;
   recordActivity: (activityType: 'problem_solved' | 'quiz_completed' | 'course_completed' | 'skill_test_passed') => Promise<void>;
+  uploadProfilePicture: (file: File) => Promise<void>;
   refreshUser: () => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -69,7 +71,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     try {
       setLoading(true);
       setError(null);
-      const token = localStorage.getItem('authToken');
+      const token = TokenManager.getToken();
       
       if (!token) {
         setUser(null);
@@ -135,6 +137,19 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     }
   };
 
+  const uploadProfilePicture = async (file: File) => {
+    try {
+      setError(null);
+      const result = await UserService.uploadProfilePicture(file);
+      
+      // Force a complete user refresh to ensure all components update
+      await fetchUser();
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to upload profile picture');
+      throw err;
+    }
+  };
+
   const refreshUser = async () => {
     await fetchUser();
   };
@@ -145,9 +160,8 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
       setUser(null);
       setError(null);
       
-      // Clear localStorage
-      localStorage.removeItem('authToken');
-      localStorage.removeItem('isAuthenticated');
+      // Clear tokens using TokenManager
+      TokenManager.removeToken();
     } catch (error) {
       console.error('Error during logout:', error);
     }
@@ -162,8 +176,14 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     const handleStorageChange = (e: StorageEvent) => {
       if (e.key === 'authToken') {
         if (e.newValue) {
+          console.log('Auth token changed, fetching new user data');
+          // Force clear any cached user data
+          setUser(null);
+          setError(null);
+          // Fetch fresh user data
           fetchUser();
         } else {
+          console.log('Auth token removed, clearing user');
           setUser(null);
         }
       }
@@ -180,6 +200,7 @@ export const UserProvider: React.FC<UserProviderProps> = ({ children }) => {
     updateUser,
     updatePreferences,
     recordActivity,
+    uploadProfilePicture,
     refreshUser,
     logout
   };

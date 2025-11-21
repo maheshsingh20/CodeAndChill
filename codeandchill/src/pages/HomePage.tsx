@@ -31,12 +31,11 @@ export function HomePage(): JSX.Element {
   const { user, loading } = useUser();
 
   return (
-    <div className="min-h-screen w-full bg-background relative">
-      {/* Shadcn Background */}
+    <div className="min-h-screen w-full relative">
+      {/* Consistent Background - matches landing page */}
       <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 gradient-bg" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,hsl(var(--primary)/0.08),transparent_50%)]" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_75%_75%,hsl(var(--accent)/0.08),transparent_50%)]" />
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
       </div>
 
       {/* Welcome Section */}

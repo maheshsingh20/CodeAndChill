@@ -27,6 +27,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUser } from "@/contexts/UserContext";
+import { NotificationDropdown } from "@/components/notifications/NotificationDropdown";
 
 // Removed paths array as we're no longer using the dropdown
 
@@ -75,14 +76,7 @@ export function Navbar({ logout }) {
           <div className="hidden md:block">
             <SearchBox />
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="rounded-full relative hover:bg-purple-900/40"
-          >
-            <Bell className="h-5 w-5 text-gray-300" />
-            <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-red-500 border-2 border-gray-900"></span>
-          </Button>
+          <NotificationDropdown />
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="ghost" size="icon" className="rounded-full">
@@ -90,6 +84,7 @@ export function Navbar({ logout }) {
                   <AvatarImage
                     src={user?.profilePicture || "https://github.com/shadcn.png"}
                     alt="User Avatar"
+                    key={user?.profilePicture || 'default'}
                   />
                   <AvatarFallback>
                     {user ? user.name.slice(0, 2).toUpperCase() : <User className="text-gray-400" />}

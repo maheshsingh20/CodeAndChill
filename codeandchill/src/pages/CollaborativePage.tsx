@@ -5,6 +5,7 @@ import { CollaborativeEditor } from '@/components/collaborative/CollaborativeEdi
 import { CollaborativeChat } from '@/components/collaborative/CollaborativeChat';
 import { collaborativeService } from '@/services/collaborativeService';
 import { useUser } from '@/contexts/UserContext';
+import { TokenManager } from '@/utils/tokenManager';
 // Simple notification helper
 const showNotification = (message: string, type: 'success' | 'error' | 'info' = 'info') => {
   console.log(`[${type.toUpperCase()}] ${message}`);
@@ -41,20 +42,25 @@ export const CollaborativePage: React.FC = () => {
   const initializeCollaborativeService = async () => {
     try {
       setIsConnecting(true);
-      const token = localStorage.getItem('authToken');
+      const token = TokenManager.getValidToken();
       
       if (!token) {
-        console.log('No token found, proceeding without WebSocket connection');
-        setIsConnecting(false);
+        console.log('No token found, redirecting to auth');
+        TokenManager.debugTokenStatus();
+        navigate('/auth');
         return;
       }
+
+      console.log('Initializing collaborative service with token');
 
       // Try to connect, but don't block the UI if it fails
       setTimeout(async () => {
         try {
           await collaborativeService.connect(token);
+          console.log('WebSocket connected successfully');
         } catch (error) {
-          console.log('WebSocket connection failed, using offline mode');
+          console.error('WebSocket connection failed:', error);
+          console.log('Using offline mode');
         }
       }, 100);
       
@@ -125,6 +131,7 @@ export const CollaborativePage: React.FC = () => {
             <CollaborativeChat 
               isOpen={isChatOpen}
               onToggle={() => setIsChatOpen(!isChatOpen)}
+              sessionToken={currentSession}
             />
           </>
         ) : (

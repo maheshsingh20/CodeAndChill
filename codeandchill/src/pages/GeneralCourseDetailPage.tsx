@@ -4,6 +4,8 @@ import { useParams } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import { CourseContentSidebar } from "@/components/engineering/CourseContentSidebar";
 import { Skeleton } from "@/components/ui/skeleton";
+import { RealTimeProgressBar } from "@/components/realtime/RealTimeProgressBar";
+import { useRealTimeProgress } from "@/hooks/useRealTimeProgress";
 
 interface Subtopic {
   id: string;
@@ -28,8 +30,22 @@ export function GeneralCourseDetailPage() {
   const { courseId } = useParams<{ courseId: string }>();
   const [courseData, setCourseData] = useState<CourseData | null>(null);
   const [selectedContent, setSelectedContent] = useState<string>("");
+  const [currentLessonId, setCurrentLessonId] = useState<string>("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [timeSpent, setTimeSpent] = useState(0);
+  const [startTime, setStartTime] = useState<Date | null>(null);
+
+  // Real-time progress tracking
+  const { updateProgress } = useRealTimeProgress({
+    courseId: courseId || '',
+    onProgressUpdate: (progress) => {
+      console.log('Real-time progress update:', progress);
+    },
+    onAchievementUnlocked: (achievements) => {
+      console.log('New achievements:', achievements);
+    }
+  });
 
   useEffect(() => {
     const fetchCourseData = async () => {
@@ -54,7 +70,10 @@ export function GeneralCourseDetailPage() {
         if (data && data.modules) {
           setCourseData(data);
           if (data.modules[0]?.topics[0]?.subtopics[0]) {
-            setSelectedContent(data.modules[0].topics[0].subtopics[0].content);
+            const firstLesson = data.modules[0].topics[0].subtopics[0];
+            setSelectedContent(firstLesson.content);
+            setCurrentLessonId(firstLesson.id);
+            setStartTime(new Date());
           } else {
             setSelectedContent(
               "Welcome! Select a topic from the left to get started."
@@ -73,6 +92,41 @@ export function GeneralCourseDetailPage() {
 
     if (courseId) fetchCourseData();
   }, [courseId]);
+
+  // Track time spent on lessons
+  useEffect(() => {
+    if (!startTime || !currentLessonId) return;
+
+    const interval = setInterval(() => {
+      const now = new Date();
+      const spent = Math.floor((now.getTime() - startTime.getTime()) / 60000); // minutes
+      setTimeSpent(spent);
+    }, 60000); // Update every minute
+
+    return () => clearInterval(interval);
+  }, [startTime, currentLessonId]);
+
+  // Handle lesson selection with progress tracking
+  const handleLessonSelect = async (content: string, lessonId?: string) => {
+    // Update progress for previous lesson
+    if (currentLessonId && timeSpent > 0 && courseData) {
+      const totalLessons = courseData.modules.reduce(
+        (total, module) => total + module.topics.reduce(
+          (topicTotal, topic) => topicTotal + topic.subtopics.length, 0
+        ), 0
+      );
+
+      await updateProgress(currentLessonId, { totalLessons }, timeSpent);
+    }
+
+    // Set new lesson
+    setSelectedContent(content);
+    if (lessonId) {
+      setCurrentLessonId(lessonId);
+      setStartTime(new Date());
+      setTimeSpent(0);
+    }
+  };
 
   if (loading) {
     return (
@@ -105,8 +159,12 @@ export function GeneralCourseDetailPage() {
   }
 
   return (
-    <section className="w-full section-professional bg-background">
-      {/* Professional Background */}
+    <section className="w-full section-professional relative">
+      {/* Consistent Background */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
+      </div>
       <div className="absolute inset-0 -z-10">
         <div className="absolute inset-0 gradient-secondary opacity-5" />
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(120,119,198,0.08),transparent_50%)]" />
@@ -121,8 +179,22 @@ export function GeneralCourseDetailPage() {
               </h2>
               <CourseContentSidebar
                 modules={courseData.modules}
-                onSelectContent={setSelectedContent}
+                onSelectContent={(content, lessonId) => handleLessonSelect(content, lessonId)}
               />
+              
+              {/* Real-time Progress Bar */}
+              {courseId && (
+                <div className="mt-6">
+                  <RealTimeProgressBar
+                    courseId={courseId}
+                    totalLessons={courseData.modules.reduce(
+                      (total, module) => total + module.topics.reduce(
+                        (topicTotal, topic) => topicTotal + topic.subtopics.length, 0
+                      ), 0
+                    )}
+                  />
+                </div>
+              )}
             </div>
           </aside>
           

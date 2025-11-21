@@ -20,6 +20,8 @@ import contestRoutes from "./contests";
 import learningPathRoutes from "./learningPaths";
 import searchRoutes from "./search";
 import feedbackRoutes from "./feedback";
+import adminRoutes from "./admin";
+import notificationRoutes from "./notifications";
 
 const router = Router();
 
@@ -44,6 +46,8 @@ router.use("/contests", contestRoutes);
 router.use("/learning-paths", learningPathRoutes);
 router.use("/search", searchRoutes);
 router.use("/feedback", feedbackRoutes);
+router.use("/admin", adminRoutes);
+router.use("/notifications", notificationRoutes);
 router.use("/", aiRoutes); // AI routes are mounted at root level for /gemini-chat
 
 export default router;

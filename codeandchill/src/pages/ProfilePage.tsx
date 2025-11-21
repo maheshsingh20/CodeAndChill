@@ -137,7 +137,7 @@ interface UserStats {
 }
 
 export function ProfilePage() {
-  const { user, loading, updateUser, updatePreferences } = useUser();
+  const { user, loading, updateUser, updatePreferences, uploadProfilePicture } = useUser();
   const [editMode, setEditMode] = useState(false);
   const [activeTab, setActiveTab] = useState("overview");
   const [activityData, setActivityData] = useState<ActivityData[]>([]);
@@ -148,6 +148,8 @@ export function ProfilePage() {
   const [dashboardLoading, setDashboardLoading] = useState(true);
   const [newSkill, setNewSkill] = useState("");
   const [editedUser, setEditedUser] = useState<ProfileData | null>(null);
+  const [uploadingPhoto, setUploadingPhoto] = useState(false);
+  const [previewImage, setPreviewImage] = useState<string | null>(null);
   const token = localStorage.getItem("authToken");
 
   useEffect(() => {
@@ -208,9 +210,52 @@ export function ProfilePage() {
     try {
       await updateUser(editedUser);
       setEditMode(false);
+      setPreviewImage(null);
     } catch (error) {
       console.error("Error saving profile:", error);
       alert("Failed to save profile. Please try again.");
+    }
+  };
+
+  const handlePhotoUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      alert('Please select an image file');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      alert('Image size should be less than 5MB');
+      return;
+    }
+
+    try {
+      setUploadingPhoto(true);
+      
+      // Create preview
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setPreviewImage(reader.result as string);
+      };
+      reader.readAsDataURL(file);
+
+      // Upload to server
+      await uploadProfilePicture(file);
+      
+      // Clear preview after successful upload
+      setPreviewImage(null);
+      
+      alert('Profile picture updated successfully!');
+    } catch (error) {
+      console.error('Error uploading photo:', error);
+      alert('Failed to upload profile picture. Please try again.');
+      setPreviewImage(null);
+    } finally {
+      setUploadingPhoto(false);
     }
   };
 
@@ -272,15 +317,51 @@ export function ProfilePage() {
           <CardContent className="p-8">
             <div className="flex flex-col lg:flex-row items-start gap-8">
               <div className="flex flex-col items-center space-y-4">
-                <Avatar className="h-32 w-32 border-4 border-purple-500">
-                  <AvatarImage 
-                    src={user.profilePicture || "https://github.com/shadcn.png"} 
-                    alt={user.name} 
-                  />
-                  <AvatarFallback className="bg-purple-600 text-white text-2xl">
-                    {user.name.slice(0, 2).toUpperCase()}
-                  </AvatarFallback>
-                </Avatar>
+                <div className="relative group">
+                  <Avatar className="h-32 w-32 border-4 border-purple-500">
+                    <AvatarImage 
+                      src={previewImage || user.profilePicture || "https://github.com/shadcn.png"} 
+                      alt={user.name}
+                      key={previewImage || user.profilePicture || 'default'}
+                    />
+                    <AvatarFallback className="bg-purple-600 text-white text-2xl">
+                      {user.name.slice(0, 2).toUpperCase()}
+                    </AvatarFallback>
+                  </Avatar>
+                  {editMode && (
+                    <label 
+                      htmlFor="profile-photo-upload" 
+                      className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer"
+                    >
+                      <Edit className="w-8 h-8 text-white" />
+                      <input
+                        id="profile-photo-upload"
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoUpload}
+                        className="hidden"
+                        disabled={uploadingPhoto}
+                      />
+                    </label>
+                  )}
+                  {uploadingPhoto && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/60 rounded-full">
+                      <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-white"></div>
+                    </div>
+                  )}
+                </div>
+                {editMode && (
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => document.getElementById('profile-photo-upload')?.click()}
+                    disabled={uploadingPhoto}
+                    className="bg-purple-600/20 border-purple-500 text-purple-300 hover:bg-purple-600/40"
+                  >
+                    <Edit className="w-4 h-4 mr-2" />
+                    {uploadingPhoto ? 'Uploading...' : 'Change Photo'}
+                  </Button>
+                )}
                 <Badge variant="secondary" className="bg-purple-600 text-white">
                   Member since {formatDate(user.joinDate)}
                 </Badge>

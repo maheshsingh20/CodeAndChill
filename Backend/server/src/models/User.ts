@@ -23,6 +23,16 @@ export interface IUser extends Document {
   currentStreak: number;
   longestStreak: number;
   lastActiveDate: Date;
+  totalPoints?: number;
+  contestsWon?: number;
+  contestsParticipated?: Array<{
+    contestId: mongoose.Types.ObjectId;
+    contestName: string;
+    rank: number;
+    score: number;
+    problemsSolved: number;
+    participatedAt: Date;
+  }>;
   preferences: {
     theme: 'light' | 'dark';
     language: string;
@@ -31,6 +41,11 @@ export interface IUser extends Document {
       push: boolean;
       achievements: boolean;
     };
+  };
+  presence?: {
+    status: 'online' | 'offline' | 'away';
+    activity: string;
+    lastSeen: Date;
   };
 }
 
@@ -57,6 +72,16 @@ const userSchema = new Schema<IUser>({
   currentStreak: { type: Number, default: 0 },
   longestStreak: { type: Number, default: 0 },
   lastActiveDate: { type: Date, default: Date.now },
+  totalPoints: { type: Number, default: 0 },
+  contestsWon: { type: Number, default: 0 },
+  contestsParticipated: [{
+    contestId: { type: Schema.Types.ObjectId, ref: 'Contest' },
+    contestName: { type: String },
+    rank: { type: Number },
+    score: { type: Number },
+    problemsSolved: { type: Number },
+    participatedAt: { type: Date, default: Date.now }
+  }],
   preferences: {
     theme: { type: String, enum: ['light', 'dark'], default: 'dark' },
     language: { type: String, default: 'en' },
@@ -65,6 +90,11 @@ const userSchema = new Schema<IUser>({
       push: { type: Boolean, default: true },
       achievements: { type: Boolean, default: true }
     }
+  },
+  presence: {
+    status: { type: String, enum: ['online', 'offline', 'away'], default: 'offline' },
+    activity: { type: String, default: '' },
+    lastSeen: { type: Date, default: Date.now }
   }
 }, {
   timestamps: true

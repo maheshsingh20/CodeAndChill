@@ -211,7 +211,7 @@ router.get('/:contestId/problems', authMiddleware, async (req: AuthRequest, res)
 router.post('/:contestId/submit', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { contestId } = req.params;
-    const { problemId, code, language } = req.body;
+    const { problemId, code, language, testCasesPassed, totalTestCases } = req.body;
     const userId = req.user._id;
     
     const contest = await Contest.findById(contestId);
@@ -235,6 +235,10 @@ router.post('/:contestId/submit', authMiddleware, async (req: AuthRequest, res) 
       return res.status(404).json({ error: 'Problem not found' });
     }
     
+    // Calculate score based on test cases passed
+    const score = Math.floor((testCasesPassed / totalTestCases) * 100);
+    const status = testCasesPassed === totalTestCases ? 'accepted' : 'wrong_answer';
+    
     // Create submission
     const submission = new ContestSubmission({
       contestId,
@@ -242,32 +246,25 @@ router.post('/:contestId/submit', authMiddleware, async (req: AuthRequest, res) 
       problemId,
       code,
       language,
-      totalTestCases: problem.testCases?.length || 0,
-      submittedAt: new Date()
+      totalTestCases,
+      testCasesPassed,
+      status,
+      score,
+      submittedAt: new Date(),
+      judgedAt: new Date()
     });
-    
-    // Simulate code execution (in real implementation, this would use a code execution service)
-    const executionResult = await simulateCodeExecution(code, language, problem.testCases || []);
-    
-    submission.status = executionResult.status;
-    submission.score = executionResult.score;
-    submission.executionTime = executionResult.executionTime;
-    submission.memoryUsed = executionResult.memoryUsed;
-    submission.testCasesPassed = executionResult.testCasesPassed;
-    submission.judgedAt = new Date();
     
     await submission.save();
     
     // Update leaderboard
-    await updateLeaderboard(contestId, userId, problemId, submission);
+    await updateLeaderboard(contestId, userId.toString(), problemId, submission);
     
     res.json({
       submissionId: submission._id,
       status: submission.status,
       score: submission.score,
       testCasesPassed: submission.testCasesPassed,
-      totalTestCases: submission.totalTestCases,
-      executionTime: submission.executionTime
+      totalTestCases: submission.totalTestCases
     });
   } catch (error) {
     console.error('Error submitting solution:', error);
@@ -287,15 +284,21 @@ router.get('/:contestId/leaderboard', async (req, res) => {
       .skip((Number(page) - 1) * Number(limit))
       .populate('userId', 'name avatar');
     
-    // Update ranks
-    leaderboard.forEach((entry, index) => {
-      entry.rank = (Number(page) - 1) * Number(limit) + index + 1;
-    });
+    // Format leaderboard with ranks and usernames
+    const formattedLeaderboard = leaderboard.map((entry, index) => ({
+      rank: (Number(page) - 1) * Number(limit) + index + 1,
+      username: entry.username || (entry.userId as any)?.name || 'Unknown',
+      userId: entry.userId,
+      totalScore: entry.totalScore,
+      problemsSolved: entry.problemsSolved,
+      totalPenalty: entry.totalPenalty,
+      lastSubmissionTime: entry.lastSubmissionTime
+    }));
     
     const total = await ContestLeaderboard.countDocuments({ contestId });
     
     res.json({
-      leaderboard,
+      leaderboard: formattedLeaderboard,
       pagination: {
         page: Number(page),
         limit: Number(limit),

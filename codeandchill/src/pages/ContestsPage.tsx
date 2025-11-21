@@ -5,6 +5,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ContestService, Contest } from '@/services/contestService';
+import { ContestTimer } from '@/components/contest/ContestTimer';
 import { Trophy, Users, Clock, Calendar, Tag, Award } from 'lucide-react';
 
 export const ContestsPage: React.FC = () => {

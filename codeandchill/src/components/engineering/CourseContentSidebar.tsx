@@ -24,7 +24,7 @@ type Module = {
 
 interface CourseContentSidebarProps {
   modules: Module[];
-  onSelectContent: (content: string) => void;
+  onSelectContent: (content: string, lessonId?: string) => void;
 }
 
 export function CourseContentSidebar({
@@ -69,7 +69,7 @@ export function CourseContentSidebar({
                           <li key={subheading.id}>
                             <button
                               onClick={() =>
-                                onSelectContent(subheading.content)
+                                onSelectContent(subheading.content, subheading.id)
                               }
                               className="w-full text-left p-2 rounded-md text-cyan-800 hover:bg-cyan-200 focus:bg-cyan-300 focus:text-cyan-900 transition"
                             >

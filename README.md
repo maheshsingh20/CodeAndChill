@@ -189,6 +189,262 @@
 
 ---
 
+## �‍💼 Admtin Dashboard
+
+### Overview
+The Admin Dashboard provides comprehensive platform management capabilities with an intuitive interface for managing users, contests, problems, and content.
+
+### Access
+- **URL**: `/admin/login`
+- **Create Admin**: Run `npx ts-node create-admin.ts` in `Backend/server/`
+- **Default Permissions**: Full access to all features
+
+### Key Features
+
+#### 📊 Dashboard Overview
+- **Platform Statistics**
+  - Total users, active users, new users this month
+  - Total courses, problems, contests
+  - Engagement metrics and trends
+- **Quick Actions**
+  - Direct links to all management sections
+  - Recent activity feed
+  - System health status
+
+#### 👥 User Management
+- **User List**
+  - View all registered users with pagination
+  - Search users by name or email
+  - Filter by registration date, activity status
+  - Sort by various criteria
+- **User Details**
+  - View complete user profiles
+  - See learning progress and statistics
+  - Check enrolled courses and solved problems
+  - View contest participation history
+- **User Actions**
+  - Edit user information (name, email, location, occupation, bio)
+  - Delete users (with confirmation)
+  - View user activity logs
+  - Reset user passwords (if needed)
+
+#### 🏆 Contest Management
+- **Contest List**
+  - View all contests (upcoming, active, completed)
+  - Filter by status and search by title
+  - See participant count and problem count
+  - Quick edit/delete actions
+- **Create Contest**
+  - Set contest title, description, and rules
+  - Configure start/end times and duration
+  - Set maximum participants limit
+  - Add prizes for top performers
+  - Configure public/private visibility
+  - Add tags for categorization
+- **Dynamic Problem Creation**
+  - Create problems directly during contest setup
+  - Add problem title, description, difficulty
+  - Define test cases with input/output
+  - Mark test cases as hidden
+  - Set time and memory limits
+  - Assign points to problems
+  - Problems automatically added to contest
+- **Add Existing Problems**
+  - Select from available problems
+  - Assign custom points for contest
+  - Set problem order
+  - View problem details before adding
+- **Edit Contest**
+  - Update contest details
+  - Add/remove problems
+  - Modify schedule (restrictions for active contests)
+  - Update prizes and rules
+- **Delete Contest**
+  - Remove contests (not allowed for active contests)
+  - Confirmation required
+  - Cascade delete related data
+
+#### 🎯 Problem Management
+- **Problem List**
+  - View all coding problems
+  - Filter by difficulty (Easy, Medium, Hard)
+  - Search by title or tags
+  - See submission statistics
+- **Create Problem**
+  - Define problem statement
+  - Add input/output format
+  - Set constraints
+  - Create multiple test cases
+  - Add hints and editorial
+  - Set difficulty level
+  - Configure time/memory limits
+- **Edit Problem**
+  - Update problem details
+  - Modify test cases
+  - Change difficulty
+  - Update tags
+- **Problem Analytics**
+  - View submission count
+  - See acceptance rate
+  - Track user attempts
+  - Identify problematic test cases
+
+#### 📚 Content Management
+- **Courses**
+  - Manage free CS courses
+  - Edit course content and lessons
+  - Update course metadata
+  - Track enrollment statistics
+- **Quizzes**
+  - Create and edit quizzes
+  - Manage questions and answers
+  - Set difficulty and duration
+  - View quiz attempt statistics
+- **Learning Paths**
+  - Create structured learning paths
+  - Add courses to paths
+  - Set milestones
+  - Track user progress
+
+#### 🔧 Data Seeding
+- **Sample Data Generation**
+  - Seed sample users for testing
+  - Generate sample courses
+  - Create sample problems
+  - Add sample quizzes
+- **Clear Data**
+  - Remove all seeded data
+  - Reset database (super admin only)
+  - Confirmation required
+
+### Automated Features
+
+#### ⏰ Contest Scheduler
+- **Automatic Status Updates**
+  - Runs every minute
+  - Updates contest status based on time
+  - Transitions: upcoming → active → completed
+  - No manual intervention required
+- **Profile Updates**
+  - Automatically updates user profiles when contests complete
+  - Awards bonus points based on final rank
+  - Adds contest to participation history
+  - Increments contests won for 1st place
+- **Leaderboard Management**
+  - Real-time leaderboard updates during contests
+  - Automatic rank calculation
+  - Score and penalty tracking
+  - Final standings frozen after completion
+
+#### 📊 Analytics & Reporting
+- **User Analytics**
+  - Registration trends
+  - Active user metrics
+  - Engagement statistics
+  - Retention rates
+- **Contest Analytics**
+  - Participation rates
+  - Problem difficulty analysis
+  - Submission patterns
+  - Success rates
+- **Platform Health**
+  - System performance metrics
+  - API response times
+  - Database query performance
+  - Error rates and logs
+
+### Admin Permissions
+
+#### Role-Based Access
+- **Super Admin**
+  - Full access to all features
+  - Can create other admins
+  - Can delete data
+  - System configuration access
+- **Admin**
+  - Manage users (view, edit)
+  - Manage content (create, edit)
+  - View analytics
+  - Cannot delete critical data
+- **Content Manager**
+  - Create and edit courses
+  - Manage problems and quizzes
+  - Cannot manage users
+  - Cannot delete contests
+
+### Security Features
+- **Authentication**
+  - Separate admin login system
+  - JWT token-based authentication
+  - Session management
+  - Auto-logout on inactivity
+- **Authorization**
+  - Permission-based access control
+  - Role verification on each request
+  - Action logging for audit trail
+- **Data Protection**
+  - Confirmation dialogs for destructive actions
+  - Soft delete for critical data
+  - Backup before major operations
+  - Activity logging
+
+### Admin Dashboard UI
+
+#### Design Principles
+- **Clean Interface**: Minimal, focused design
+- **Responsive**: Works on all screen sizes
+- **Dark Theme**: Eye-friendly dark mode
+- **Quick Actions**: One-click access to common tasks
+- **Real-time Updates**: Live data without page refresh
+
+#### Navigation
+- **Sidebar Menu**
+  - Dashboard overview
+  - User management
+  - Contest management
+  - Problem management
+  - Content management
+  - Analytics
+  - Settings
+- **Top Bar**
+  - Admin profile
+  - Notifications
+  - Quick search
+  - Logout
+
+#### Key Pages
+1. **Dashboard** - Overview with statistics and quick actions
+2. **Users** - User list with search and filters
+3. **Contests** - Contest management with create/edit forms
+4. **Problems** - Problem library with CRUD operations
+5. **Analytics** - Charts and graphs with insights
+6. **Settings** - System configuration and preferences
+
+### Best Practices
+
+#### Contest Management
+- Set start time at least 15 minutes in future
+- Test problems before adding to contests
+- Provide clear rules and guidelines
+- Set appropriate difficulty levels
+- Monitor contests during active period
+
+#### Problem Creation
+- Write clear problem statements
+- Provide sample test cases
+- Add hidden test cases for edge cases
+- Set reasonable time/memory limits
+- Include hints for difficult problems
+
+#### User Management
+- Regularly review user activity
+- Handle user reports promptly
+- Monitor for suspicious behavior
+- Maintain user privacy
+- Respond to feedback
+
+---
+
 ## 🛠 Tech Stack
 
 ### Frontend
