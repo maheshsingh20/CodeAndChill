@@ -16,7 +16,7 @@ pnpm-debug.log*
 .env
 .env.local
 .env.*.local
-
+.env.docker
 # IDE and editor directories
 .idea
 .vscode/*
@@ -29,3 +29,58 @@ Thumbs.db
 # Vite-specific cache and temp files
 .vite/
 coverage/
+
+# Jenkins files
+jenkins.war
+jenkins.msi
+*.war
+*.msi
+start-jenkins.bat
+*.groovy
+*jenkins*.md
+*JENKINS*.md
+*STEP*.md
+*NEXT*.md
+*IGNORE*.md
+*ADD*.md
+*SET*.md
+CI-CD-SETUP.md
+
+# Jenkins files (local installation only)
+jenkins.war
+jenkins.msi
+*.war
+*.msi
+
+# Jenkins CI/CD generated files
+*.md
+!README.md
+
+# Jenkins files (should not be committed)
+jenkins.war
+jenkins.msi
+*.war
+*.msi
+
+# CI/CD setup files (optional - keep documentation only)
+jenkins-setup.sh
+start-jenkins.bat
+*.md
+
+# Jenkins files (should not be committed)
+jenkins.war
+jenkins.msi
+*.war
+*.msi
+
+# CI/CD setup files (optional - keep documentation only)
+jenkins-setup.sh
+start-jenkins.bat
+*.md
+!README.md
+
+# Jenkins files
+jenkins.war
+jenkins.msi
+*.war
+*.msi

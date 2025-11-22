@@ -188,4 +188,51 @@ export function VideoPlayer({ videoUrl, title, onProgress, onComplete }: VideoPl
               onClick={() => skip(10)}
               variant="ghost"
               size="sm"
-              className="text-gra
+              className="text-gray-300 hover:text-purple-400"
+            >
+              <SkipForward className="h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Button
+              onClick={toggleMute}
+              variant="ghost"
+              size="sm"
+              className="text-gray-300 hover:text-purple-400"
+            >
+              {isMuted ? <VolumeX className="h-4 w-4" /> : <Volume2 className="h-4 w-4" />}
+            </Button>
+            
+            <input
+              type="range"
+              min="0"
+              max="1"
+              step="0.1"
+              value={volume}
+              onChange={handleVolumeChange}
+              className="w-20 h-2 bg-gray-700 rounded-lg appearance-none cursor-pointer"
+            />
+
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-gray-300 hover:text-purple-400"
+            >
+              <Settings className="h-4 w-4" />
+            </Button>
+
+            <Button
+              onClick={toggleFullscreen}
+              variant="ghost"
+              size="sm"
+              className="text-gray-300 hover:text-purple-400"
+            >
+              <Maximize className="h-4 w-4" />
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}

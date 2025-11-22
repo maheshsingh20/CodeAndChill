@@ -175,7 +175,15 @@ export const ContestCompetePage: React.FC = () => {
     setTestResults(null);
 
     try {
-      const results = [];
+      const results: Array<{
+        input: string;
+        expectedOutput: string;
+        actualOutput: string;
+        passed: boolean;
+        status: string;
+        time: any;
+        memory: any;
+      }> = [];
       let passedCount = 0;
 
       for (const testCase of selectedProblem.testCases) {

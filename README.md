@@ -646,12 +646,68 @@ Before you begin, ensure you have the following installed:
 - **MongoDB** (v6.0 or higher) - [Download](https://www.mongodb.com/try/download/community)
 - **Git** - [Download](https://git-scm.com/)
 
+**OR**
+
+- **Docker Desktop** - [Download](https://www.docker.com/products/docker-desktop) (Recommended for easy setup)
+
 ### Clone Repository
 
 ```bash
 git clone https://github.com/maheshsingh20/codeandchill.git
 cd codeandchill
 ```
+
+## 🐳 Docker Setup (Recommended)
+
+### Quick Start with Docker
+
+1. **Ensure Docker Desktop is running**
+
+2. **Setup environment variables**
+```bash
+# Copy example file
+copy .env.docker .env
+
+# Edit and add your API keys
+notepad .env
+```
+
+3. **Run the setup script**
+```bash
+# Windows
+docker-start.bat
+
+# Or manually
+docker-compose up -d
+```
+
+4. **Access the application**
+- Frontend: http://localhost
+- Backend: http://localhost:3001
+- MongoDB: localhost:27017
+
+### Docker Commands
+
+```bash
+# Start containers
+docker-compose up -d
+
+# Stop containers
+docker-compose down
+
+# View logs
+docker-compose logs -f
+
+# Rebuild containers
+docker-compose up -d --build
+
+# Seed database
+docker-compose exec backend npm run seed
+```
+
+For detailed Docker instructions, see [DOCKER_SETUP.md](./DOCKER_SETUP.md)
+
+## 💻 Manual Setup (Without Docker)
 
 ### Backend Setup
 

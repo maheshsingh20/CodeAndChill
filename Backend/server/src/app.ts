@@ -3,7 +3,8 @@ import dotenv from "dotenv";
 import path from "path";
 const envPath = path.resolve(process.cwd(), ".env");
 console.log("Loading .env from:", envPath);
-dotenv.config({ path: envPath });
+// Don't override existing environment variables (from docker-compose)
+dotenv.config({ path: envPath, override: false });
 
 import express from "express";
 import cors from "cors";
@@ -59,8 +60,31 @@ setInterval(() => {
 
 // Middleware
 app.use(cors({ 
-  origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
-  credentials: true 
+  origin: function(origin, callback) {
+    const allowedOrigins = [
+      "http://localhost:5173", 
+      "http://localhost:5174", 
+      "http://localhost:5175",
+      "http://localhost:80",
+      "http://localhost"
+    ];
+    // Allow requests with no origin (like mobile apps or curl requests)
+    if (!origin) {
+      console.log('CORS: Allowing request with no origin');
+      return callback(null, true);
+    }
+    
+    console.log(`CORS: Request from origin: ${origin}`);
+    // Always allow in development
+    callback(null, true);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Content-Range', 'X-Content-Range'],
+  maxAge: 600,
+  preflightContinue: false,
+  optionsSuccessStatus: 204
 }));
 app.use(express.json());
 
