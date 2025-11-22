@@ -143,7 +143,7 @@ pipeline {
         }
         always {
             echo 'Cleaning up...'
-            deleteDir()
+            // deleteDir() - Removed as it causes issues outside node context
         }
     }
 }
