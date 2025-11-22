@@ -4,6 +4,7 @@ pipeline {
     environment {
         DOCKER_REGISTRY = 'docker.io'
         DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
+        DOCKER_USERNAME = 'maheshsingh20'
         BACKEND_IMAGE = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/codeandchill-backend"
         FRONTEND_IMAGE = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/codeandchill-frontend"
     }
