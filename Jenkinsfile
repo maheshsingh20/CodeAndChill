@@ -56,12 +56,6 @@ pipeline {
         }
         
         stage('Build Docker Images') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'master'
-                }
-            }
             parallel {
                 stage('Build Backend') {
                     steps {
@@ -91,12 +85,6 @@ pipeline {
         }
         
         stage('Push to Registry') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'master'
-                }
-            }
             steps {
                 echo 'Pushing images to Docker Hub...'
                 script {
@@ -112,12 +100,6 @@ pipeline {
         }
         
         stage('Deploy to Production') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'master'
-                }
-            }
             steps {
                 echo 'Deploying to Production...'
                 script {
