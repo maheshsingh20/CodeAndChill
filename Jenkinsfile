@@ -57,7 +57,10 @@ pipeline {
         
         stage('Build Docker Images') {
             when {
-                branch 'main'
+                anyOf {
+                    branch 'main'
+                    branch 'master'
+                }
             }
             parallel {
                 stage('Build Backend') {
@@ -89,7 +92,10 @@ pipeline {
         
         stage('Push to Registry') {
             when {
-                branch 'main'
+                anyOf {
+                    branch 'main'
+                    branch 'master'
+                }
             }
             steps {
                 echo 'Pushing images to Docker Hub...'
@@ -107,19 +113,25 @@ pipeline {
         
         stage('Deploy to Production') {
             when {
-                branch 'main'
+                anyOf {
+                    branch 'main'
+                    branch 'master'
+                }
             }
             steps {
                 echo 'Deploying to Production...'
                 script {
-                    sshagent(credentials: ['production-server-ssh']) {
+                    if (isUnix()) {
                         sh '''
-                            ssh -o StrictHostKeyChecking=no ${DEPLOY_USER}@${DEPLOY_HOST} "
-                                cd ${DEPLOY_PATH} &&
-                                docker-compose pull &&
-                                docker-compose up -d &&
-                                docker system prune -f
-                            "
+                            docker-compose pull
+                            docker-compose up -d
+                            docker system prune -f
+                        '''
+                    } else {
+                        bat '''
+                            docker-compose pull
+                            docker-compose up -d
+                            docker system prune -f
                         '''
                     }
                 }
