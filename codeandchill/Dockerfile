@@ -1,7 +1,6 @@
-# Frontend Dockerfile
-FROM node:18-alpine as build
+# Frontend Dockerfile - Multi-stage build
+FROM node:18-alpine AS builder
 
-# Set working directory
 WORKDIR /app
 
 # Copy package files
@@ -20,10 +19,10 @@ RUN npm run build
 FROM nginx:alpine
 
 # Copy built files to nginx
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=builder /app/dist /usr/share/nginx/html
 
 # Copy nginx configuration
-COPY nginx.conf /etc/nginx/conf.d/default.conf
+COPY nginx.conf /etc/nginx/nginx.conf
 
 # Expose port
 EXPOSE 80
