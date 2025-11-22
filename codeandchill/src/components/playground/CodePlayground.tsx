@@ -76,7 +76,7 @@ func main() {
           break;
         case 'python':
           mockOutput = 'Hello, World!\n';
-          if (input) mockOutput += f`Input: {input}\n`;
+          if (input) mockOutput += `Input: ${input}\n`;
           break;
         case 'java':
           mockOutput = 'Hello, World!\n';

@@ -145,11 +145,10 @@ class PWAManager {
     }
 
     try {
+      const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
       const subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(
-          process.env.VITE_VAPID_PUBLIC_KEY || ''
-        )
+        applicationServerKey: this.urlBase64ToUint8Array(vapidKey)
       });
 
       // Send subscription to server

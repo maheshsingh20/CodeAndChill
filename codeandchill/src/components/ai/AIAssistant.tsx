@@ -248,16 +248,16 @@ The more context you provide, the better I can assist you!`;
                 {message.type === 'assistant' ? (
                   <ReactMarkdown
                     components={{
-                      code({ node, inline, className, children, ...props }) {
+                      code({ node, className, children, ...props }: any) {
                         const match = /language-(\w+)/.exec(className || '');
+                        const inline = props.inline;
                         return !inline && match ? (
                           <div className="relative">
                             <SyntaxHighlighter
-                              style={vscDarkPlus}
+                              style={vscDarkPlus as any}
                               language={match[1]}
                               PreTag="div"
                               className="rounded-md my-2"
-                              {...props}
                             >
                               {String(children).replace(/\n$/, '')}
                             </SyntaxHighlighter>

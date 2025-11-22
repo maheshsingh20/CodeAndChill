@@ -32,7 +32,7 @@
     "socket.io": "^4.8.1",
     "stripe": "^18.4.0",
     "undici": "^7.16.0",
-    "uuid": "^13.0.0"
+    "uuid": "^9.0.1"
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
