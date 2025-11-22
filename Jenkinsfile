@@ -6,7 +6,6 @@ pipeline {
         DOCKER_CREDENTIALS_ID = 'dockerhub-credentials'
         BACKEND_IMAGE = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/codeandchill-backend"
         FRONTEND_IMAGE = "${DOCKER_REGISTRY}/${DOCKER_USERNAME}/codeandchill-frontend"
-        GIT_COMMIT_SHORT = sh(script: "git rev-parse --short HEAD", returnStdout: true).trim()
     }
     
     stages {
@@ -22,9 +21,15 @@ pipeline {
                 echo 'Testing Backend...'
                 dir('Backend/server') {
                     script {
-                        sh 'npm ci'
-                        sh 'npm run lint || true'
-                        sh 'npm test || true'
+                        if (isUnix()) {
+                            sh 'npm ci'
+                            sh 'npm run lint || true'
+                            sh 'npm test || true'
+                        } else {
+                            bat 'npm ci'
+                            bat 'npm run lint || exit 0'
+                            bat 'npm test || exit 0'
+                        }
                     }
                 }
             }
@@ -35,9 +40,15 @@ pipeline {
                 echo 'Testing Frontend...'
                 dir('codeandchill') {
                     script {
-                        sh 'npm ci'
-                        sh 'npm run lint || true'
-                        sh 'npm run build'
+                        if (isUnix()) {
+                            sh 'npm ci'
+                            sh 'npm run lint || true'
+                            sh 'npm run build'
+                        } else {
+                            bat 'npm ci'
+                            bat 'npm run lint || exit 0'
+                            bat 'npm run build'
+                        }
                     }
                 }
             }
@@ -53,7 +64,8 @@ pipeline {
                         echo 'Building Backend Docker Image...'
                         dir('Backend/server') {
                             script {
-                                docker.build("${BACKEND_IMAGE}:${GIT_COMMIT_SHORT}")
+                                def gitCommit = bat(script: '@git rev-parse --short HEAD', returnStdout: true).trim()
+                                docker.build("${BACKEND_IMAGE}:${gitCommit}")
                                 docker.build("${BACKEND_IMAGE}:latest")
                             }
                         }
@@ -64,7 +76,8 @@ pipeline {
                         echo 'Building Frontend Docker Image...'
                         dir('codeandchill') {
                             script {
-                                docker.build("${FRONTEND_IMAGE}:${GIT_COMMIT_SHORT}")
+                                def gitCommit = bat(script: '@git rev-parse --short HEAD', returnStdout: true).trim()
+                                docker.build("${FRONTEND_IMAGE}:${gitCommit}")
                                 docker.build("${FRONTEND_IMAGE}:latest")
                             }
                         }
@@ -80,10 +93,11 @@ pipeline {
             steps {
                 echo 'Pushing images to Docker Hub...'
                 script {
+                    def gitCommit = bat(script: '@git rev-parse --short HEAD', returnStdout: true).trim()
                     docker.withRegistry('https://index.docker.io/v1/', DOCKER_CREDENTIALS_ID) {
-                        docker.image("${BACKEND_IMAGE}:${GIT_COMMIT_SHORT}").push()
+                        docker.image("${BACKEND_IMAGE}:${gitCommit}").push()
                         docker.image("${BACKEND_IMAGE}:latest").push()
-                        docker.image("${FRONTEND_IMAGE}:${GIT_COMMIT_SHORT}").push()
+                        docker.image("${FRONTEND_IMAGE}:${gitCommit}").push()
                         docker.image("${FRONTEND_IMAGE}:latest").push()
                     }
                 }
@@ -129,7 +143,7 @@ pipeline {
         }
         always {
             echo 'Cleaning up...'
-            cleanWs()
+            deleteDir()
         }
     }
 }
