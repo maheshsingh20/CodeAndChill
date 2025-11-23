@@ -189,7 +189,7 @@ export const LearningPathProgress: React.FC = () => {
             </Button>
           </Link>
           
-          {enrolledPaths.length > 0 && (
+          {enrolledPaths.length > 0 && enrolledPaths[0].pathId && (
             <div className="text-center">
               <Link 
                 to={`/learning-paths/${enrolledPaths[0].pathId._id}`} 

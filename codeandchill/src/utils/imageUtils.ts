@@ -2,7 +2,7 @@
  * Utility functions for handling image URLs
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 /**
  * Converts a relative profile picture URL to an absolute URL

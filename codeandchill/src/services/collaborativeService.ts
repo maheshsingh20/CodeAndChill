@@ -61,7 +61,7 @@ export interface CodeChange {
 
 class CollaborativeService {
   private socket: Socket | null = null;
-  private baseURL = 'http://localhost:3001';
+  private baseURL = import.meta.env.VITE_API_URL?.replace('/api', '') || '';
   private currentSession: CollaborativeSession | null = null;
   private eventListeners: Map<string, Function[]> = new Map();
 

@@ -227,7 +227,7 @@ export const LearningPathsPage: React.FC = () => {
   };
 
   const getEnrolledPathProgress = (pathId: string) => {
-    return enrolledPaths.find(ep => ep.pathId._id === pathId);
+    return enrolledPaths.find(ep => ep.pathId && ep.pathId._id === pathId);
   };
 
   if (loading) {

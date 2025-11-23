@@ -51,35 +51,9 @@ class PWAManager {
   }
 
   private async registerServiceWorker(): Promise<void> {
-    if ('serviceWorker' in navigator) {
-      try {
-        this.registration = await navigator.serviceWorker.register('/sw.js', {
-          scope: '/'
-        });
-
-        console.log('Service Worker registered successfully:', this.registration);
-
-        // Listen for updates
-        this.registration.addEventListener('updatefound', () => {
-          const newWorker = this.registration!.installing;
-          if (newWorker) {
-            newWorker.addEventListener('statechange', () => {
-              if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                this.notifyUpdateAvailable();
-              }
-            });
-          }
-        });
-
-        // Check for updates periodically
-        setInterval(() => {
-          this.registration?.update();
-        }, 60000); // Check every minute
-
-      } catch (error) {
-        console.error('Service Worker registration failed:', error);
-      }
-    }
+    // Service worker disabled - not needed for this application
+    console.log('Service Worker: Disabled');
+    return;
   }
 
   // Public methods

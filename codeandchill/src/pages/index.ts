@@ -33,3 +33,4 @@ export { DashboardPage } from './DashboardPage';
 export { ForumPage } from './ForumPage';
 export { SkillTestsPage } from './SkillTestsPage';
 export { SkillTestTakingPage } from './SkillTestTakingPage';
+export { CertificatesPage } from './CertificatesPage';

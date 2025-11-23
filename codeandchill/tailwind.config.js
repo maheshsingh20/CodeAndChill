@@ -143,12 +143,17 @@ module.exports = {
           "0%, 100%": { "background-position": "0% 50%" },
           "50%": { "background-position": "100% 50%" },
         },
+        shimmer: {
+          "0%": { transform: "translateX(-100%)" },
+          "100%": { transform: "translateX(100%)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
         "gradient-x": "gradient 15s ease infinite",
         "gradient-y": "gradient 15s ease infinite",
+        "shimmer": "shimmer 2s infinite",
       },
       backgroundSize: {
         "200%": "200% 200%",
