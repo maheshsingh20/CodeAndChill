@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3001/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
 
 export type ActivityType = 'course_viewing' | 'problem_solving' | 'quiz_taking' | 'skill_testing' | 'forum_browsing' | 'general_browsing';
 

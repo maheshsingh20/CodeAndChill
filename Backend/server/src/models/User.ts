@@ -20,6 +20,12 @@ export interface IUser extends Document {
   totalProblemsSolved: number;
   totalQuizzesTaken: number;
   totalCoursesCompleted: number;
+  completedCourses: Array<{
+    courseId: mongoose.Types.ObjectId;
+    courseTitle: string;
+    completedAt: Date;
+    certificateId?: string;
+  }>;
   currentStreak: number;
   longestStreak: number;
   lastActiveDate: Date;
@@ -69,6 +75,12 @@ const userSchema = new Schema<IUser>({
   totalProblemsSolved: { type: Number, default: 0 },
   totalQuizzesTaken: { type: Number, default: 0 },
   totalCoursesCompleted: { type: Number, default: 0 },
+  completedCourses: [{
+    courseId: { type: Schema.Types.ObjectId, ref: 'Course' },
+    courseTitle: { type: String },
+    completedAt: { type: Date, default: Date.now },
+    certificateId: { type: String }
+  }],
   currentStreak: { type: Number, default: 0 },
   longestStreak: { type: Number, default: 0 },
   lastActiveDate: { type: Date, default: Date.now },

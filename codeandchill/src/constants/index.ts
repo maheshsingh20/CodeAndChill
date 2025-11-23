@@ -1,5 +1,7 @@
 // API Configuration
-export const API_BASE_URL = "http://localhost:3001/api";
+// In production (Docker), use /api which nginx proxies to backend
+// In development, use full URL to backend
+export const API_BASE_URL = import.meta.env.VITE_API_URL || "/api";
 
 // API Endpoints
 export const API_ENDPOINTS = {

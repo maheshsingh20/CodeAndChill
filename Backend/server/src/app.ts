@@ -70,11 +70,9 @@ app.use(cors({
     ];
     // Allow requests with no origin (like mobile apps or curl requests)
     if (!origin) {
-      console.log('CORS: Allowing request with no origin');
       return callback(null, true);
     }
     
-    console.log(`CORS: Request from origin: ${origin}`);
     // Always allow in development
     callback(null, true);
   },

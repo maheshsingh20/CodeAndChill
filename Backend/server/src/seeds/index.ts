@@ -5,6 +5,7 @@ import LearningPath from "../models/LearningPath";
 import { seedSkillTests } from './skillTests';
 import { seedContests } from './contests';
 import { seedLearningPaths } from './learningPaths';
+import { seedLearningPathsModular } from './learning-paths';
 
 dotenv.config();
 
@@ -856,8 +857,8 @@ const seedDatabase = async () => {
     // Seed contests
     await seedContests();
 
-    // Seed learning paths
-    await seedLearningPaths();
+    // Seed learning paths (modular approach with real content)
+    await seedLearningPathsModular();
 
     console.log("🎉 Database seeding completed successfully!");
   } catch (error) {

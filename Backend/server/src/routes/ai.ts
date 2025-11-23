@@ -9,7 +9,7 @@ if (!process.env.GEMINI_API_KEY) {
 }
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const MODEL_NAME = "gemini-2.0-flash"; // Use the available model
+const MODEL_NAME = "gemini-pro"; // Use the stable model
 const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/${MODEL_NAME}:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
 
 // Test endpoint to verify API key

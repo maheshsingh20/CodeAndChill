@@ -44,6 +44,7 @@ import {
   ForumPage,
   SkillTestsPage,
   SkillTestTakingPage,
+  CertificatesPage,
 } from "./pages";
 
 import { RealContestDetailPage } from "./pages/RealContestDetailPage";
@@ -91,30 +92,64 @@ import { PWAInstallPrompt } from "./components/pwa/PWAInstallPrompt";
 import "./utils/pwa"; // Initialize PWA manager
 
 function App() {
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    return localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED) === "true";
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [authChecked, setAuthChecked] = useState(false);
 
-  // Activity tracking will be initialized inside Router context
+  // Validate authentication on mount
+  useEffect(() => {
+    const validateAuth = async () => {
+      const token = localStorage.getItem(STORAGE_KEYS.AUTH_TOKEN);
+      const isAuthFlag = localStorage.getItem(STORAGE_KEYS.IS_AUTHENTICATED);
+      
+      // If no token or auth flag, user is not authenticated
+      if (!token || isAuthFlag !== "true") {
+        setIsAuthenticated(false);
+        setAuthChecked(true);
+        return;
+      }
+
+      // Validate token with backend
+      try {
+        const API_URL = import.meta.env.VITE_API_URL || '/api';
+        const response = await fetch(`${API_URL}/user/profile`, {
+          method: 'GET',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          }
+        });
+
+        if (response.ok) {
+          // Token is valid
+          setIsAuthenticated(true);
+        } else if (response.status === 401 || response.status === 403) {
+          // Token is invalid, clear auth data
+          localStorage.removeItem(STORAGE_KEYS.AUTH_TOKEN);
+          localStorage.removeItem(STORAGE_KEYS.IS_AUTHENTICATED);
+          localStorage.removeItem('user');
+          localStorage.removeItem('userPreferences');
+          setIsAuthenticated(false);
+        } else {
+          // Other error, assume authenticated for now
+          setIsAuthenticated(true);
+        }
+      } catch (error) {
+        console.error('Error validating authentication:', error);
+        // On network error, assume authenticated if token exists
+        setIsAuthenticated(true);
+      } finally {
+        setAuthChecked(true);
+      }
+    };
+
+    validateAuth();
+  }, []);
 
   // Initialize NoirSystem
   useEffect(() => {
     document.body.classList.add('noir-theme');
     initNoirAccentSystem();
     return () => document.body.classList.remove('noir-theme');
-  }, []);
-
-  // Initialize NoirSystem
-  useEffect(() => {
-    // Add noir-theme class to body
-    document.body.classList.add('noir-theme');
-    
-    // Initialize dynamic accent system
-    initNoirAccentSystem();
-    
-    return () => {
-      document.body.classList.remove('noir-theme');
-    };
   }, []);
 
   const login = (token?: string) => {
@@ -159,6 +194,18 @@ function App() {
   };
 
   const isAdminRoute = window.location.pathname.startsWith('/admin');
+
+  // Show loading screen while checking authentication
+  if (!authChecked) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black">
+        <div className="text-center">
+          <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
+          <p className="text-slate-400 text-lg">Verifying authentication...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <Router>
@@ -290,25 +337,15 @@ function App() {
             />
             <Route
               path="/problems"
-              element={
-                isAuthenticated ? <ProblemSetsPage /> : <Navigate to="/auth" />
-              }
+              element={<PrivateRoute element={<ProblemSetsPage />} />}
             />
             <Route
               path="/problems/:setId"
-              element={
-                isAuthenticated ? (
-                  <ProblemSetDetailPage />
-                ) : (
-                  <Navigate to="/auth" />
-                )
-              }
+              element={<PrivateRoute element={<ProblemSetDetailPage />} />}
             />
             <Route
               path="/solve/:problemId"
-              element={
-                isAuthenticated ? <SolveProblemPage /> : <Navigate to="/auth" />
-              }
+              element={<PrivateRoute element={<SolveProblemPage />} />}
             />
             <Route
               path="/problem-solver"
@@ -335,6 +372,10 @@ function App() {
               element={<PrivateRoute element={<SkillTestTakingPage />} />}
             />
             <Route
+              path="/certificates"
+              element={<PrivateRoute element={<CertificatesPage />} />}
+            />
+            <Route
               path="/collaborative"
               element={<PrivateRoute element={<CollaborativePage />} />}
             />
@@ -358,75 +399,64 @@ function App() {
             />
             <Route
               path="/quizzes/subjects/:subjectSlug"
-              element={
-                isAuthenticated ? <QuizListPage /> : <Navigate to="path" />
-              }
+              element={<PrivateRoute element={<QuizListPage />} />}
             />
             <Route
               path="/quizzes/play/:quizSlug"
-              element={
-                isAuthenticated ? <QuizPlayerPage /> : <Navigate to="/auth" />
-              }
+              element={<PrivateRoute element={<QuizPlayerPage />} />}
             />
             <Route
               path="/quizzes/results/:attemptId"
-              element={
-                isAuthenticated ? <QuizResultPage /> : <Navigate to="/auth" />
-              }
+              element={<PrivateRoute element={<QuizResultPage />} />}
             />
             <Route
               path="/showcase"
-              element={
-                isAuthenticated ? <ShadcnShowcasePage /> : <Navigate to="/auth" />
-              }
+              element={<PrivateRoute element={<ShadcnShowcasePage />} />}
             />
             <Route
               path="/test-realtime"
-              element={
-                isAuthenticated ? <RealTimeTest /> : <Navigate to="/auth" />
-              }
+              element={<PrivateRoute element={<RealTimeTest />} />}
             />
             <Route
               path="/test-collaborative"
-              element={
-                isAuthenticated ? <CollaborativeTest /> : <Navigate to="/auth" />
-              }
+              element={<PrivateRoute element={<CollaborativeTest />} />}
             />
             <Route
               path="/test-simple-collaborative"
-              element={
-                isAuthenticated ? <SimpleCollaborativeTest /> : <Navigate to="/auth" />
-              }
+              element={<PrivateRoute element={<SimpleCollaborativeTest />} />}
             />
             <Route
               path="/test-debug-collaborative"
-              element={
-                isAuthenticated ? <DebugCollaborativeTest /> : <Navigate to="/auth" />
-              }
+              element={<PrivateRoute element={<DebugCollaborativeTest />} />}
             />
             <Route
               path="/test-collaborative-system"
-              element={
-                isAuthenticated ? <CollaborativeSystemTest /> : <Navigate to="/auth" />
-              }
+              element={<PrivateRoute element={<CollaborativeSystemTest />} />}
             />
             <Route
               path="/auth-diagnostic"
-              element={
-                isAuthenticated ? <AuthDiagnostic /> : <Navigate to="/auth" />
-              }
+              element={<PrivateRoute element={<AuthDiagnostic />} />}
             />
             {/* Admin Routes */}
-            <Route path="/admin/login" element={<AdminLoginPage />} />
-            <Route path="/admin/dashboard" element={<AdminDashboard />} />
-            <Route path="/admin/users" element={<AdminUsersPage />} />
-            <Route path="/admin/problems" element={<AdminProblemsPage />} />
-            <Route path="/admin/quizzes" element={<AdminQuizzesPage />} />
-            <Route path="/admin/contests" element={<AdminContestsPage />} />
-            <Route path="/admin/contests/create" element={<AdminContestFormPage />} />
-            <Route path="/admin/contests/edit/:contestId" element={<AdminContestFormPage />} />
-            <Route path="/admin/seed-data" element={<AdminDataSeedPage />} />
-            <Route path="/admin/courses" element={<AdminDashboard />} />
+            <Route 
+              path="/admin/login" 
+              element={
+                !isAuthenticated ? (
+                  <AdminLoginPage />
+                ) : (
+                  <Navigate to="/admin/dashboard" />
+                )
+              } 
+            />
+            <Route path="/admin/dashboard" element={<PrivateRoute element={<AdminDashboard />} />} />
+            <Route path="/admin/users" element={<PrivateRoute element={<AdminUsersPage />} />} />
+            <Route path="/admin/problems" element={<PrivateRoute element={<AdminProblemsPage />} />} />
+            <Route path="/admin/quizzes" element={<PrivateRoute element={<AdminQuizzesPage />} />} />
+            <Route path="/admin/contests" element={<PrivateRoute element={<AdminContestsPage />} />} />
+            <Route path="/admin/contests/create" element={<PrivateRoute element={<AdminContestFormPage />} />} />
+            <Route path="/admin/contests/edit/:contestId" element={<PrivateRoute element={<AdminContestFormPage />} />} />
+            <Route path="/admin/seed-data" element={<PrivateRoute element={<AdminDataSeedPage />} />} />
+            <Route path="/admin/courses" element={<PrivateRoute element={<AdminDashboard />} />} />
           </Routes>
         </main>
 
