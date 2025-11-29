@@ -1,172 +1,648 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
-/* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "@/components/ui/tabs";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { Textarea } from "@/components/ui/textarea";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { 
+  User, Lock, Bell, Palette, Upload, CheckCircle, AlertCircle,
+  Github, Linkedin, Twitter, Globe
+} from "lucide-react";
+import { API_BASE_URL } from "@/constants";
+import { useUser } from "@/contexts/UserContext";
 
 interface UserProfile {
+  _id: string;
   name: string;
   email: string;
+  location?: string;
+  occupation?: string;
+  bio?: string;
+  phone?: string;
+  website?: string;
+  github?: string;
+  linkedin?: string;
+  twitter?: string;
+  skills?: string[];
+  profilePicture?: string;
+  preferences?: {
+    theme: 'light' | 'dark';
+    language: string;
+    notifications: {
+      email: boolean;
+      push: boolean;
+      achievements: boolean;
+    };
+  };
 }
 
 export function SettingsPage() {
-  const [profile, setProfile] = useState<UserProfile>({ name: "", email: "" });
+  const { user: contextUser, updateUser: updateContextUser, updatePreferences: updateContextPreferences, uploadProfilePicture: uploadContextProfilePicture, refreshUser } = useUser();
+  const [profile, setProfile] = useState<UserProfile | null>(null);
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
-  const [message, setMessage] = useState<{
-    text: string;
-    type: "success" | "error";
-  } | null>(null);
+  const [confirmPassword, setConfirmPassword] = useState("");
+  const [message, setMessage] = useState<{ text: string; type: "success" | "error" } | null>(null);
   const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
   const token = localStorage.getItem("authToken");
 
   useEffect(() => {
-    const fetchProfile = async () => {
-      setLoading(true);
-      try {
-        const response = await fetch("http://localhost:3001/api/user/profile", {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!response.ok) throw new Error("Failed to fetch profile.");
-        const data = await response.json();
-        setProfile({ name: data.name, email: data.email });
-      } catch (error: any) {
-        setMessage({ text: error.message, type: "error" });
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchProfile();
-  }, [token]);
+    if (contextUser) {
+      setProfile(contextUser as any);
+      setLoading(false);
+    } else {
+      fetchProfile();
+    }
+  }, [contextUser]);
+
+  // Sync profile with context user whenever it changes
+  useEffect(() => {
+    if (contextUser && !loading) {
+      setProfile(contextUser as any);
+    }
+  }, [contextUser?.profilePicture, contextUser?.name, contextUser?.email]);
+
+  const fetchProfile = async () => {
+    setLoading(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/profile`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      if (!response.ok) throw new Error("Failed to fetch profile.");
+      const data = await response.json();
+      setProfile(data.user);
+    } catch (error: any) {
+      showMessage(error.message, "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const showMessage = (text: string, type: "success" | "error") => {
+    setMessage({ text, type });
+    setTimeout(() => setMessage(null), 5000);
+  };
 
   const handleUpdateProfile = async (e: React.FormEvent) => {
-    // ... your existing update profile logic
+    e.preventDefault();
+    if (!profile) return;
+
+    setSaving(true);
+    try {
+      // Update via context which will sync across all components
+      await updateContextUser(profile);
+      showMessage("Profile updated successfully!", "success");
+      
+      // Refresh to ensure all data is in sync
+      await refreshUser();
+    } catch (error: any) {
+      showMessage(error.message, "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
   const handleChangePassword = async (e: React.FormEvent) => {
-    // ... your existing change password logic
+    e.preventDefault();
+    
+    if (newPassword !== confirmPassword) {
+      showMessage("New passwords do not match!", "error");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      showMessage("Password must be at least 6 characters long!", "error");
+      return;
+    }
+
+    setSaving(true);
+    try {
+      const response = await fetch(`${API_BASE_URL}/user/change-password`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+        body: JSON.stringify({ currentPassword, newPassword }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.message || "Failed to change password.");
+      }
+
+      showMessage("Password changed successfully!", "success");
+      setCurrentPassword("");
+      setNewPassword("");
+      setConfirmPassword("");
+    } catch (error: any) {
+      showMessage(error.message, "error");
+    } finally {
+      setSaving(false);
+    }
   };
 
-  if (loading && !profile.name) {
+  const handleProfilePictureUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 5 * 1024 * 1024) {
+      showMessage("File size must be less than 5MB", "error");
+      return;
+    }
+
+    setUploadingImage(true);
+    try {
+      // Upload via context which will refresh user data automatically
+      await uploadContextProfilePicture(file);
+      
+      // Force refresh to ensure profile picture updates everywhere
+      await refreshUser();
+      
+      showMessage("Profile picture updated successfully!", "success");
+    } catch (error: any) {
+      showMessage(error.message, "error");
+    } finally {
+      setUploadingImage(false);
+    }
+  };
+
+  const handleUpdatePreferences = async () => {
+    if (!profile?.preferences) return;
+
+    setSaving(true);
+    try {
+      // Update via context which will sync across all components
+      await updateContextPreferences(profile.preferences);
+      showMessage("Preferences updated successfully!", "success");
+    } catch (error: any) {
+      showMessage(error.message, "error");
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  if (loading) {
     return (
-      <div className="container p-8">
-        <Skeleton className="h-[40vh] w-full max-w-4xl mx-auto" />
+      <div className="min-h-screen w-full relative p-8">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
+        </div>
+        <div className="container mx-auto max-w-5xl">
+          <Skeleton className="h-[600px] w-full" />
+        </div>
+      </div>
+    );
+  }
+
+  if (!profile) {
+    return (
+      <div className="min-h-screen w-full relative p-8">
+        <div className="absolute inset-0 -z-10">
+          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
+          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
+        </div>
+        <div className="container mx-auto max-w-5xl text-center">
+          <AlertCircle className="mx-auto text-red-400 mb-4" size={48} />
+          <h2 className="text-2xl font-bold text-white">Failed to load profile</h2>
+        </div>
       </div>
     );
   }
 
   return (
-    <div className="bg-muted/30 w-full min-h-screen">
-      <div className="container mx-auto max-w-4xl px-4 py-12">
+    <div className="min-h-screen w-full relative p-8">
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
+      </div>
+      <div className="container mx-auto max-w-5xl">
         <header className="mb-8">
-          <h1 className="text-3xl font-bold tracking-tight">Settings</h1>
-          <p className="text-muted-foreground">
-            Manage your account settings and preferences.
+          <h1 className="text-4xl font-bold text-white mb-2">Settings</h1>
+          <p className="text-gray-400 text-lg">
+            Manage your account settings and preferences
           </p>
         </header>
 
+        {message && (
+          <div
+            className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
+              message.type === "success"
+                ? "bg-green-900/30 border border-green-500/50 text-green-300"
+                : "bg-red-900/30 border border-red-500/50 text-red-300"
+            }`}
+          >
+            {message.type === "success" ? (
+              <CheckCircle size={20} />
+            ) : (
+              <AlertCircle size={20} />
+            )}
+            <span>{message.text}</span>
+          </div>
+        )}
+
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
-            <TabsTrigger value="profile">Profile</TabsTrigger>
-            <TabsTrigger value="security">Security</TabsTrigger>
+          <TabsList className="grid w-full grid-cols-4 bg-gray-800/50 border border-gray-700">
+            <TabsTrigger value="profile" className="data-[state=active]:bg-purple-600">
+              <User size={16} className="mr-2" />
+              Profile
+            </TabsTrigger>
+            <TabsTrigger value="security" className="data-[state=active]:bg-purple-600">
+              <Lock size={16} className="mr-2" />
+              Security
+            </TabsTrigger>
+            <TabsTrigger value="preferences" className="data-[state=active]:bg-purple-600">
+              <Palette size={16} className="mr-2" />
+              Preferences
+            </TabsTrigger>
+            <TabsTrigger value="notifications" className="data-[state=active]:bg-purple-600">
+              <Bell size={16} className="mr-2" />
+              Notifications
+            </TabsTrigger>
           </TabsList>
 
-          {/* FIX: Added the <TabsContent> wrappers for each panel */}
+          {/* Profile Tab */}
           <TabsContent value="profile" className="mt-6">
-            <Card>
+            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
               <CardHeader>
-                <CardTitle>Public Profile</CardTitle>
-                <CardDescription>
-                  This information may be displayed publicly.
+                <CardTitle className="text-white">Profile Information</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Update your personal information and social links
                 </CardDescription>
               </CardHeader>
               <CardContent>
-                <form onSubmit={handleUpdateProfile} className="space-y-4">
+                <form onSubmit={handleUpdateProfile} className="space-y-6">
+                  <div className="flex items-center gap-6">
+                    <Avatar className="h-24 w-24">
+                      <AvatarImage 
+                        src={profile.profilePicture ? `${API_BASE_URL}${profile.profilePicture}` : undefined} 
+                      />
+                      <AvatarFallback className="bg-purple-600 text-white text-2xl">
+                        {profile.name.charAt(0).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div>
+                      <Label htmlFor="profile-picture" className="cursor-pointer">
+                        <div className="flex items-center gap-2 px-4 py-2 bg-purple-600 hover:bg-purple-700 text-white rounded-lg transition-colors">
+                          <Upload size={16} />
+                          {uploadingImage ? "Uploading..." : "Upload Photo"}
+                        </div>
+                      </Label>
+                      <Input
+                        id="profile-picture"
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={handleProfilePictureUpload}
+                        disabled={uploadingImage}
+                      />
+                      <p className="text-xs text-gray-500 mt-2">
+                        JPG, PNG or GIF. Max size 5MB
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="name" className="text-gray-300">Name</Label>
+                      <Input
+                        id="name"
+                        value={profile.name}
+                        onChange={(e) => setProfile({ ...profile, name: e.target.value })}
+                        className="bg-gray-900 border-gray-700 text-white"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="email" className="text-gray-300">Email</Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        value={profile.email}
+                        onChange={(e) => setProfile({ ...profile, email: e.target.value })}
+                        className="bg-gray-900 border-gray-700 text-white"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="location" className="text-gray-300">Location</Label>
+                      <Input
+                        id="location"
+                        value={profile.location || ""}
+                        onChange={(e) => setProfile({ ...profile, location: e.target.value })}
+                        placeholder="City, Country"
+                        className="bg-gray-900 border-gray-700 text-white"
+                      />
+                    </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="occupation" className="text-gray-300">Occupation</Label>
+                      <Input
+                        id="occupation"
+                        value={profile.occupation || ""}
+                        onChange={(e) => setProfile({ ...profile, occupation: e.target.value })}
+                        placeholder="Software Developer"
+                        className="bg-gray-900 border-gray-700 text-white"
+                      />
+                    </div>
+                  </div>
+
                   <div className="space-y-2">
-                    <Label htmlFor="name">Name</Label>
-                    <Input
-                      id="name"
-                      value={profile.name}
-                      onChange={(e) =>
-                        setProfile({ ...profile, name: e.target.value })
-                      }
+                    <Label htmlFor="bio" className="text-gray-300">Bio</Label>
+                    <Textarea
+                      id="bio"
+                      value={profile.bio || ""}
+                      onChange={(e) => setProfile({ ...profile, bio: e.target.value })}
+                      placeholder="Tell us about yourself..."
+                      rows={4}
+                      className="bg-gray-900 border-gray-700 text-white"
                     />
                   </div>
-                  <div className="space-y-2">
-                    <Label htmlFor="email">Email</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      value={profile.email}
-                      onChange={(e) =>
-                        setProfile({ ...profile, email: e.target.value })
-                      }
-                    />
+
+                  <div className="space-y-4">
+                    <h3 className="text-lg font-semibold text-white">Social Links</h3>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="website" className="text-gray-300 flex items-center gap-2">
+                          <Globe size={16} />
+                          Website
+                        </Label>
+                        <Input
+                          id="website"
+                          value={profile.website || ""}
+                          onChange={(e) => setProfile({ ...profile, website: e.target.value })}
+                          placeholder="https://yourwebsite.com"
+                          className="bg-gray-900 border-gray-700 text-white"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="github" className="text-gray-300 flex items-center gap-2">
+                          <Github size={16} />
+                          GitHub
+                        </Label>
+                        <Input
+                          id="github"
+                          value={profile.github || ""}
+                          onChange={(e) => setProfile({ ...profile, github: e.target.value })}
+                          placeholder="github.com/username"
+                          className="bg-gray-900 border-gray-700 text-white"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="linkedin" className="text-gray-300 flex items-center gap-2">
+                          <Linkedin size={16} />
+                          LinkedIn
+                        </Label>
+                        <Input
+                          id="linkedin"
+                          value={profile.linkedin || ""}
+                          onChange={(e) => setProfile({ ...profile, linkedin: e.target.value })}
+                          placeholder="linkedin.com/in/username"
+                          className="bg-gray-900 border-gray-700 text-white"
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="twitter" className="text-gray-300 flex items-center gap-2">
+                          <Twitter size={16} />
+                          Twitter
+                        </Label>
+                        <Input
+                          id="twitter"
+                          value={profile.twitter || ""}
+                          onChange={(e) => setProfile({ ...profile, twitter: e.target.value })}
+                          placeholder="twitter.com/username"
+                          className="bg-gray-900 border-gray-700 text-white"
+                        />
+                      </div>
+                    </div>
                   </div>
-                  <Button type="submit" disabled={loading}>
-                    {loading ? "Saving..." : "Save Changes"}
+
+                  <Button 
+                    type="submit" 
+                    disabled={saving}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    {saving ? "Saving..." : "Save Changes"}
                   </Button>
                 </form>
               </CardContent>
             </Card>
           </TabsContent>
 
+          {/* Security Tab */}
           <TabsContent value="security" className="mt-6">
-            <Card>
+            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
               <CardHeader>
-                <CardTitle>Password</CardTitle>
-                <CardDescription>Change your password here.</CardDescription>
+                <CardTitle className="text-white">Change Password</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Update your password to keep your account secure
+                </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleChangePassword} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="current-password">Current Password</Label>
+                    <Label htmlFor="current-password" className="text-gray-300">
+                      Current Password
+                    </Label>
                     <Input
                       id="current-password"
                       type="password"
                       value={currentPassword}
                       onChange={(e) => setCurrentPassword(e.target.value)}
+                      required
+                      className="bg-gray-900 border-gray-700 text-white"
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="new-password">New Password</Label>
+                    <Label htmlFor="new-password" className="text-gray-300">
+                      New Password
+                    </Label>
                     <Input
                       id="new-password"
                       type="password"
                       value={newPassword}
                       onChange={(e) => setNewPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="bg-gray-900 border-gray-700 text-white"
                     />
                   </div>
-                  {message && (
-                    <p
-                      className={`text-sm font-medium ${
-                        message.type === "success"
-                          ? "text-green-600"
-                          : "text-destructive"
-                      }`}
-                    >
-                      {message.text}
-                    </p>
-                  )}
-                  <Button type="submit" disabled={loading}>
-                    {loading ? "Saving..." : "Save Password"}
+                  <div className="space-y-2">
+                    <Label htmlFor="confirm-password" className="text-gray-300">
+                      Confirm New Password
+                    </Label>
+                    <Input
+                      id="confirm-password"
+                      type="password"
+                      value={confirmPassword}
+                      onChange={(e) => setConfirmPassword(e.target.value)}
+                      required
+                      minLength={6}
+                      className="bg-gray-900 border-gray-700 text-white"
+                    />
+                  </div>
+                  <Button 
+                    type="submit" 
+                    disabled={saving}
+                    className="bg-purple-600 hover:bg-purple-700"
+                  >
+                    {saving ? "Updating..." : "Update Password"}
                   </Button>
                 </form>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Preferences Tab */}
+          <TabsContent value="preferences" className="mt-6">
+            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white">Appearance & Language</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Customize your experience
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-gray-300">Theme</Label>
+                      <p className="text-sm text-gray-500">Choose your preferred theme</p>
+                    </div>
+                    <select
+                      value={profile.preferences?.theme || 'dark'}
+                      onChange={(e) => setProfile({
+                        ...profile,
+                        preferences: {
+                          ...profile.preferences!,
+                          theme: e.target.value as 'light' | 'dark'
+                        }
+                      })}
+                      className="bg-gray-900 border-gray-700 text-white rounded-lg px-4 py-2"
+                    >
+                      <option value="light">Light</option>
+                      <option value="dark">Dark</option>
+                    </select>
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-gray-300">Language</Label>
+                      <p className="text-sm text-gray-500">Select your language</p>
+                    </div>
+                    <select
+                      value={profile.preferences?.language || 'en'}
+                      onChange={(e) => setProfile({
+                        ...profile,
+                        preferences: {
+                          ...profile.preferences!,
+                          language: e.target.value
+                        }
+                      })}
+                      className="bg-gray-900 border-gray-700 text-white rounded-lg px-4 py-2"
+                    >
+                      <option value="en">English</option>
+                      <option value="es">Spanish</option>
+                      <option value="fr">French</option>
+                      <option value="de">German</option>
+                    </select>
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={handleUpdatePreferences}
+                  disabled={saving}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  {saving ? "Saving..." : "Save Preferences"}
+                </Button>
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          {/* Notifications Tab */}
+          <TabsContent value="notifications" className="mt-6">
+            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white">Notification Settings</CardTitle>
+                <CardDescription className="text-gray-400">
+                  Manage how you receive notifications
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-gray-300">Email Notifications</Label>
+                      <p className="text-sm text-gray-500">Receive updates via email</p>
+                    </div>
+                    <Switch
+                      checked={profile.preferences?.notifications?.email ?? true}
+                      onCheckedChange={(checked) => setProfile({
+                        ...profile,
+                        preferences: {
+                          ...profile.preferences!,
+                          notifications: {
+                            ...profile.preferences!.notifications,
+                            email: checked
+                          }
+                        }
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-gray-300">Push Notifications</Label>
+                      <p className="text-sm text-gray-500">Receive push notifications</p>
+                    </div>
+                    <Switch
+                      checked={profile.preferences?.notifications?.push ?? true}
+                      onCheckedChange={(checked) => setProfile({
+                        ...profile,
+                        preferences: {
+                          ...profile.preferences!,
+                          notifications: {
+                            ...profile.preferences!.notifications,
+                            push: checked
+                          }
+                        }
+                      })}
+                    />
+                  </div>
+
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <Label className="text-gray-300">Achievement Notifications</Label>
+                      <p className="text-sm text-gray-500">Get notified about achievements</p>
+                    </div>
+                    <Switch
+                      checked={profile.preferences?.notifications?.achievements ?? true}
+                      onCheckedChange={(checked) => setProfile({
+                        ...profile,
+                        preferences: {
+                          ...profile.preferences!,
+                          notifications: {
+                            ...profile.preferences!.notifications,
+                            achievements: checked
+                          }
+                        }
+                      })}
+                    />
+                  </div>
+                </div>
+
+                <Button 
+                  onClick={handleUpdatePreferences}
+                  disabled={saving}
+                  className="bg-purple-600 hover:bg-purple-700"
+                >
+                  {saving ? "Saving..." : "Save Notification Settings"}
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>

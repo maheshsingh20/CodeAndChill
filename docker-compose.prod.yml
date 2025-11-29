@@ -1,0 +1,100 @@
+version: '3.8'
+
+services:
+  # MongoDB Database with Authentication
+  mongodb:
+    image: mongo:6.0
+    container_name: codeandchill-mongodb-prod
+    restart: always
+    ports:
+      - "27017:27017"
+    volumes:
+      - mongodb_data:/data/db
+      - mongodb_config:/data/configdb
+    environment:
+      - MONGO_INITDB_ROOT_USERNAME=admin
+      - MONGO_INITDB_ROOT_PASSWORD=${MONGO_ROOT_PASSWORD}
+      - MONGO_INITDB_DATABASE=codeandchill
+    networks:
+      - codeandchill-network
+    healthcheck:
+      test: echo 'db.runCommand("ping").ok' | mongosh -u admin -p ${MONGO_ROOT_PASSWORD} localhost:27017/codeandchill --quiet
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 1G
+
+  # Backend API
+  backend:
+    build:
+      context: ./Backend/server
+      dockerfile: Dockerfile
+    container_name: codeandchill-backend-prod
+    restart: always
+    ports:
+      - "3001:3001"
+    environment:
+      - NODE_ENV=production
+      - MONGO_URI=mongodb://admin:${MONGO_ROOT_PASSWORD}@mongodb:27017/codeandchill?authSource=admin
+      - JWT_SECRET=${JWT_SECRET}
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - RAZORPAY_KEY_ID=${RAZORPAY_KEY_ID}
+      - RAZORPAY_KEY_SECRET=${RAZORPAY_KEY_SECRET}
+      - GMAIL_USER=${GMAIL_USER}
+      - GMAIL_APP_PASSWORD=${GMAIL_APP_PASSWORD}
+      - RAPIDAPI_KEY=${RAPIDAPI_KEY}
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - codeandchill-network
+    volumes:
+      - ./Backend/server/uploads:/app/uploads
+    deploy:
+      resources:
+        limits:
+          cpus: '2'
+          memory: 2G
+        reservations:
+          cpus: '1'
+          memory: 1G
+
+  # Frontend with SSL support
+  frontend:
+    build:
+      context: ./codeandchill
+      dockerfile: Dockerfile
+      args:
+        - VITE_API_URL=${FRONTEND_API_URL:-http://localhost:3001/api}
+        - VITE_RAPID_API_KEY=${RAPIDAPI_KEY}
+        - VITE_RAPID_API_HOST=judge0-ce.p.rapidapi.com
+    container_name: codeandchill-frontend-prod
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    depends_on:
+      - backend
+    networks:
+      - codeandchill-network
+    volumes:
+      - ./ssl:/etc/nginx/ssl:ro  # Mount SSL certificates
+    deploy:
+      resources:
+        limits:
+          cpus: '1'
+          memory: 512M
+
+networks:
+  codeandchill-network:
+    driver: bridge
+
+volumes:
+  mongodb_data:
+    driver: local
+  mongodb_config:
+    driver: local
