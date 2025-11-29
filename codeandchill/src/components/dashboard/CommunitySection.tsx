@@ -1,43 +1,34 @@
-/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Section } from "./Section.jsx";
 import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { MessageSquare, ThumbsUp } from "lucide-react";
+import { useEffect, useState } from "react";
+import { communityService, CommunityPost } from "@/services/communityService";
 
 export function CommunitySection() {
-  const posts = [
-    {
-      user: "Sarah W.",
-      userImg: "https://randomuser.me/api/portraits/women/68.jpg",
-      title: "Can anyone explain this React hook behavior?",
-      likes: 12,
-      comments: 5,
-    },
-    {
-      user: "Mike R.",
-      userImg: "https://randomuser.me/api/portraits/men/32.jpg",
-      title: "My solution for the 'Two Sum' problem in Python.",
-      likes: 28,
-      comments: 11,
-    },
-    {
-      user: "Priya S.",
-      userImg: "https://randomuser.me/api/portraits/women/65.jpg",
-      title: "Tips for passing technical interviews?",
-      likes: 19,
-      comments: 7,
-    },
-    {
-      user: "Alex T.",
-      userImg: "https://randomuser.me/api/portraits/men/45.jpg",
-      title: "Best resources for learning TypeScript?",
-      likes: 15,
-      comments: 4,
-    },
-  ];
+  const [posts, setPosts] = useState<CommunityPost[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchPosts = async () => {
+      try {
+        const data = await communityService.getLatestPosts(4);
+        setPosts(data);
+      } catch (error) {
+        console.error('Error fetching community posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPosts();
+  }, []);
+
+  if (loading) {
+    return <Section title="From the Community" viewAllLink="/community"><div className="text-center text-gray-400">Loading posts...</div></Section>;
+  }
 
   return (
-    <Section title="From the Community" viewAllLink="/community">
+    <Section title="From the Community" viewAllLink="/forum">
       <Card
         className="
           rounded-xl border border-gray-800 
@@ -47,10 +38,9 @@ export function CommunitySection() {
         "
         role="list"
       >
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        {posts.map((post, index) => (
+        {posts.map((post) => (
           <article
-            key={post.title}
+            key={post._id}
             className="
               group flex items-start gap-4 
               py-5 transition-all duration-300 
@@ -61,12 +51,12 @@ export function CommunitySection() {
             "
             tabIndex={0}
             role="listitem"
-            aria-label={`${post.title} by ${post.user}, ${post.likes} likes, ${post.comments} comments`}
+            aria-label={`${post.title} by ${post.user.name}, ${post.likes} likes, ${post.comments} comments`}
           >
             {/* Avatar */}
             <Avatar className="mt-1 border-2 border-purple-500/40 group-hover:border-pink-500/50 transition-all duration-300">
-              <AvatarImage src={post.userImg} alt={`Avatar of ${post.user}`} />
-              <AvatarFallback>{post.user.charAt(0)}</AvatarFallback>
+              <AvatarImage src={post.user.profilePicture} alt={`Avatar of ${post.user.name}`} />
+              <AvatarFallback>{post.user.name.charAt(0)}</AvatarFallback>
             </Avatar>
 
             {/* Content */}
@@ -75,7 +65,7 @@ export function CommunitySection() {
                 {post.title}
               </p>
               <p className="text-sm text-gray-400 mt-1 truncate">
-                by {post.user}
+                by {post.user.name}
               </p>
             </div>
 

@@ -1,0 +1,102 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  lint-and-test:
+    runs-on: ubuntu-latest
+    
+    strategy:
+      matrix:
+        service: [backend, frontend]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+
+      - name: Install backend dependencies
+        if: matrix.service == 'backend'
+        working-directory: Backend/server
+        run: npm ci
+
+      - name: Lint backend
+        if: matrix.service == 'backend'
+        working-directory: Backend/server
+        run: npm run lint
+
+      - name: Test backend
+        if: matrix.service == 'backend'
+        working-directory: Backend/server
+        run: npm test
+
+      - name: Install frontend dependencies
+        if: matrix.service == 'frontend'
+        working-directory: codeandchill
+        run: npm ci
+
+      - name: Lint frontend
+        if: matrix.service == 'frontend'
+        working-directory: codeandchill
+        run: npm run lint
+
+      - name: Build frontend
+        if: matrix.service == 'frontend'
+        working-directory: codeandchill
+        run: npm run build
+
+  docker-build-test:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
+
+      - name: Build backend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./Backend/server
+          file: ./Backend/server/Dockerfile
+          push: false
+          tags: codeandchill-backend:test
+
+      - name: Build frontend image
+        uses: docker/build-push-action@v4
+        with:
+          context: ./codeandchill
+          file: ./codeandchill/Dockerfile
+          push: false
+          tags: codeandchill-frontend:test
+          build-args: |
+            VITE_API_URL=http://localhost:3001/api
+            VITE_RAPID_API_KEY=test_key
+            VITE_RAPID_API_HOST=judge0-ce.p.rapidapi.com
+
+  code-quality:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Run security scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          scan-type: 'fs'
+          scan-ref: '.'
+          format: 'sarif'
+          output: 'trivy-results.sarif'
+
+      - name: Upload Trivy results to GitHub Security
+        uses: github/codeql-action/upload-sarif@v2
+        with:
+          sarif_file: 'trivy-results.sarif'
