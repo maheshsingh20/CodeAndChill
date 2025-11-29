@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { Section } from "./Section";
 import {
   Card,
@@ -11,42 +11,41 @@ import {
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
 import { ArrowRight, BrainCircuit, Code, FileQuestion } from "lucide-react";
+import api from "@/services/api";
 
-// Mock data for available quizzes
-const quizzes = [
-  {
-    id: "js-fundamentals",
-    icon: <Code className="h-8 w-8 text-yellow-400" />,
-    title: "JavaScript Fundamentals",
-    description:
-      "Test your knowledge of core JS concepts like closures, scope, and prototypes.",
-    questions: 20,
-  },
-  {
-    id: "dsa-basics",
-    icon: <BrainCircuit className="h-8 w-8 text-cyan-400" />,
-    title: "DSA Basics",
-    description:
-      "Assess your understanding of fundamental data structures and algorithms.",
-    questions: 15,
-  },
-  {
-    id: "python-quiz",
-    icon: <FileQuestion className="h-8 w-8 text-green-400" />,
-    title: "Advanced Python",
-    description:
-      "Challenge yourself with questions on decorators, generators, and more.",
-    questions: 25,
-  },
-];
+const iconMap: Record<string, React.ReactElement> = {
+  Code: <Code className="h-8 w-8 text-yellow-400" />,
+  BrainCircuit: <BrainCircuit className="h-8 w-8 text-cyan-400" />,
+  FileQuestion: <FileQuestion className="h-8 w-8 text-green-400" />,
+};
 
 export function QuizzesSection() {
+  const [quizzes, setQuizzes] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchQuizzes = async () => {
+      try {
+        const response = await api.get<any[]>('/quizzes');
+        setQuizzes(response.slice(0, 3));
+      } catch (error) {
+        console.error('Error fetching quizzes:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchQuizzes();
+  }, []);
+
+  if (loading) {
+    return <Section title="Test Your Knowledge" viewAllLink="/quizzes"><div className="text-center text-gray-400">Loading quizzes...</div></Section>;
+  }
   return (
     <Section title="Test Your Knowledge" viewAllLink="/quizzes">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
         {quizzes.map((quiz) => (
           <Card
-            key={quiz.id}
+            key={quiz._id}
             className="
               relative rounded-3xl border border-gray-800/50 
               bg-gradient-to-b from-gray-900/90 to-black/90
@@ -64,7 +63,7 @@ export function QuizzesSection() {
                   border border-gray-700/50
                 "
               >
-                {quiz.icon}
+                {iconMap[quiz.icon] || <FileQuestion className="h-8 w-8 text-green-400" />}
               </div>
               <CardTitle className="text-xl font-bold text-gray-100 group-hover:text-cyan-400 transition-colors">
                 {quiz.title}
@@ -86,13 +85,13 @@ export function QuizzesSection() {
               "
             >
               <span className="font-semibold text-sm text-gray-400">
-                {quiz.questions} Questions
+                {quiz.questions?.length || 0} Questions
               </span>
               <Button
                 asChild
                 className="bg-cyan-600 hover:bg-cyan-500 text-white rounded-xl shadow-md shadow-cyan-600/30 transition-all"
               >
-                <Link to={`/quizzes`}>
+                <Link to={`/quizzes/${quiz._id}`}>
                   Start Quiz
                   <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                 </Link>
