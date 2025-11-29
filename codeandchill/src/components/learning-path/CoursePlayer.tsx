@@ -178,7 +178,7 @@ const QuizComponent: React.FC<QuizComponentProps> = ({ quiz, quizTitle, lessonId
             </Button>
             {score === quiz.length && (
               <Button
-                onClick={onComplete}
+                onClick={() => onComplete(score, Object.values(selectedAnswers))}
                 className="flex-1 bg-green-600 hover:bg-green-700 py-6 text-lg"
               >
                 <CheckCircle className="mr-2" size={20} />
@@ -224,13 +224,13 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
   };
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: number;
     if (isPlaying) {
       interval = setInterval(() => {
         setTimeSpent(prev => prev + 1);
         // Auto-progress simulation
         setProgress(prev => Math.min(prev + 0.5, 100));
-      }, 1000);
+      }, 1000) as unknown as number;
     }
     return () => clearInterval(interval);
   }, [isPlaying]);
