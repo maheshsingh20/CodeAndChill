@@ -17,6 +17,7 @@ import {
   CoursesPage,
   CourseDetailPage,
   CoursePlayerPage,
+  GeneralCoursesPage,
   LearningPathsPage,
   LearningPathDetailPage,
   PathDetailPage,
