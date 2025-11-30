@@ -17,8 +17,6 @@ import {
   CoursesPage,
   CourseDetailPage,
   CoursePlayerPage,
-  GeneralCoursesPage,
-  GeneralCourseDetailPage,
   LearningPathsPage,
   LearningPathDetailPage,
   PathDetailPage,
@@ -53,7 +51,6 @@ import { EnhancedCourseDetailPage } from "./pages/EnhancedCourseDetailPage";
 
 import { CollaborativePage } from "./pages/CollaborativePage";
 import { performAppCleanup } from "@/utils/cleanup";
-import { AuthDebug } from "./components/debug/AuthDebug";
 import { AdminLoginPage } from "./pages/admin/AdminLoginPage";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
 import { AdminUsersPage } from "./pages/admin/AdminUsersPage";
