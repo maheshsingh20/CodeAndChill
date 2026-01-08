@@ -1,14 +1,14 @@
 import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  EnhancedCard,
+  EnhancedCardContent,
+  EnhancedCardDescription,
+  EnhancedCardFooter,
+  EnhancedCardHeader,
+  EnhancedCardTitle,
+} from "@/components/ui/enhanced-card";
 import { Button } from "@/components/ui/button";
 import { Link } from "react-router-dom";
-import { Star } from "lucide-react";
+import { Star, BookOpen } from "lucide-react";
 
 type Course = {
   id: string;
@@ -28,51 +28,66 @@ export function CourseCard({ course }: CourseCardProps) {
   return (
     <Link
       to={`/courses/${course.id}`}
-      className="group block hover-lift h-full"
+      className="group block h-full"
     >
-      <Card className="card glass-card flex flex-col h-full">
+      <EnhancedCard
+        variant="gradient"
+        color="blue"
+        hover={true}
+        glow={true}
+        animated={true}
+        className="flex flex-col h-full"
+      >
         {/* Image */}
-        <CardHeader className="card-header p-0 rounded-t-lg overflow-hidden">
+        <EnhancedCardHeader
+          icon={BookOpen}
+          iconColor="blue"
+          className="p-0 rounded-t-xl overflow-hidden"
+        >
           <img
             src={course.image}
             alt={course.title}
             className="w-full h-48 object-cover transition-transform duration-500 group-hover:scale-105"
             loading="lazy"
           />
-        </CardHeader>
+        </EnhancedCardHeader>
 
         {/* Content */}
-        <CardContent className="card-content p-6 flex flex-col flex-grow">
-          <CardTitle className="card-title text-lg font-bold mb-2 group-hover:text-primary transition-colors">
+        <EnhancedCardContent className="flex flex-col flex-grow">
+          <EnhancedCardTitle
+            gradient={true}
+            color="blue"
+            className="text-lg mb-2 group-hover:text-blue-300 transition-colors"
+          >
             {course.title}
-          </CardTitle>
-          <CardDescription className="card-description text-sm mb-4">
+          </EnhancedCardTitle>
+          <EnhancedCardDescription className="mb-4">
             by {course.author}
-          </CardDescription>
+          </EnhancedCardDescription>
 
           {/* Rating */}
-          <div className="mt-auto flex items-center gap-2 text-primary font-semibold">
-            <Star className="h-5 w-5 fill-primary stroke-primary" />
+          <div className="mt-auto flex items-center gap-2 text-blue-400 font-semibold">
+            <Star className="h-5 w-5 fill-blue-400 stroke-blue-400" />
             <span>{course.rating.toFixed(1)}</span>
-            <span className="text-xs text-muted-foreground font-normal">
+            <span className="text-xs text-slate-400 font-normal">
               ({course.reviews.toLocaleString()})
             </span>
           </div>
-        </CardContent>
+        </EnhancedCardContent>
 
         {/* Footer */}
-        <CardFooter className="card-footer p-6 pt-0 border-t border-border flex justify-between items-center">
-          <div className="text-xl font-extrabold text-primary">
+        <EnhancedCardFooter className="border-t border-blue-500/20 flex justify-between items-center">
+          <div className="text-xl font-extrabold text-blue-400">
             ${course.price.toFixed(2)}
           </div>
           <Button
-            className="btn btn-default"
+            className="bg-blue-600 hover:bg-blue-500 text-white border-0"
             aria-label={`Enroll in ${course.title}`}
           >
             Enroll
           </Button>
-        </CardFooter>
-      </Card>
+        </EnhancedCardFooter>
+      </EnhancedCard>
     </Link>
   );
 }

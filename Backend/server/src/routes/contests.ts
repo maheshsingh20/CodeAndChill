@@ -2,7 +2,7 @@ import express from 'express';
 import Contest from '../models/Contest';
 import ContestSubmission from '../models/ContestSubmission';
 import ContestLeaderboard from '../models/ContestLeaderboard';
-import Problem from '../models/Problem';
+import { Problem } from '../models/Problem';
 import { User } from '../models/User';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 

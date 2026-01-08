@@ -4,7 +4,7 @@ import jwt from "jsonwebtoken";
 import { Admin } from "../models/Admin";
 import { User } from "../models/User";
 import Contest from "../models/Contest";
-import Problem from "../models/Problem";
+import { Problem } from "../models/Problem";
 import { adminAuthMiddleware, checkPermission, AdminRequest } from "../middleware/adminAuth";
 
 const router = Router();
@@ -63,22 +63,70 @@ router.get("/profile", adminAuthMiddleware, async (req: AdminRequest, res: Respo
 // Dashboard stats
 router.get("/stats", adminAuthMiddleware, async (req: AdminRequest, res: Response): Promise<void> => {
   try {
-    const totalUsers = await User.countDocuments();
-    const activeUsers = await User.countDocuments({
-      lastActiveDate: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
-    });
-    const newUsersThisMonth = await User.countDocuments({
-      joinDate: { $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
-    });
-
-    res.json({
+    const [
       totalUsers,
       activeUsers,
       newUsersThisMonth,
-      totalProblems: 0, // TODO: Add when Problem model exists
-      totalCourses: 0, // TODO: Add when Course model exists
+      totalProblems,
+      totalContests,
+      totalSubmissions,
+      recentActivity
+    ] = await Promise.all([
+      User.countDocuments(),
+      User.countDocuments({
+        lastActiveDate: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+      }),
+      User.countDocuments({
+        joinDate: { $gte: new Date(new Date().getFullYear(), new Date().getMonth(), 1) }
+      }),
+      Problem.countDocuments(),
+      Contest.countDocuments(),
+      // Get total submissions count (assuming Submission model exists)
+      User.aggregate([
+        { $group: { _id: null, total: { $sum: "$totalSubmissions" } } }
+      ]).then(result => result[0]?.total || 0),
+      // Get recent activity
+      User.find()
+        .select('name email joinDate lastActiveDate')
+        .sort({ joinDate: -1 })
+        .limit(5)
+    ]);
+
+    // Get growth data for charts
+    const last30Days = Array.from({ length: 30 }, (_, i) => {
+      const date = new Date();
+      date.setDate(date.getDate() - i);
+      return date;
+    }).reverse();
+
+    const userGrowth = await Promise.all(
+      last30Days.map(async (date) => {
+        const count = await User.countDocuments({
+          joinDate: { $lte: date }
+        });
+        return {
+          date: date.toISOString().split('T')[0],
+          users: count
+        };
+      })
+    );
+
+    res.json({
+      overview: {
+        totalUsers,
+        activeUsers,
+        newUsersThisMonth,
+        totalProblems,
+        totalContests,
+        totalSubmissions
+      },
+      growth: {
+        userGrowth
+      },
+      recentActivity
     });
   } catch (error) {
+    console.error("Error fetching admin stats:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -169,7 +217,97 @@ router.delete("/users/:id", adminAuthMiddleware, checkPermission('delete_users')
   }
 });
 
-// Create admin (super_admin only)
+// Contest management
+router.get("/contests", adminAuthMiddleware, async (req: AdminRequest, res: Response): Promise<void> => {
+  try {
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const status = req.query.status as string;
+
+    const query: any = {};
+    if (status && status !== 'all') {
+      query.status = status;
+    }
+
+    const contests = await Contest.find(query)
+      .populate('createdBy', 'name email')
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip((page - 1) * limit);
+
+    const total = await Contest.countDocuments(query);
+
+    res.json({
+      contests,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
+  } catch (error) {
+    console.error("Error fetching contests:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.post("/contests", adminAuthMiddleware, checkPermission('edit_content'), async (req: AdminRequest, res: Response): Promise<void> => {
+  try {
+    const contestData = {
+      ...req.body,
+      createdBy: req.admin._id
+    };
+
+    const contest = new Contest(contestData);
+    await contest.save();
+
+    res.status(201).json({ 
+      message: "Contest created successfully",
+      contest 
+    });
+  } catch (error) {
+    console.error("Error creating contest:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.put("/contests/:id", adminAuthMiddleware, checkPermission('edit_content'), async (req: AdminRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const contest = await Contest.findByIdAndUpdate(id, req.body, { new: true });
+    
+    if (!contest) {
+      res.status(404).json({ message: "Contest not found" });
+      return;
+    }
+
+    res.json({ 
+      message: "Contest updated successfully",
+      contest 
+    });
+  } catch (error) {
+    console.error("Error updating contest:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+router.delete("/contests/:id", adminAuthMiddleware, checkPermission('delete_content'), async (req: AdminRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    const contest = await Contest.findByIdAndDelete(id);
+    
+    if (!contest) {
+      res.status(404).json({ message: "Contest not found" });
+      return;
+    }
+
+    res.json({ message: "Contest deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting contest:", error);
+    res.status(500).json({ message: "Server error" });
+  }
+});
 router.post("/create-admin", adminAuthMiddleware, async (req: AdminRequest, res: Response): Promise<void> => {
   try {
     if (req.admin.role !== 'super_admin') {
@@ -205,9 +343,37 @@ router.post("/create-admin", adminAuthMiddleware, async (req: AdminRequest, res:
 // Problem CRUD operations
 router.get("/problems", adminAuthMiddleware, async (req: AdminRequest, res: Response): Promise<void> => {
   try {
-    // TODO: Implement when Problem model is ready
-    res.json({ problems: [] });
+    const page = parseInt(req.query.page as string) || 1;
+    const limit = parseInt(req.query.limit as string) || 20;
+    const search = req.query.search as string || '';
+
+    const query: any = {};
+    if (search) {
+      query.$or = [
+        { title: { $regex: search, $options: 'i' } },
+        { topic: { $regex: search, $options: 'i' } },
+        { description: { $regex: search, $options: 'i' } }
+      ];
+    }
+
+    const problems = await Problem.find(query)
+      .sort({ createdAt: -1 })
+      .limit(limit)
+      .skip((page - 1) * limit);
+
+    const total = await Problem.countDocuments(query);
+
+    res.json({
+      problems,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    });
   } catch (error) {
+    console.error("Error fetching problems:", error);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -218,26 +384,44 @@ router.post("/problems", adminAuthMiddleware, checkPermission('edit_content'), a
       title,
       description,
       difficulty,
-      points,
+      topic,
       testCases,
       constraints,
       timeLimit,
       memoryLimit,
       tags,
-      isPublic
+      isPublic,
+      examples
     } = req.body;
+
+    // Generate slug from title if not provided
+    const slug = title?.toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '') || '';
+
+    // Validate required fields
+    if (!title || !description || !topic) {
+      res.status(400).json({ 
+        message: "Missing required fields: title, description, and topic are required" 
+      });
+      return;
+    }
+
+    // Ensure testCases have proper structure
+    const validatedTestCases = (testCases || []).map((tc: any) => ({
+      input: tc.input || '',
+      expectedOutput: tc.expectedOutput || tc.output || ''
+    }));
 
     const problem = new Problem({
       title,
+      slug,
       description,
-      difficulty: difficulty || 'medium',
-      tags: tags || [],
-      testCases: testCases || [],
-      constraints: constraints || '',
-      timeLimit: timeLimit || 1000,
-      memoryLimit: memoryLimit || 256,
-      isPublic: isPublic !== false,
-      createdBy: req.admin._id
+      difficulty: difficulty || 'Medium',
+      topic: topic || 'General',
+      examples: examples || [],
+      constraints: Array.isArray(constraints) ? constraints : (constraints ? [constraints] : []),
+      testCases: validatedTestCases
     });
 
     await problem.save();
@@ -248,15 +432,99 @@ router.post("/problems", adminAuthMiddleware, checkPermission('edit_content'), a
     });
   } catch (error) {
     console.error("Error creating problem:", error);
-    res.status(500).json({ message: "Server error" });
+    if (error.name === 'ValidationError') {
+      res.status(400).json({ 
+        message: "Validation error", 
+        details: error.message 
+      });
+    } else if (error.code === 11000) {
+      res.status(400).json({ 
+        message: "Problem with this slug already exists" 
+      });
+    } else {
+      res.status(500).json({ message: "Server error" });
+    }
   }
 });
 
 router.put("/problems/:id", adminAuthMiddleware, checkPermission('edit_content'), async (req: AdminRequest, res: Response): Promise<void> => {
   try {
-    // TODO: Implement when Problem model is ready
-    res.json({ message: "Problem updated successfully" });
+    const { id } = req.params;
+    const {
+      title,
+      description,
+      difficulty,
+      topic,
+      testCases,
+      constraints,
+      examples
+    } = req.body;
+
+    // Generate slug from title if title is being updated
+    const updateData: any = {
+      title,
+      description,
+      difficulty: difficulty || 'Medium',
+      topic: topic || 'General',
+      examples: examples || [],
+      constraints: Array.isArray(constraints) ? constraints : (constraints ? [constraints] : [])
+    };
+
+    if (title) {
+      updateData.slug = title.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+    }
+
+    if (testCases) {
+      updateData.testCases = testCases.map((tc: any) => ({
+        input: tc.input || '',
+        expectedOutput: tc.expectedOutput || tc.output || ''
+      }));
+    }
+
+    const problem = await Problem.findByIdAndUpdate(id, updateData, { new: true });
+    
+    if (!problem) {
+      res.status(404).json({ message: "Problem not found" });
+      return;
+    }
+
+    res.json({ 
+      message: "Problem updated successfully",
+      problem 
+    });
   } catch (error) {
+    console.error("Error updating problem:", error);
+    if (error.name === 'ValidationError') {
+      res.status(400).json({ 
+        message: "Validation error", 
+        details: error.message 
+      });
+    } else if (error.code === 11000) {
+      res.status(400).json({ 
+        message: "Problem with this slug already exists" 
+      });
+    } else {
+      res.status(500).json({ message: "Server error" });
+    }
+  }
+});
+
+router.delete("/problems/:id", adminAuthMiddleware, checkPermission('delete_content'), async (req: AdminRequest, res: Response): Promise<void> => {
+  try {
+    const { id } = req.params;
+    
+    const problem = await Problem.findByIdAndDelete(id);
+    
+    if (!problem) {
+      res.status(404).json({ message: "Problem not found" });
+      return;
+    }
+
+    res.json({ message: "Problem deleted successfully" });
+  } catch (error) {
+    console.error("Error deleting problem:", error);
     res.status(500).json({ message: "Server error" });
   }
 });

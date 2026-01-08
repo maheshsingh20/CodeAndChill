@@ -27,7 +27,6 @@ export { AiAssistantPage } from "./AiAssistantPage";
 export { BlogPage } from "./BlogPage";
 export { BlogDetailPage } from "./BlogDetailPage";
 export { PlaygroundPage } from "./PlaygroundPage";
-export { ProblemSolverPage } from './ProblemSolverPage';
 export { QuizPage } from './QuizPage';
 export { DashboardPage } from './DashboardPage';
 export { ForumPage } from './ForumPage';

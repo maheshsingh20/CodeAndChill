@@ -1,4 +1,5 @@
 @import './styles/collaborative.css';
+@import './styles/enhanced-cards.css';
 
 @tailwind base;
 @tailwind components;
@@ -50,6 +51,33 @@
 }
 
 @layer components {
+
+  /* Global consistent background for all pages */
+  .app-background {
+    @apply bg-gradient-to-br from-gray-950 via-gray-900 to-black min-h-screen;
+  }
+
+  /* Consistent background orbs for all pages */
+  .background-orbs {
+    @apply fixed inset-0 -z-10;
+  }
+
+  .background-orbs::before {
+    content: '';
+    @apply absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse;
+  }
+
+  .background-orbs::after {
+    content: '';
+    @apply absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse;
+    animation-delay: 1s;
+  }
+
+  /* Page container with consistent styling */
+  .page-container {
+    @apply relative w-full min-h-screen;
+  }
+
   .card {
     @apply rounded-xl border bg-card/80 backdrop-blur-sm text-card-foreground shadow-lg transition-all duration-300;
   }
@@ -135,7 +163,7 @@
   }
 
   .gradient-bg {
-    @apply bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950;
+    @apply bg-gradient-to-br from-black via-gray-900 to-black;
   }
 
   .hover-lift {
@@ -147,14 +175,158 @@
   }
 
   .heading-primary {
-    @apply text-4xl md:text-5xl lg:text-6xl font-bold text-slate-100 leading-tight tracking-tight;
+    @apply text-4xl md:text-5xl lg:text-6xl font-bold leading-tight tracking-tight;
+    background: linear-gradient(to right, #f9fafb, #e5e7eb, #d1d5db);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .heading-secondary {
-    @apply text-2xl md:text-3xl lg:text-4xl font-bold text-slate-200 leading-tight;
+    @apply text-2xl md:text-3xl lg:text-4xl font-bold leading-tight;
+    background: linear-gradient(to right, #f3f4f6, #d1d5db);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
   }
 
   .heading-tertiary {
     @apply text-xl md:text-2xl font-bold text-slate-200 leading-snug;
   }
+
+  /* Remove all borders from footer to ensure seamless integration */
+  footer,
+  footer *,
+  footer div,
+  footer .container {
+    border: none !important;
+    border-top: none !important;
+    border-bottom: none !important;
+    border-left: none !important;
+    border-right: none !important;
+  }
+}
+
+/* 3D Animation Utilities */
+@layer utilities {
+  .transform-gpu {
+    transform: translate3d(0, 0, 0);
+  }
+
+  .perspective-1000 {
+    perspective: 1000px;
+  }
+
+  .preserve-3d {
+    transform-style: preserve-3d;
+  }
+
+  .backface-hidden {
+    backface-visibility: hidden;
+  }
+}
+
+/* Custom Animations for Hero Section */
+@keyframes float {
+
+  0%,
+  100% {
+    transform: translateY(0px) rotateX(0deg);
+  }
+
+  50% {
+    transform: translateY(-10px) rotateX(5deg);
+  }
+}
+
+@keyframes glow {
+
+  0%,
+  100% {
+    box-shadow: 0 0 5px rgba(59, 130, 246, 0.5);
+  }
+
+  50% {
+    box-shadow: 0 0 20px rgba(59, 130, 246, 0.8), 0 0 30px rgba(59, 130, 246, 0.6);
+  }
+}
+
+@keyframes matrix-glow {
+
+  0%,
+  100% {
+    text-shadow: 0 0 5px rgba(0, 255, 0, 0.5);
+  }
+
+  50% {
+    text-shadow: 0 0 10px rgba(0, 255, 0, 0.8), 0 0 15px rgba(0, 255, 0, 0.6);
+  }
+}
+
+@keyframes code-drift {
+  0% {
+    transform: translateX(-100px) translateY(0px) rotateY(-15deg);
+    opacity: 0;
+  }
+
+  10% {
+    opacity: 0.6;
+  }
+
+  90% {
+    opacity: 0.6;
+  }
+
+  100% {
+    transform: translateX(100px) translateY(-20px) rotateY(15deg);
+    opacity: 0;
+  }
+}
+
+.animate-float {
+  animation: float 6s ease-in-out infinite;
+}
+
+.animate-glow {
+  animation: glow 2s ease-in-out infinite;
+}
+
+.animate-matrix-glow {
+  animation: matrix-glow 1.5s ease-in-out infinite;
+}
+
+.animate-code-drift {
+  animation: code-drift 15s linear infinite;
+}
+
+/* Enhanced text shadows for better readability */
+.text-shadow-lg {
+  text-shadow: 0 4px 8px rgba(0, 0, 0, 0.5);
+}
+
+.text-shadow-glow {
+  text-shadow: 0 0 10px rgba(59, 130, 246, 0.5), 0 0 20px rgba(59, 130, 246, 0.3);
+}
+
+/* Backdrop blur enhancements */
+.backdrop-blur-strong {
+  backdrop-filter: blur(20px) saturate(180%);
+}
+
+/* Custom scrollbar for coding theme */
+::-webkit-scrollbar {
+  width: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(59, 130, 246, 0.3);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(59, 130, 246, 0.5);
 }

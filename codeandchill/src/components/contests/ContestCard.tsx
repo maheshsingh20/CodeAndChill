@@ -1,15 +1,15 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import {
-  Card,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+  EnhancedCard,
+  EnhancedCardDescription,
+  EnhancedCardFooter,
+  EnhancedCardHeader,
+  EnhancedCardTitle,
+} from "@/components/ui/enhanced-card";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
-import { Clock } from "lucide-react";
+import { Clock, Trophy } from "lucide-react";
 
 type Contest = {
   id: string;
@@ -44,41 +44,52 @@ export function ContestCard({ contest }: ContestCardProps) {
     }
   }, [contest.endsIn, contest.status]);
 
-  const levelVariants: Record<Contest["level"], "default" | "secondary" | "outline"> = {
-    Beginner: "secondary",
-    Intermediate: "default",
-    Advanced: "outline",
+  const levelColors = {
+    Beginner: "green" as const,
+    Intermediate: "orange" as const,
+    Advanced: "red" as const,
   };
 
+  const cardColor = levelColors[contest.level];
+
   return (
-    <Card
-      className={`card glass-card flex flex-col hover-lift ${
-        contest.status === "Ended" ? "opacity-60" : ""
-      }`}
+    <EnhancedCard
+      variant="cyber"
+      color={cardColor}
+      hover={true}
+      glow={contest.status !== "Ended"}
+      animated={true}
+      className={`flex flex-col ${contest.status === "Ended" ? "opacity-60" : ""
+        }`}
     >
-      <CardHeader className="card-header p-6">
+      <EnhancedCardHeader icon={Trophy} iconColor={cardColor}>
         <div className="flex justify-between items-start">
-          <Badge className="badge badge-outline">
+          <Badge className="bg-slate-700/50 text-slate-300 border-slate-600">
             {contest.type}
           </Badge>
-          <Badge className={`badge badge-${levelVariants[contest.level]}`}>
+          <Badge className={`bg-${cardColor}-500/20 text-${cardColor}-400 border-${cardColor}-500/30`}>
             {contest.level}
           </Badge>
         </div>
-        <CardTitle className="card-title mt-3 text-2xl font-extrabold">
+        <EnhancedCardTitle
+          gradient={true}
+          color={cardColor}
+          className="mt-3 text-2xl font-extrabold"
+        >
           {contest.name}
-        </CardTitle>
-        <CardDescription className="card-description flex items-center gap-2 pt-3 text-sm">
+        </EnhancedCardTitle>
+        <EnhancedCardDescription className="flex items-center gap-2 pt-3 text-sm">
           <Clock className="h-5 w-5" />
           <span>
             {contest.status === "Ended" ? "Contest has ended" : timeLeft}
           </span>
-        </CardDescription>
-      </CardHeader>
-      <CardFooter className="card-footer p-6 mt-auto">
+        </EnhancedCardDescription>
+      </EnhancedCardHeader>
+
+      <EnhancedCardFooter className="mt-auto">
         <Button
           asChild
-          className="btn btn-default w-full"
+          className={`w-full bg-${cardColor}-600 hover:bg-${cardColor}-500 text-white border-0`}
           disabled={contest.status === "Ended"}
           aria-disabled={contest.status === "Ended"}
         >
@@ -89,7 +100,7 @@ export function ContestCard({ contest }: ContestCardProps) {
             {contest.status === "Ended" ? "View Archive" : "View Details"}
           </Link>
         </Button>
-      </CardFooter>
-    </Card>
+      </EnhancedCardFooter>
+    </EnhancedCard>
   );
 }

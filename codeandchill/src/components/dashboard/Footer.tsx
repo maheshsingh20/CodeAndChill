@@ -6,8 +6,8 @@ import { FeedbackModal } from "@/components/feedback/FeedbackModal";
 
 export function Footer() {
   return (
-    <footer className="gradient-bg border-t border-slate-700/50">
-      <div className="container mx-auto px-6 py-16">
+    <footer className="border-0 border-t-0">
+      <div className="container mx-auto px-6 py-16 border-0 border-t-0">
         <div className="grid gap-12 sm:grid-cols-2 md:grid-cols-4">
           {/* Brand & Social */}
           <div className="space-y-6 md:col-span-1">
@@ -136,17 +136,17 @@ export function Footer() {
             </form>
           </div>
         </div>
-      </div>
-      <div className="bg-muted/20 border-t border-border">
-        <div className="container mx-auto py-4 px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+
+        {/* Copyright section integrated without separator */}
+        <div className="mt-16 pt-8 flex flex-col sm:flex-row items-center justify-between gap-4 border-0 border-t-0">
           <div className="text-sm text-muted-foreground">
             © 2025 Code and Chill, Inc. All rights reserved.
           </div>
           <div className="flex items-center gap-4">
             <FeedbackModal>
-              <Button 
-                variant="outline" 
-                size="sm" 
+              <Button
+                variant="outline"
+                size="sm"
                 className="border-gray-600 text-gray-300 hover:bg-gray-800 hover:text-white"
               >
                 <MessageSquare className="w-4 h-4 mr-2" />

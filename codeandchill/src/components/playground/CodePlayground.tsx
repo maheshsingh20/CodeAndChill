@@ -1,6 +1,6 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Editor } from '@monaco-editor/react';
-import { Play, Save, Share, Download, Upload, RotateCcw, Settings } from 'lucide-react';
+import { Play, Save, Share, Download, Upload, RotateCcw, Settings, Zap } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
@@ -14,41 +14,57 @@ interface CodePlaygroundProps {
 
 export const CodePlayground: React.FC<CodePlaygroundProps> = ({
   initialCode = '',
-  initialLanguage = 'javascript'
+  initialLanguage = 'python'
 }) => {
   const [code, setCode] = useState(initialCode);
   const [language, setLanguage] = useState(initialLanguage);
+  const [availableLanguages, setAvailableLanguages] = useState<string[]>(['python']);
   const [output, setOutput] = useState('');
   const [input, setInput] = useState('');
   const [isRunning, setIsRunning] = useState(false);
   const [theme, setTheme] = useState('vs-dark');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Fetch available languages on component mount
+  useEffect(() => {
+    const fetchAvailableLanguages = async () => {
+      try {
+        const response = await fetch('http://localhost:3001/api/code/languages');
+        const data = await response.json();
+        if (data.success && data.available) {
+          setAvailableLanguages(data.available);
+          // Set default language to first available (should be Python)
+          if (data.available.length > 0 && !data.available.includes(language)) {
+            setLanguage(data.available[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Failed to fetch available languages:', error);
+        // Fallback to Python only
+        setAvailableLanguages(['python']);
+        setLanguage('python');
+      }
+    };
+
+    fetchAvailableLanguages();
+  }, []);
+
   const languages = [
-    { value: 'javascript', label: 'JavaScript', template: 'console.log("Hello, World!");' },
-    { value: 'python', label: 'Python', template: 'print("Hello, World!")' },
-    { value: 'java', label: 'Java', template: `public class Main {
+    { value: 'python', label: '🐍 Python', template: 'print("Hello, World!")' },
+    { value: 'javascript', label: '🟨 JavaScript', template: 'console.log("Hello, World!");' },
+    {
+      value: 'java', label: '☕ Java', template: `public class Main {
     public static void main(String[] args) {
         System.out.println("Hello, World!");
     }
 }` },
-    { value: 'cpp', label: 'C++', template: `#include <iostream>
+    {
+      value: 'cpp', label: '⚡ C++', template: `#include <iostream>
 using namespace std;
 
 int main() {
     cout << "Hello, World!" << endl;
     return 0;
-}` },
-    { value: 'typescript', label: 'TypeScript', template: 'console.log("Hello, World!");' },
-    { value: 'go', label: 'Go', template: `package main
-
-import "fmt"
-
-func main() {
-    fmt.Println("Hello, World!")
-}` },
-    { value: 'rust', label: 'Rust', template: `fn main() {
-    println!("Hello, World!");
 }` }
   ];
 
@@ -60,43 +76,52 @@ func main() {
 
   const runCode = async () => {
     setIsRunning(true);
-    setOutput('Running...');
+    setOutput('🚀 Running code with custom compiler...');
 
     try {
-      // Simulate code execution (replace with actual execution service)
-      await new Promise(resolve => setTimeout(resolve, 1000 + Math.random() * 2000));
-      
-      // Mock output based on language
-      let mockOutput = '';
-      switch (language) {
-        case 'javascript':
-        case 'typescript':
-          mockOutput = 'Hello, World!\n';
-          if (input) mockOutput += `Input received: ${input}\n`;
-          break;
-        case 'python':
-          mockOutput = 'Hello, World!\n';
-          if (input) mockOutput += `Input: ${input}\n`;
-          break;
-        case 'java':
-          mockOutput = 'Hello, World!\n';
-          break;
-        case 'cpp':
-          mockOutput = 'Hello, World!\n';
-          break;
-        case 'go':
-          mockOutput = 'Hello, World!\n';
-          break;
-        case 'rust':
-          mockOutput = 'Hello, World!\n';
-          break;
-        default:
-          mockOutput = 'Language not supported in demo mode\n';
+      const startTime = Date.now();
+
+      // Use our custom compiler
+      const response = await fetch('http://localhost:3001/api/code/execute', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          language,
+          code,
+          input
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
       }
-      
-      setOutput(mockOutput);
-    } catch (error) {
-      setOutput(`Error: ${error}`);
+
+      const result = await response.json();
+      const endTime = Date.now();
+      const execTime = endTime - startTime;
+
+      let outputText = `--- 🎯 Execution Result ---\n`;
+      outputText += `⚡ Execution Time: ${result.executionTime || execTime}ms\n`;
+      outputText += `🔧 Compiler: Custom Backend Compiler\n`;
+      outputText += `📝 Language: ${language.toUpperCase()}\n\n`;
+
+      if (result.success && result.output) {
+        outputText += `✅ Output:\n${result.output}`;
+      } else if (result.error) {
+        outputText += `❌ Error:\n${result.error}`;
+      } else {
+        outputText += "⚠️ Execution finished with no output.";
+      }
+
+      if (input.trim()) {
+        outputText += `\n\n--- 📥 Input Used ---\n${input}`;
+      }
+
+      setOutput(outputText);
+    } catch (error: any) {
+      setOutput(`❌ Execution failed: ${error.message}`);
     } finally {
       setIsRunning(false);
     }
@@ -108,7 +133,7 @@ func main() {
       language,
       timestamp: new Date().toISOString()
     };
-    
+
     localStorage.setItem(`playground_${Date.now()}`, JSON.stringify(codeData));
     alert('Code saved to local storage!');
   };
@@ -167,7 +192,7 @@ func main() {
       reader.onload = (e) => {
         const content = e.target?.result as string;
         setCode(content);
-        
+
         // Try to detect language from file extension
         const extension = file.name.split('.').pop()?.toLowerCase();
         const languageMap: { [key: string]: string } = {
@@ -180,7 +205,7 @@ func main() {
           go: 'go',
           rs: 'rust'
         };
-        
+
         if (extension && languageMap[extension]) {
           setLanguage(languageMap[extension]);
         }
@@ -208,14 +233,18 @@ func main() {
       {/* Header */}
       <div className="flex items-center justify-between p-4 bg-gray-800 border-b border-gray-700">
         <div className="flex items-center space-x-4">
-          <h1 className="text-xl font-bold text-white">Code Playground</h1>
-          
+          <div className="flex items-center gap-2">
+            <Zap className="w-5 h-5 text-yellow-400" />
+            <h1 className="text-xl font-bold text-white">Code Playground</h1>
+            <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">Custom Compiler</span>
+          </div>
+
           <Select value={language} onValueChange={changeLanguage}>
             <SelectTrigger className="w-40 bg-gray-700 border-gray-600 text-white">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              {languages.map(lang => (
+              {languages.filter(lang => availableLanguages.includes(lang.value)).map(lang => (
                 <SelectItem key={lang.value} value={lang.value}>
                   {lang.label}
                 </SelectItem>
@@ -246,22 +275,22 @@ func main() {
             <Play size={16} className="mr-1" />
             {isRunning ? 'Running...' : 'Run'}
           </Button>
-          
+
           <Button onClick={saveCode} variant="outline" size="sm">
             <Save size={16} className="mr-1" />
             Save
           </Button>
-          
+
           <Button onClick={shareCode} variant="outline" size="sm">
             <Share size={16} className="mr-1" />
             Share
           </Button>
-          
+
           <Button onClick={downloadCode} variant="outline" size="sm">
             <Download size={16} className="mr-1" />
             Download
           </Button>
-          
+
           <Button
             onClick={() => fileInputRef.current?.click()}
             variant="outline"
@@ -270,7 +299,7 @@ func main() {
             <Upload size={16} className="mr-1" />
             Upload
           </Button>
-          
+
           <Button onClick={resetCode} variant="outline" size="sm">
             <RotateCcw size={16} className="mr-1" />
             Reset
@@ -315,7 +344,7 @@ func main() {
               <TabsTrigger value="output">Output</TabsTrigger>
               <TabsTrigger value="input">Input</TabsTrigger>
             </TabsList>
-            
+
             <TabsContent value="output" className="flex-1 p-4">
               <Card className="h-full bg-gray-900 border-gray-600">
                 <div className="p-4 h-full">
@@ -326,7 +355,7 @@ func main() {
                 </div>
               </Card>
             </TabsContent>
-            
+
             <TabsContent value="input" className="flex-1 p-4">
               <Card className="h-full bg-gray-900 border-gray-600">
                 <div className="p-4 h-full flex flex-col">

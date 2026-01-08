@@ -119,7 +119,7 @@ export function AuthPage({ login }: AuthPageProps) {
 
   const handleBlur = (field: keyof typeof touched) => {
     setTouched({ ...touched, [field]: true });
-    
+
     switch (field) {
       case 'name':
         setNameError(validateName(name));
@@ -175,11 +175,11 @@ export function AuthPage({ login }: AuthPageProps) {
       // Perform cleanup before login to avoid token conflicts
       await performFreshLogin();
 
-      const API_URL = import.meta.env.VITE_API_URL || '/api';
+      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const endpoint =
         type === "login"
-          ? `${API_URL}/auth/login`
-          : `${API_URL}/auth/signup`;
+          ? `${API_URL}/api/auth/login`
+          : `${API_URL}/api/auth/signup`;
       const payload =
         type === "login" ? { email, password } : { name, email, password };
 
@@ -202,7 +202,7 @@ export function AuthPage({ login }: AuthPageProps) {
       TokenManager.setToken(data.token);
       console.log('Token stored successfully');
       TokenManager.debugTokenStatus();
-      
+
       login(data.token);
     } catch (err: any) {
       setError(err.message);
@@ -248,14 +248,14 @@ export function AuthPage({ login }: AuthPageProps) {
 
           <Tabs defaultValue="login" className="w-full">
             <TabsList className="grid w-full grid-cols-2 mb-8 h-14 bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-xl p-1">
-              <TabsTrigger 
-                value="login" 
+              <TabsTrigger
+                value="login"
                 className="text-base font-semibold rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white transition-all duration-300"
               >
                 Log In
               </TabsTrigger>
-              <TabsTrigger 
-                value="signup" 
+              <TabsTrigger
+                value="signup"
                 className="text-base font-semibold rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white transition-all duration-300"
               >
                 Sign Up
@@ -266,7 +266,7 @@ export function AuthPage({ login }: AuthPageProps) {
               <div className="bg-gray-800/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden">
                 {/* Gradient Border Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-indigo-500/10 rounded-2xl blur-xl -z-10" />
-                
+
                 <div className="p-8">
                   <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
@@ -337,7 +337,7 @@ export function AuthPage({ login }: AuthPageProps) {
               <div className="bg-gray-800/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden relative">
                 {/* Gradient Border Effect */}
                 <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-indigo-500/10 rounded-2xl blur-xl -z-10" />
-                
+
                 <div className="p-8">
                   <div className="text-center mb-8">
                     <h2 className="text-3xl font-bold text-white mb-2">Create Account</h2>
@@ -402,12 +402,11 @@ export function AuthPage({ login }: AuthPageProps) {
                         <div className="space-y-2 p-3 bg-gray-900/30 rounded-lg border border-gray-700/50">
                           <div className="flex items-center justify-between text-xs">
                             <span className="text-slate-400 font-medium">Password Strength:</span>
-                            <span className={`font-bold ${
-                              getPasswordStrength(password).strength === 1 ? 'text-red-400' :
+                            <span className={`font-bold ${getPasswordStrength(password).strength === 1 ? 'text-red-400' :
                               getPasswordStrength(password).strength === 2 ? 'text-orange-400' :
-                              getPasswordStrength(password).strength === 3 ? 'text-yellow-400' :
-                              'text-green-400'
-                            }`}>
+                                getPasswordStrength(password).strength === 3 ? 'text-yellow-400' :
+                                  'text-green-400'
+                              }`}>
                               {getPasswordStrength(password).label}
                             </span>
                           </div>
@@ -415,11 +414,10 @@ export function AuthPage({ login }: AuthPageProps) {
                             {[1, 2, 3, 4].map((level) => (
                               <div
                                 key={level}
-                                className={`flex-1 rounded-full transition-all duration-300 ${
-                                  level <= getPasswordStrength(password).strength
-                                    ? getPasswordStrength(password).color
-                                    : 'bg-gray-700'
-                                }`}
+                                className={`flex-1 rounded-full transition-all duration-300 ${level <= getPasswordStrength(password).strength
+                                  ? getPasswordStrength(password).color
+                                  : 'bg-gray-700'
+                                  }`}
                               />
                             ))}
                           </div>

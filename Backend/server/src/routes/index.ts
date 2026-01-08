@@ -24,6 +24,7 @@ import adminRoutes from "./admin";
 import notificationRoutes from "./notifications";
 import blogRoutes from "./blog";
 import communityRoutes from "./community";
+import codeExecutionRoutes from "./codeExecution";
 
 const router = Router();
 
@@ -52,6 +53,7 @@ router.use("/admin", adminRoutes);
 router.use("/notifications", notificationRoutes);
 router.use("/blog", blogRoutes);
 router.use("/community", communityRoutes);
+router.use("/code", codeExecutionRoutes);
 router.use("/", aiRoutes); // AI routes are mounted at root level for /gemini-chat
 
 export default router;

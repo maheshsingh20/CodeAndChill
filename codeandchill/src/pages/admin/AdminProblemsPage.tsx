@@ -16,7 +16,8 @@ interface Problem {
   title: string;
   description: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
-  category: string;
+  topic?: string; // Add topic field
+  category: string; // Keep category for form compatibility
   testCases: Array<{ input: string; output: string }>;
   starterCode?: string;
   solution?: string;
@@ -64,20 +65,41 @@ export function AdminProblemsPage() {
       const url = editingProblem
         ? `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/admin/problems/${editingProblem._id}`
         : `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/admin/problems`;
-      
+
+      // Transform the data to match backend expectations
+      const backendData = {
+        title: formData.title,
+        description: formData.description,
+        difficulty: formData.difficulty,
+        topic: formData.category, // Map category to topic
+        testCases: formData.testCases.map(tc => ({
+          input: tc.input,
+          expectedOutput: tc.output // Map output to expectedOutput
+        })),
+        examples: [], // Add empty examples array
+        constraints: [] // Add empty constraints array
+      };
+
+      console.log('Sending data to backend:', backendData);
+
       const response = await fetch(url, {
         method: editingProblem ? "PUT" : "POST",
         headers: {
           Authorization: `Bearer ${token}`,
           "Content-Type": "application/json",
         },
-        body: JSON.stringify(formData),
+        body: JSON.stringify(backendData),
       });
+
+      const responseData = await response.json();
+      console.log('Backend response:', responseData);
 
       if (response.ok) {
         fetchProblems();
         resetForm();
         alert(editingProblem ? "Problem updated!" : "Problem created!");
+      } else {
+        alert(`Failed to save problem: ${responseData.message || 'Unknown error'}`);
       }
     } catch (error) {
       console.error("Error saving problem:", error);
@@ -87,7 +109,7 @@ export function AdminProblemsPage() {
 
   const handleDelete = async (id: string) => {
     if (!confirm("Delete this problem?")) return;
-    
+
     try {
       const token = localStorage.getItem("adminToken");
       const response = await fetch(
@@ -176,7 +198,7 @@ export function AdminProblemsPage() {
                   <TableRow className="border-gray-700">
                     <TableHead className="text-gray-400">Title</TableHead>
                     <TableHead className="text-gray-400">Difficulty</TableHead>
-                    <TableHead className="text-gray-400">Category</TableHead>
+                    <TableHead className="text-gray-400">Topic</TableHead>
                     <TableHead className="text-gray-400">Test Cases</TableHead>
                     <TableHead className="text-gray-400">Actions</TableHead>
                   </TableRow>
@@ -192,14 +214,14 @@ export function AdminProblemsPage() {
                             problem.difficulty === "Easy"
                               ? "bg-green-600/20 text-green-300"
                               : problem.difficulty === "Medium"
-                              ? "bg-yellow-600/20 text-yellow-300"
-                              : "bg-red-600/20 text-red-300"
+                                ? "bg-yellow-600/20 text-yellow-300"
+                                : "bg-red-600/20 text-red-300"
                           }
                         >
                           {problem.difficulty}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-gray-300">{problem.category}</TableCell>
+                      <TableCell className="text-gray-300">{problem.topic || problem.category}</TableCell>
                       <TableCell className="text-gray-300">{problem.testCases?.length || 0}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
@@ -208,7 +230,15 @@ export function AdminProblemsPage() {
                             size="icon"
                             onClick={() => {
                               setEditingProblem(problem);
-                              setFormData(problem);
+                              // Map backend data to form format
+                              setFormData({
+                                ...problem,
+                                category: problem.topic || problem.category || '',
+                                testCases: problem.testCases?.map(tc => ({
+                                  input: tc.input,
+                                  output: (tc as any).expectedOutput || tc.output || ''
+                                })) || [{ input: '', output: '' }]
+                              });
                               setShowForm(true);
                             }}
                             className="text-blue-400 hover:text-blue-300"
@@ -280,12 +310,12 @@ export function AdminProblemsPage() {
               </div>
 
               <div>
-                <Label>Category</Label>
+                <Label>Topic/Category</Label>
                 <Input
                   value={formData.category}
                   onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                   className="bg-gray-700 border-gray-600 text-white"
-                  placeholder="e.g., Arrays, Strings"
+                  placeholder="e.g., Arrays, Strings, Dynamic Programming"
                   required
                 />
               </div>

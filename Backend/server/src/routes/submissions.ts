@@ -3,14 +3,15 @@ import mongoose from 'mongoose';
 import Submission from '../models/Submission';
 import { Problem, User, UserProblem } from '../models';
 import { authMiddleware, AuthRequest } from '../middleware/auth';
-import { judgeService } from '../services/judgeService';
+import { CodeExecutor } from '../services/codeExecutor';
 
 const router = express.Router();
+const codeExecutor = new CodeExecutor();
 
 // Submit solution for a problem
 router.post('/', authMiddleware, async (req, res) => {
   try {
-    const { problemId, code, language } = req.body;
+    const { problemId, code, language, testResults, score, status, executionTime, passedTestCases, totalTestCases } = req.body;
     const userId = req.user._id;
 
     console.log('📝 Submission request received:');
@@ -18,6 +19,9 @@ router.post('/', authMiddleware, async (req, res) => {
     console.log('- Language:', language);
     console.log('- Code length:', code?.length || 0);
     console.log('- User ID:', userId);
+    console.log('- Status:', status);
+    console.log('- Score:', score);
+    console.log('- Test Results:', passedTestCases, '/', totalTestCases);
 
     // Validate input
     if (!problemId || !code || !language) {
@@ -43,37 +47,31 @@ router.post('/', authMiddleware, async (req, res) => {
     // Use the actual ObjectId for database operations
     const actualProblemId = problem._id;
 
-    // Create submission
+    // Create submission with provided results
     const submission = new Submission({
       userId,
       problemId: actualProblemId,
       code,
       language,
-      status: 'pending'
+      status: status || 'pending',
+      score: score || 0,
+      executionTime: executionTime || 0,
+      memoryUsed: 0, // Not tracked by custom compiler yet
+      judgedAt: new Date()
     });
 
-    await submission.save();
-
-    try {
-      // For now, use a mock execution to avoid Judge0 API issues
-      // TODO: Replace with real judgeService.runTestCases(code, language, problem.testCases)
-      const executionResult = await mockExecuteCode(code, language, problem.testCases);
-    
-    // Update submission with results
-    submission.status = executionResult.status;
-    submission.testResults = executionResult.testResults.map((result, index) => ({
-      testCaseId: `test_${index + 1}`,
-      input: result.input,
-      expectedOutput: result.expectedOutput,
-      actualOutput: result.actualOutput,
-      passed: result.passed,
-      executionTime: result.executionTime,
-      memoryUsed: result.memoryUsed
-    }));
-    submission.executionTime = executionResult.executionTime;
-    submission.memoryUsed = executionResult.memoryUsed;
-    submission.score = executionResult.totalScore;
-    submission.judgedAt = new Date();
+    // Add test results if provided
+    if (testResults && Array.isArray(testResults)) {
+      submission.testResults = testResults.map((result: any, index: number) => ({
+        testCaseId: `test_${index + 1}`,
+        input: result.input || '',
+        expectedOutput: result.expectedOutput || '',
+        actualOutput: result.actualOutput || '',
+        passed: result.passed || false,
+        executionTime: result.executionTime || 0,
+        memoryUsed: result.memoryUsed || 0
+      }));
+    }
 
     await submission.save();
 
@@ -85,17 +83,19 @@ router.post('/', authMiddleware, async (req, res) => {
       existingUserProblem.attempts += 1;
       
       // Update if this is a better submission
-      if (executionResult.totalScore > existingUserProblem.bestScore) {
-        existingUserProblem.bestScore = executionResult.totalScore;
-        existingUserProblem.bestExecutionTime = executionResult.executionTime;
+      if ((score || 0) > existingUserProblem.bestScore) {
+        existingUserProblem.bestScore = score || 0;
+        existingUserProblem.bestExecutionTime = executionTime || 0;
         existingUserProblem.bestSubmissionId = submission._id;
         existingUserProblem.language = language;
       }
       
       // Mark as solved if all test cases passed
-      if (executionResult.status === 'accepted' && existingUserProblem.status !== 'solved') {
+      if (status === 'accepted' && existingUserProblem.status !== 'solved') {
         existingUserProblem.status = 'solved';
         existingUserProblem.solvedAt = new Date();
+        
+        console.log('🎉 Problem marked as SOLVED for user:', userId);
         
         // Update user's solved problems count
         await User.findByIdAndUpdate(userId, {
@@ -110,50 +110,40 @@ router.post('/', authMiddleware, async (req, res) => {
         userId,
         problemId: actualProblemId,
         difficulty: problem.difficulty,
-        status: executionResult.status === 'accepted' ? 'solved' : 'attempted',
+        status: status === 'accepted' ? 'solved' : 'attempted',
         bestSubmissionId: submission._id,
         attempts: 1,
-        bestScore: executionResult.totalScore,
-        bestExecutionTime: executionResult.executionTime,
+        bestScore: score || 0,
+        bestExecutionTime: executionTime || 0,
         language,
-        solvedAt: executionResult.status === 'accepted' ? new Date() : undefined
+        solvedAt: status === 'accepted' ? new Date() : undefined
       });
       
       await userProblem.save();
       
+      if (status === 'accepted') {
+        console.log('🎉 Problem marked as SOLVED for user (first attempt):', userId);
+      }
+      
       // Update user's problem counts
       const updateData: any = { $inc: { totalProblemsAttempted: 1 } };
-      if (executionResult.status === 'accepted') {
+      if (status === 'accepted') {
         updateData.$inc.totalProblemsSolved = 1;
       }
       
       await User.findByIdAndUpdate(userId, updateData);
     }
 
-      res.json({
-        submissionId: submission._id,
-        status: submission.status,
-        score: submission.score,
-        testResults: executionResult.testResults,
-        executionTime: submission.executionTime,
-        memoryUsed: submission.memoryUsed,
-        passedTestCases: executionResult.passedTestCases,
-        totalTestCases: executionResult.totalTestCases
-      });
-
-    } catch (judgeError) {
-      console.error('Judge service error:', judgeError);
-      
-      // Update submission with error status
-      submission.status = 'runtime_error';
-      submission.judgedAt = new Date();
-      await submission.save();
-      
-      res.status(500).json({ 
-        error: 'Code execution failed',
-        details: judgeError instanceof Error ? judgeError.message : 'Unknown error'
-      });
-    }
+    res.json({
+      submissionId: submission._id,
+      status: submission.status,
+      score: submission.score,
+      executionTime: submission.executionTime,
+      memoryUsed: submission.memoryUsed,
+      passedTestCases: passedTestCases || 0,
+      totalTestCases: totalTestCases || 0,
+      message: status === 'accepted' ? 'Problem solved successfully!' : 'Submission recorded'
+    });
 
   } catch (error) {
     console.error('Error submitting solution:', error);
@@ -379,62 +369,5 @@ router.get('/solved/by-difficulty', authMiddleware, async (req: AuthRequest, res
     res.status(500).json({ error: 'Failed to fetch solved problems' });
   }
 });
-
-// Mock execution function for testing (replace with real Judge0 when ready)
-async function mockExecuteCode(code: string, language: string, testCases: any[]) {
-  console.log(`🧪 Mock executing ${language} code with ${testCases.length} test cases`);
-  
-  // Simulate execution delay
-  await new Promise(resolve => setTimeout(resolve, 1000));
-  
-  const testResults = testCases.map((testCase, index) => {
-    // Simple mock logic - pass if code contains certain keywords
-    const codeContent = code.toLowerCase();
-    let passed = false;
-    
-    // Basic heuristics for common problems
-    if (testCase.expectedOutput.trim() === testCase.input.trim()) {
-      // Echo problem
-      passed = codeContent.includes('input') || codeContent.includes('print') || codeContent.includes('cout');
-    } else if (testCase.expectedOutput.includes('Hello')) {
-      // Hello world problem
-      passed = codeContent.includes('hello') || codeContent.includes('Hello');
-    } else {
-      // Random pass rate for demo
-      passed = Math.random() > 0.3;
-    }
-    
-    return {
-      input: testCase.input,
-      expectedOutput: testCase.expectedOutput,
-      actualOutput: passed ? testCase.expectedOutput : 'Mock wrong output',
-      passed,
-      executionTime: Math.floor(Math.random() * 100) + 10,
-      memoryUsed: Math.floor(Math.random() * 1000) + 100,
-      status: passed ? 'Accepted' : 'Wrong Answer'
-    };
-  });
-
-  const passedTestCases = testResults.filter(r => r.passed).length;
-  const totalTestCases = testResults.length;
-  const totalScore = Math.round((passedTestCases / totalTestCases) * 100);
-  
-  let status: 'accepted' | 'wrong_answer' | 'compilation_error' | 'runtime_error' | 'time_limit_exceeded' | 'pending';
-  if (passedTestCases === totalTestCases) {
-    status = 'accepted';
-  } else {
-    status = 'wrong_answer';
-  }
-
-  return {
-    status,
-    testResults,
-    totalScore,
-    executionTime: Math.max(...testResults.map(r => r.executionTime)),
-    memoryUsed: Math.max(...testResults.map(r => r.memoryUsed)),
-    passedTestCases,
-    totalTestCases
-  };
-}
 
 export default router;

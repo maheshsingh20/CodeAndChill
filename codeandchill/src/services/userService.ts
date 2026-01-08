@@ -1,4 +1,5 @@
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api';
+const API_BASE_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+const API_URL = `${API_BASE_URL}/api`;
 
 export class UserService {
   private static getAuthHeaders() {
@@ -11,7 +12,7 @@ export class UserService {
 
   // Get user profile
   static async getProfile() {
-    const response = await fetch(`${API_BASE_URL}/user/profile`, {
+    const response = await fetch(`${API_URL}/user/profile`, {
       headers: this.getAuthHeaders()
     });
     
@@ -23,8 +24,7 @@ export class UserService {
     
     // Convert relative profile picture URL to absolute
     if (result.user?.profilePicture && !result.user.profilePicture.startsWith('http')) {
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      result.user.profilePicture = `${baseUrl}${result.user.profilePicture}`;
+      result.user.profilePicture = `${API_BASE_URL}${result.user.profilePicture}`;
     }
     
     return result;
@@ -32,7 +32,7 @@ export class UserService {
 
   // Get user dashboard data
   static async getProfileDashboard() {
-    const response = await fetch(`${API_BASE_URL}/user/profile-dashboard`, {
+    const response = await fetch(`${API_URL}/user/profile-dashboard`, {
       headers: this.getAuthHeaders()
     });
     
@@ -44,8 +44,7 @@ export class UserService {
     
     // Convert relative profile picture URL to absolute
     if (result.user?.profilePicture && !result.user.profilePicture.startsWith('http')) {
-      const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-      result.user.profilePicture = `${baseUrl}${result.user.profilePicture}`;
+      result.user.profilePicture = `${API_BASE_URL}${result.user.profilePicture}`;
     }
     
     return result;
@@ -53,7 +52,7 @@ export class UserService {
 
   // Update user profile
   static async updateProfile(profileData: any) {
-    const response = await fetch(`${API_BASE_URL}/user/profile`, {
+    const response = await fetch(`${API_URL}/user/profile`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(profileData)
@@ -72,8 +71,7 @@ export class UserService {
     formData.append('profilePicture', file);
 
     const token = localStorage.getItem('authToken');
-    const baseUrl = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-    const response = await fetch(`${API_BASE_URL}/user/profile-picture`, {
+    const response = await fetch(`${API_URL}/user/profile-picture`, {
       method: 'POST',
       headers: {
         'Authorization': `Bearer ${token}`
@@ -89,7 +87,7 @@ export class UserService {
     
     // Convert relative URL to absolute URL
     if (result.profilePicture && !result.profilePicture.startsWith('http')) {
-      result.profilePicture = `${baseUrl}${result.profilePicture}`;
+      result.profilePicture = `${API_BASE_URL}${result.profilePicture}`;
     }
     
     return result;
@@ -97,7 +95,7 @@ export class UserService {
 
   // Update user preferences
   static async updatePreferences(preferences: any) {
-    const response = await fetch(`${API_BASE_URL}/user/preferences`, {
+    const response = await fetch(`${API_URL}/user/preferences`, {
       method: 'PUT',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(preferences)
@@ -118,7 +116,7 @@ export class UserService {
     coursesCompleted?: number;
     streakUpdate?: boolean;
   }) {
-    const response = await fetch(`${API_BASE_URL}/user/update-stats`, {
+    const response = await fetch(`${API_URL}/user/update-stats`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify(stats)
@@ -133,7 +131,7 @@ export class UserService {
 
   // Get user achievements
   static async getAchievements() {
-    const response = await fetch(`${API_BASE_URL}/user/achievements`, {
+    const response = await fetch(`${API_URL}/user/achievements`, {
       headers: this.getAuthHeaders()
     });
     
@@ -146,7 +144,7 @@ export class UserService {
 
   // Change password
   static async changePassword(currentPassword: string, newPassword: string) {
-    const response = await fetch(`${API_BASE_URL}/user/change-password`, {
+    const response = await fetch(`${API_URL}/user/change-password`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify({ currentPassword, newPassword })
@@ -191,13 +189,13 @@ export class UserService {
     if (params?.page) searchParams.append('page', params.page.toString());
     if (params?.limit) searchParams.append('limit', params.limit.toString());
 
-    const response = await fetch(`${API_BASE_URL}/skill-tests?${searchParams}`);
+    const response = await fetch(`${API_URL}/skill-tests?${searchParams}`);
     if (!response.ok) throw new Error('Failed to fetch skill tests');
     return response.json();
   }
 
   static async getSkillTest(testId: string) {
-    const response = await fetch(`${API_BASE_URL}/skill-tests/${testId}`, {
+    const response = await fetch(`${API_URL}/skill-tests/${testId}`, {
       headers: this.getAuthHeaders()
     });
     if (!response.ok) throw new Error('Failed to fetch skill test');
@@ -205,7 +203,7 @@ export class UserService {
   }
 
   static async submitSkillTest(testId: string, answers: any[], timeSpent: number, startedAt: string) {
-    const response = await fetch(`${API_BASE_URL}/skill-tests/${testId}/submit`, {
+    const response = await fetch(`${API_URL}/skill-tests/${testId}/submit`, {
       method: 'POST',
       headers: this.getAuthHeaders(),
       body: JSON.stringify({ answers, timeSpent, startedAt })
@@ -221,7 +219,7 @@ export class UserService {
     if (params?.skill) searchParams.append('skill', params.skill);
     if (params?.passed !== undefined) searchParams.append('passed', params.passed.toString());
 
-    const response = await fetch(`${API_BASE_URL}/skill-tests/attempts/history?${searchParams}`, {
+    const response = await fetch(`${API_URL}/skill-tests/attempts/history?${searchParams}`, {
       headers: this.getAuthHeaders()
     });
     if (!response.ok) throw new Error('Failed to fetch skill test attempts');
@@ -229,7 +227,7 @@ export class UserService {
   }
 
   static async getEarnedSkills() {
-    const response = await fetch(`${API_BASE_URL}/skill-tests/earned/skills`, {
+    const response = await fetch(`${API_URL}/skill-tests/earned/skills`, {
       headers: this.getAuthHeaders()
     });
     if (!response.ok) throw new Error('Failed to fetch earned skills');

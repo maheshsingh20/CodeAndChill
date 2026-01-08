@@ -7,7 +7,7 @@ services:
     container_name: codeandchill-mongodb-prod
     restart: always
     ports:
-      - "27017:27017"
+      - "27018:27017"
     volumes:
       - mongodb_data:/data/db
       - mongodb_config:/data/configdb
@@ -18,7 +18,7 @@ services:
     networks:
       - codeandchill-network
     healthcheck:
-      test: echo 'db.runCommand("ping").ok' | mongosh -u admin -p ${MONGO_ROOT_PASSWORD} localhost:27017/codeandchill --quiet
+      test: echo 'db.runCommand("ping").ok' | mongosh -u admin -p ${MONGO_ROOT_PASSWORD} --authenticationDatabase admin localhost:27017/test --quiet
       interval: 10s
       timeout: 5s
       retries: 5

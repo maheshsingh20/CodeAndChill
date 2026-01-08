@@ -2,18 +2,24 @@ import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { 
-  Play, 
-  Pause, 
-  SkipForward, 
-  SkipBack, 
-  CheckCircle, 
-  X,
+import { Badge } from '@/components/ui/badge';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { LearningPathService } from '@/services/learningPathService';
+import {
+  Play,
+  Pause,
+  SkipForward,
+  SkipBack,
   BookOpen,
-  FileText,
-  Video,
   Code,
-  Clock
+  CheckCircle,
+  Clock,
+  X,
+  Volume2,
+  Maximize,
+  FileText,
+  Award,
+  Target
 } from 'lucide-react';
 
 interface CoursePlayerProps {
@@ -23,506 +29,442 @@ interface CoursePlayerProps {
   onClose: () => void;
 }
 
-interface QuizComponentProps {
-  quiz: any[];
-  quizTitle: string;
-  lessonId: string;
-  onComplete: (score: number, answers: any[]) => void;
+interface Lesson {
+  id: string;
+  title: string;
+  duration: number;
+  videoUrl?: string;
+  content: string;
+  codeExamples?: Array<{
+    language: string;
+    code: string;
+    description: string;
+  }>;
+  quiz?: Array<{
+    question: string;
+    options: string[];
+    correctAnswer: number;
+  }>;
 }
 
-const QuizComponent: React.FC<QuizComponentProps> = ({ quiz, quizTitle, lessonId, onComplete }) => {
-  const [selectedAnswers, setSelectedAnswers] = useState<{ [key: number]: number }>({});
-  const [showResults, setShowResults] = useState(false);
-  const [score, setScore] = useState(0);
-
-  const handleAnswerSelect = (questionIndex: number, optionIndex: number) => {
-    if (!showResults) {
-      setSelectedAnswers({
-        ...selectedAnswers,
-        [questionIndex]: optionIndex
-      });
-    }
-  };
-
-  const handleSubmit = async () => {
-    let correctCount = 0;
-    const answerDetails = quiz.map((q, idx) => ({
-      questionIndex: idx,
-      selectedAnswer: selectedAnswers[idx],
-      correctAnswer: q.correctAnswer,
-      isCorrect: selectedAnswers[idx] === q.correctAnswer
-    }));
-
-    answerDetails.forEach(answer => {
-      if (answer.isCorrect) correctCount++;
-    });
-
-    setScore(correctCount);
-    setShowResults(true);
-    
-    // Auto-complete and move to next lesson after showing results
-    setTimeout(() => {
-      onComplete(correctCount, answerDetails);
-    }, 2000);
-  };
-
-  const handleRetry = () => {
-    setSelectedAnswers({});
-    setShowResults(false);
-    setScore(0);
-  };
-
-  return (
-    <div className="bg-gray-900/50 rounded-lg p-8 min-h-[400px]">
-      <div className="flex items-center justify-between mb-6">
-        <h2 className="text-3xl font-bold text-white">Quiz Time! 🎯</h2>
-        {showResults && (
-          <div className="text-right">
-            <p className="text-2xl font-bold text-white">
-              Score: {score}/{quiz.length}
-            </p>
-            <p className={`text-sm ${score === quiz.length ? 'text-green-400' : score >= quiz.length / 2 ? 'text-yellow-400' : 'text-red-400'}`}>
-              {score === quiz.length ? 'Perfect! 🎉' : score >= quiz.length / 2 ? 'Good job! 👍' : 'Keep practicing! 💪'}
-            </p>
-          </div>
-        )}
-      </div>
-
-      <div className="space-y-6">
-        {quiz.map((q, questionIdx) => {
-          const isAnswered = selectedAnswers[questionIdx] !== undefined;
-          const isCorrect = selectedAnswers[questionIdx] === q.correctAnswer;
-
-          return (
-            <div 
-              key={questionIdx} 
-              className={`bg-gray-800/50 rounded-lg p-6 border-2 transition-all ${
-                showResults 
-                  ? isCorrect 
-                    ? 'border-green-500/50' 
-                    : 'border-red-500/50'
-                  : 'border-gray-700'
-              }`}
-            >
-              <p className="text-white font-semibold text-lg mb-4">
-                {questionIdx + 1}. {q.question}
-              </p>
-              <div className="space-y-3">
-                {q.options.map((option: string, optIdx: number) => {
-                  const isSelected = selectedAnswers[questionIdx] === optIdx;
-                  const isCorrectOption = optIdx === q.correctAnswer;
-                  
-                  let buttonClass = 'w-full text-left p-4 rounded-lg transition-all border-2 ';
-                  
-                  if (showResults) {
-                    if (isCorrectOption) {
-                      buttonClass += 'bg-green-900/30 border-green-500 text-green-300';
-                    } else if (isSelected && !isCorrectOption) {
-                      buttonClass += 'bg-red-900/30 border-red-500 text-red-300';
-                    } else {
-                      buttonClass += 'bg-gray-700/30 border-gray-600 text-gray-400';
-                    }
-                  } else {
-                    if (isSelected) {
-                      buttonClass += 'bg-purple-600 border-purple-500 text-white';
-                    } else {
-                      buttonClass += 'bg-gray-700 border-gray-600 text-gray-300 hover:bg-gray-600 hover:border-gray-500';
-                    }
-                  }
-
-                  return (
-                    <button
-                      key={optIdx}
-                      onClick={() => handleAnswerSelect(questionIdx, optIdx)}
-                      disabled={showResults}
-                      className={buttonClass}
-                    >
-                      <div className="flex items-center gap-3">
-                        <span className="font-bold text-lg">
-                          {String.fromCharCode(65 + optIdx)}.
-                        </span>
-                        <span className="flex-1">{option}</span>
-                        {showResults && isCorrectOption && (
-                          <CheckCircle className="text-green-400" size={20} />
-                        )}
-                        {showResults && isSelected && !isCorrectOption && (
-                          <X className="text-red-400" size={20} />
-                        )}
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <div className="mt-8 flex gap-4">
-        {!showResults ? (
-          <Button
-            onClick={handleSubmit}
-            disabled={Object.keys(selectedAnswers).length !== quiz.length}
-            className="w-full bg-purple-600 hover:bg-purple-700 text-white py-6 text-lg font-semibold"
-          >
-            Submit Quiz
-          </Button>
-        ) : (
-          <>
-            <Button
-              onClick={handleRetry}
-              variant="outline"
-              className="flex-1 border-gray-600 py-6 text-lg"
-            >
-              Retry Quiz
-            </Button>
-            {score === quiz.length && (
-              <Button
-                onClick={() => onComplete(score, Object.values(selectedAnswers))}
-                className="flex-1 bg-green-600 hover:bg-green-700 py-6 text-lg"
-              >
-                <CheckCircle className="mr-2" size={20} />
-                Continue
-              </Button>
-            )}
-          </>
-        )}
-      </div>
-    </div>
-  );
-};
-
-export const CoursePlayer: React.FC<CoursePlayerProps> = ({ 
-  course, 
-  pathId, 
-  onProgressUpdate, 
-  onClose 
+export const CoursePlayer: React.FC<CoursePlayerProps> = ({
+  course,
+  pathId,
+  onProgressUpdate,
+  onClose
 }) => {
-  const [currentLesson, setCurrentLesson] = useState(0);
+  const [currentLessonIndex, setCurrentLessonIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [progress, setProgress] = useState(0);
   const [timeSpent, setTimeSpent] = useState(0);
-  const [courseContent, setCourseContent] = useState<any>(null);
-  const [loading, setLoading] = useState(true);
-  const [completedLessons, setCompletedLessons] = useState<Set<number>>(new Set());
+  const [completedLessons, setCompletedLessons] = useState<Set<string>>(new Set());
+  const [quizAnswers, setQuizAnswers] = useState<{ [key: number]: number }>({});
+  const [showQuizResults, setShowQuizResults] = useState(false);
+  const [quizScore, setQuizScore] = useState(0);
+
+  // Extract lessons from course modules
+  const lessons: Lesson[] = course.courseId?.modules?.flatMap((module: any) =>
+    module.topics?.flatMap((topic: any) =>
+      topic.subtopics?.map((subtopic: any) => ({
+        id: subtopic.id,
+        title: subtopic.title,
+        duration: subtopic.duration || 15,
+        videoUrl: subtopic.videoUrl,
+        content: subtopic.content || '',
+        codeExamples: subtopic.codeExamples || [],
+        quiz: subtopic.quiz || []
+      })) || []
+    ) || []
+  ) || [];
+
+  const currentLesson = lessons[currentLessonIndex];
 
   useEffect(() => {
-    fetchCourseContent();
-  }, [course.courseId._id]);
-
-  const fetchCourseContent = async () => {
-    try {
-      setLoading(true);
-      const { LearningPathService } = await import('@/services/learningPathService');
-      const content = await LearningPathService.getCourseContent(pathId, course.courseId._id);
-      setCourseContent(content);
-    } catch (error) {
-      console.error('Error fetching course content:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  useEffect(() => {
-    let interval: number;
+    let interval: NodeJS.Timeout;
     if (isPlaying) {
       interval = setInterval(() => {
         setTimeSpent(prev => prev + 1);
-        // Auto-progress simulation
-        setProgress(prev => Math.min(prev + 0.5, 100));
-      }, 1000) as unknown as number;
+      }, 1000);
     }
     return () => clearInterval(interval);
   }, [isPlaying]);
 
-  const handleComplete = async () => {
-    // Update progress
-    onProgressUpdate(course.courseId._id, 100, Math.floor(timeSpent / 60));
-    
-    // Generate certificate for completed course
-    try {
-      const { LearningPathService } = await import('@/services/learningPathService');
-      await LearningPathService.generateCourseCertificate(pathId, course.courseId._id);
-      alert('🎉 Congratulations! Course completed and certificate generated!');
-    } catch (error) {
-      console.error('Error generating certificate:', error);
+  useEffect(() => {
+    // Calculate progress based on completed lessons
+    const progressPercentage = (completedLessons.size / lessons.length) * 100;
+    setProgress(progressPercentage);
+
+    // Update progress in parent component
+    if (progressPercentage > 0) {
+      onProgressUpdate(course.courseId._id, progressPercentage, Math.floor(timeSpent / 60));
     }
-    
-    onClose();
+  }, [completedLessons, timeSpent, course.courseId._id, onProgressUpdate]);
+
+  const handleLessonComplete = () => {
+    if (currentLesson) {
+      setCompletedLessons(prev => new Set([...prev, currentLesson.id]));
+
+      // Auto-advance to next lesson
+      if (currentLessonIndex < lessons.length - 1) {
+        setTimeout(() => {
+          setCurrentLessonIndex(prev => prev + 1);
+        }, 1000);
+      }
+    }
   };
 
-  // Extract lessons from course content
-  const lessons = courseContent?.modules?.flatMap((module: any) => 
-    module.topics?.flatMap((topic: any) => 
-      topic.subtopics?.map((subtopic: any) => ({
-        title: subtopic.title,
-        type: subtopic.videoUrl ? 'video' : subtopic.quiz?.length > 0 ? 'quiz' : 'text',
-        duration: subtopic.duration ? `${subtopic.duration}:00` : '10:00',
-        content: subtopic.content,
-        videoUrl: subtopic.videoUrl,
-        quiz: subtopic.quiz,
-        codeExamples: subtopic.codeExamples
-      }))
-    )
-  ) || [];
+  const handleQuizSubmit = () => {
+    if (!currentLesson?.quiz) return;
 
-  if (loading) {
+    let correct = 0;
+    currentLesson.quiz.forEach((question, index) => {
+      if (quizAnswers[index] === question.correctAnswer) {
+        correct++;
+      }
+    });
+
+    const score = Math.round((correct / currentLesson.quiz.length) * 100);
+    setQuizScore(score);
+    setShowQuizResults(true);
+
+    // Mark lesson as complete if quiz passed (70% or higher)
+    if (score >= 70) {
+      handleLessonComplete();
+    }
+  };
+
+  const nextLesson = () => {
+    if (currentLessonIndex < lessons.length - 1) {
+      setCurrentLessonIndex(prev => prev + 1);
+      setQuizAnswers({});
+      setShowQuizResults(false);
+    }
+  };
+
+  const previousLesson = () => {
+    if (currentLessonIndex > 0) {
+      setCurrentLessonIndex(prev => prev - 1);
+      setQuizAnswers({});
+      setShowQuizResults(false);
+    }
+  };
+
+  if (!currentLesson) {
     return (
       <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
         <CardContent className="py-20 text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-b-2 border-purple-500 mx-auto mb-4"></div>
-          <p className="text-gray-400">Loading course content...</p>
+          <BookOpen size={64} className="mx-auto text-gray-600 mb-4" />
+          <h3 className="text-xl font-semibold text-white mb-2">No Lessons Available</h3>
+          <p className="text-gray-400">This course doesn't have any lessons yet.</p>
+          <Button onClick={onClose} className="mt-4">
+            Back to Course Overview
+          </Button>
         </CardContent>
       </Card>
     );
   }
-
-  if (!courseContent || lessons.length === 0) {
-    return (
-      <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
-        <CardContent className="py-20 text-center">
-          <Video size={64} className="mx-auto text-gray-600 mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">No Content Available</h3>
-          <p className="text-gray-400">This course doesn't have any lessons yet</p>
-          <Button onClick={onClose} className="mt-4">Go Back</Button>
-        </CardContent>
-      </Card>
-    );
-  }
-
-  const currentLessonData = lessons[currentLesson];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-4">
-      {/* Main Player */}
-      <div className="lg:col-span-3">
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle className="text-white">{course.courseId.title}</CardTitle>
-            <Button variant="ghost" size="sm" onClick={onClose}>
-              <X size={20} />
-            </Button>
-          </CardHeader>
-          <CardContent className="space-y-6">
-            {/* Dynamic Content Area */}
-            {currentLessonData.type === 'video' && currentLessonData.videoUrl ? (
-              /* Video Player */
-              <div className="aspect-video bg-gray-900 rounded-lg overflow-hidden">
-                <iframe
-                  src={currentLessonData.videoUrl}
-                  className="w-full h-full"
-                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                  allowFullScreen
-                  title={currentLessonData.title}
-                />
+    <div className="space-y-6">
+      {/* Course Header */}
+      <Card className="bg-gradient-to-r from-purple-900/40 to-blue-900/40 border-purple-500/20">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-white text-2xl mb-2">
+                {course.courseId.title}
+              </CardTitle>
+              <div className="flex items-center gap-4 text-sm text-gray-300">
+                <span className="flex items-center gap-1">
+                  <BookOpen size={16} />
+                  Lesson {currentLessonIndex + 1} of {lessons.length}
+                </span>
+                <span className="flex items-center gap-1">
+                  <Clock size={16} />
+                  {Math.floor(timeSpent / 60)}m {timeSpent % 60}s
+                </span>
+                <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">
+                  {Math.round(progress)}% Complete
+                </Badge>
               </div>
-            ) : currentLessonData.type === 'text' ? (
-              /* Text Lesson */
-              <div className="bg-gray-900/50 rounded-lg p-8 min-h-[400px]">
-                <h2 className="text-3xl font-bold text-white mb-6">{currentLessonData.title}</h2>
-                <div className="prose prose-invert prose-lg max-w-none">
-                  <div 
-                    dangerouslySetInnerHTML={{ __html: currentLessonData.content }} 
-                    className="text-gray-300 leading-relaxed"
+            </div>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={onClose}
+              className="border-gray-600 text-gray-400 hover:bg-gray-700"
+            >
+              <X size={16} />
+            </Button>
+          </div>
+
+          {/* Progress Bar */}
+          <div className="mt-4">
+            <Progress value={progress} className="h-2" />
+          </div>
+        </CardHeader>
+      </Card>
+
+      {/* Main Content */}
+      <div className="grid gap-6 lg:grid-cols-4">
+        {/* Lesson Content */}
+        <div className="lg:col-span-3 space-y-6">
+          {/* Video Player (if video available) */}
+          {currentLesson.videoUrl && (
+            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+              <CardContent className="p-0">
+                <div className="aspect-video bg-black rounded-lg overflow-hidden">
+                  <iframe
+                    src={currentLesson.videoUrl}
+                    title={currentLesson.title}
+                    className="w-full h-full"
+                    allowFullScreen
                   />
                 </div>
-                
-                {currentLessonData.codeExamples && currentLessonData.codeExamples.length > 0 && (
-                  <div className="mt-8 space-y-6">
-                    <h3 className="text-2xl font-bold text-white border-b border-gray-700 pb-2">
-                      Code Examples
-                    </h3>
-                    {currentLessonData.codeExamples.map((example: any, idx: number) => (
-                      <div key={idx} className="bg-gray-800/50 rounded-lg p-6 border border-gray-700">
-                        <div className="flex items-center justify-between mb-3">
-                          <p className="text-gray-400 font-medium">{example.description}</p>
-                          <span className="text-xs bg-purple-600 px-3 py-1 rounded-full text-white">
-                            {example.language}
-                          </span>
-                        </div>
-                        <pre className="bg-gray-950 p-4 rounded-lg overflow-x-auto border border-gray-800">
-                          <code className="text-sm text-green-400 font-mono">{example.code}</code>
+
+                {/* Video Controls */}
+                <div className="p-4 bg-gray-900/50">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      <Button
+                        size="sm"
+                        onClick={() => setIsPlaying(!isPlaying)}
+                        className="bg-purple-600 hover:bg-purple-700"
+                      >
+                        {isPlaying ? <Pause size={16} /> : <Play size={16} />}
+                      </Button>
+                      <span className="text-white font-medium">{currentLesson.title}</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Volume2 size={16} className="text-gray-400" />
+                      <Maximize size={16} className="text-gray-400" />
+                    </div>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Lesson Content */}
+          <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white flex items-center gap-2">
+                <FileText size={20} />
+                {currentLesson.title}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div
+                className="prose prose-invert max-w-none"
+                dangerouslySetInnerHTML={{ __html: currentLesson.content }}
+              />
+            </CardContent>
+          </Card>
+
+          {/* Code Examples */}
+          {currentLesson.codeExamples && currentLesson.codeExamples.length > 0 && (
+            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Code size={20} />
+                  Code Examples
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <Tabs defaultValue="0" className="w-full">
+                  <TabsList className="bg-gray-700/50">
+                    {currentLesson.codeExamples.map((example, index) => (
+                      <TabsTrigger key={index} value={index.toString()}>
+                        {example.language}
+                      </TabsTrigger>
+                    ))}
+                  </TabsList>
+                  {currentLesson.codeExamples.map((example, index) => (
+                    <TabsContent key={index} value={index.toString()}>
+                      <div className="space-y-3">
+                        <p className="text-gray-300 text-sm">{example.description}</p>
+                        <pre className="bg-gray-900 p-4 rounded-lg overflow-x-auto">
+                          <code className="text-green-400 text-sm">{example.code}</code>
                         </pre>
                       </div>
+                    </TabsContent>
+                  ))}
+                </Tabs>
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Quiz */}
+          {currentLesson.quiz && currentLesson.quiz.length > 0 && (
+            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+              <CardHeader>
+                <CardTitle className="text-white flex items-center gap-2">
+                  <Award size={20} />
+                  Knowledge Check
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                {!showQuizResults ? (
+                  <div className="space-y-6">
+                    {currentLesson.quiz.map((question, qIndex) => (
+                      <div key={qIndex} className="space-y-3">
+                        <h4 className="text-white font-medium">
+                          {qIndex + 1}. {question.question}
+                        </h4>
+                        <div className="space-y-2">
+                          {question.options.map((option, oIndex) => (
+                            <label
+                              key={oIndex}
+                              className="flex items-center gap-3 p-3 rounded-lg border border-gray-600 hover:border-purple-500/50 cursor-pointer transition-colors"
+                            >
+                              <input
+                                type="radio"
+                                name={`question-${qIndex}`}
+                                value={oIndex}
+                                onChange={() => setQuizAnswers(prev => ({ ...prev, [qIndex]: oIndex }))}
+                                className="text-purple-600"
+                              />
+                              <span className="text-gray-300">{option}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
                     ))}
+                    <Button
+                      onClick={handleQuizSubmit}
+                      disabled={Object.keys(quizAnswers).length !== currentLesson.quiz.length}
+                      className="bg-purple-600 hover:bg-purple-700"
+                    >
+                      Submit Quiz
+                    </Button>
+                  </div>
+                ) : (
+                  <div className="text-center space-y-4">
+                    <div className={`text-6xl ${quizScore >= 70 ? 'text-green-400' : 'text-red-400'}`}>
+                      {quizScore >= 70 ? '🎉' : '📚'}
+                    </div>
+                    <h3 className={`text-2xl font-bold ${quizScore >= 70 ? 'text-green-400' : 'text-red-400'}`}>
+                      {quizScore}% Score
+                    </h3>
+                    <p className="text-gray-300">
+                      {quizScore >= 70
+                        ? 'Great job! You can proceed to the next lesson.'
+                        : 'Keep studying! Review the content and try again.'}
+                    </p>
+                    {quizScore >= 70 && (
+                      <div className="flex items-center justify-center gap-2 text-green-400">
+                        <CheckCircle size={20} />
+                        <span>Lesson Completed!</span>
+                      </div>
+                    )}
                   </div>
                 )}
-              </div>
-            ) : currentLessonData.type === 'quiz' && currentLessonData.quiz ? (
-              /* Interactive Quiz */
-              <QuizComponent 
-                quiz={currentLessonData.quiz}
-                quizTitle={currentLessonData.title}
-                lessonId={currentLessonData.id || `lesson-${currentLesson}`}
-                onComplete={async (correctCount, answerDetails) => {
-                  // Save quiz result to backend
-                  try {
-                    const { LearningPathService } = await import('@/services/learningPathService');
-                    await LearningPathService.submitQuizResult(
-                      pathId,
-                      course.courseId._id,
-                      currentLessonData.id || `lesson-${currentLesson}`,
-                      currentLessonData.title,
-                      currentLessonData.quiz.length,
-                      correctCount,
-                      answerDetails,
-                      timeSpent
-                    );
-                  } catch (error) {
-                    console.error('Error saving quiz result:', error);
-                  }
+              </CardContent>
+            </Card>
+          )}
 
-                  // Mark lesson as completed
-                  setCompletedLessons(prev => new Set([...prev, currentLesson]));
-                  
-                  // Auto-advance to next lesson
-                  if (currentLesson < lessons.length - 1) {
-                    setTimeout(() => {
-                      setCurrentLesson(currentLesson + 1);
-                    }, 2500);
-                  }
-                }}
-              />
-            ) : (
-              /* Fallback */
-              <div className="aspect-video bg-gray-900 rounded-lg flex items-center justify-center">
-                <div className="text-center">
-                  <FileText size={64} className="mx-auto text-gray-600 mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    {currentLessonData.title}
-                  </h3>
-                  <p className="text-gray-400">
-                    Lesson {currentLesson + 1} of {lessons.length}
-                  </p>
-                </div>
-              </div>
+          {/* Navigation */}
+          <div className="flex items-center justify-between">
+            <Button
+              variant="outline"
+              onClick={previousLesson}
+              disabled={currentLessonIndex === 0}
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              <SkipBack size={16} className="mr-2" />
+              Previous Lesson
+            </Button>
+
+            {!currentLesson.quiz && (
+              <Button
+                onClick={handleLessonComplete}
+                className="bg-green-600 hover:bg-green-700"
+              >
+                <CheckCircle size={16} className="mr-2" />
+                Mark Complete
+              </Button>
             )}
 
-            {/* Navigation Controls */}
-            <div className="space-y-4">
-              <div className="flex items-center gap-2">
-                <span className="text-sm text-gray-400">
-                  Lesson {currentLesson + 1} of {lessons.length}
-                </span>
-                <Progress value={(completedLessons.size / lessons.length) * 100} className="flex-1" />
-                <span className="text-sm text-gray-400">
-                  {Math.round((completedLessons.size / lessons.length) * 100)}% Complete
-                </span>
-              </div>
+            <Button
+              variant="outline"
+              onClick={nextLesson}
+              disabled={currentLessonIndex === lessons.length - 1}
+              className="border-gray-600 text-gray-300 hover:bg-gray-700"
+            >
+              Next Lesson
+              <SkipForward size={16} className="ml-2" />
+            </Button>
+          </div>
+        </div>
 
-              <div className="flex items-center justify-between gap-4">
-                <Button
-                  variant="outline"
-                  onClick={() => setCurrentLesson(Math.max(0, currentLesson - 1))}
-                  disabled={currentLesson === 0}
-                  className="border-gray-600 flex-1"
-                >
-                  <SkipBack size={16} className="mr-2" />
-                  Previous
-                </Button>
-                
-                {!completedLessons.has(currentLesson) && currentLessonData.type !== 'quiz' && (
-                  <Button
-                    onClick={() => {
-                      setCompletedLessons(prev => new Set([...prev, currentLesson]));
-                      if (currentLesson < lessons.length - 1) {
-                        setTimeout(() => setCurrentLesson(currentLesson + 1), 500);
-                      }
-                    }}
-                    className="bg-green-600 hover:bg-green-700 flex-1"
-                  >
-                    <CheckCircle size={16} className="mr-2" />
-                    Mark Complete
-                  </Button>
-                )}
-                
-                {currentLesson === lessons.length - 1 && completedLessons.size === lessons.length ? (
-                  <Button
-                    onClick={handleComplete}
-                    className="bg-green-600 hover:bg-green-700 flex-1"
-                  >
-                    <CheckCircle size={16} className="mr-2" />
-                    Complete Course
-                  </Button>
-                ) : (
-                  <Button
-                    onClick={() => setCurrentLesson(Math.min(lessons.length - 1, currentLesson + 1))}
-                    className="bg-purple-600 hover:bg-purple-700 flex-1"
-                    disabled={currentLesson === lessons.length - 1}
-                  >
-                    Next
-                    <SkipForward size={16} className="ml-2" />
-                  </Button>
-                )}
-              </div>
-            </div>
-
-            {/* Content Description */}
-            <div className="bg-gray-900/50 rounded-lg p-6">
-              <h4 className="text-white font-semibold mb-2">About this lesson</h4>
-              <p className="text-gray-400 text-sm">
-                {course.courseId.description}
-              </p>
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Lesson List */}
-      <div className="lg:col-span-1">
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-white text-lg">Course Content</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2">
-            {lessons.map((lesson, index) => {
-              const isCompleted = completedLessons.has(index);
-              const isCurrent = currentLesson === index;
-              
-              return (
+        {/* Sidebar */}
+        <div className="space-y-6">
+          {/* Lesson List */}
+          <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-lg">Course Content</CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-2">
+              {lessons.map((lesson, index) => (
                 <button
-                  key={index}
-                  onClick={() => setCurrentLesson(index)}
-                  className={`w-full text-left p-3 rounded-lg transition-all relative ${
-                    isCurrent
-                      ? 'bg-purple-600 text-white'
-                      : isCompleted
-                        ? 'bg-green-900/30 text-green-300 border border-green-500/30'
-                        : 'bg-gray-700/30 text-gray-300 hover:bg-gray-700/50'
-                  }`}
+                  key={lesson.id}
+                  onClick={() => setCurrentLessonIndex(index)}
+                  className={`w-full text-left p-3 rounded-lg border transition-all ${index === currentLessonIndex
+                      ? 'border-purple-500 bg-purple-500/20'
+                      : 'border-gray-600 hover:border-gray-500'
+                    }`}
                 >
-                  <div className="flex items-center gap-3">
-                    <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                      isCurrent 
-                        ? 'bg-white/20' 
-                        : isCompleted 
-                          ? 'bg-green-600' 
-                          : 'bg-gray-600'
-                    }`}>
-                      {isCompleted ? (
-                        <CheckCircle size={14} />
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                      {completedLessons.has(lesson.id) ? (
+                        <CheckCircle size={16} className="text-green-400" />
                       ) : (
-                        <>
-                          {lesson.type === 'video' && <Video size={14} />}
-                          {lesson.type === 'text' && <FileText size={14} />}
-                          {lesson.type === 'code' && <Code size={14} />}
-                          {lesson.type === 'quiz' && <BookOpen size={14} />}
-                        </>
+                        <div className={`w-4 h-4 rounded-full border-2 ${index === currentLessonIndex ? 'border-purple-400' : 'border-gray-500'
+                          }`} />
                       )}
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-medium text-sm">{lesson.title}</p>
-                      <p className="text-xs opacity-70 flex items-center gap-1">
-                        <Clock size={10} />
-                        {lesson.duration}
-                      </p>
+                      <div>
+                        <p className={`font-medium ${index === currentLessonIndex ? 'text-purple-300' : 'text-white'
+                          }`}>
+                          {lesson.title}
+                        </p>
+                        <p className="text-gray-400 text-sm">{lesson.duration}min</p>
+                      </div>
                     </div>
                   </div>
                 </button>
-              );
-            })}
-          </CardContent>
-        </Card>
+              ))}
+            </CardContent>
+          </Card>
+
+          {/* Progress Summary */}
+          <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+            <CardHeader>
+              <CardTitle className="text-white text-lg flex items-center gap-2">
+                <Target size={18} />
+                Progress
+              </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="text-center">
+                <div className="text-3xl font-bold text-purple-400 mb-1">
+                  {Math.round(progress)}%
+                </div>
+                <p className="text-gray-400 text-sm">Course Completion</p>
+              </div>
+
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between text-gray-300">
+                  <span>Lessons Completed:</span>
+                  <span>{completedLessons.size}/{lessons.length}</span>
+                </div>
+                <div className="flex justify-between text-gray-300">
+                  <span>Time Spent:</span>
+                  <span>{Math.floor(timeSpent / 60)}m {timeSpent % 60}s</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
       </div>
     </div>
   );

@@ -34,7 +34,7 @@ import { NotificationDropdown } from "@/components/notifications/NotificationDro
 export function Navbar({ logout }) {
   const navigate = useNavigate();
   const { user } = useUser();
-  
+
   const handleLogout = () => {
     logout();
     navigate("/");
@@ -49,22 +49,35 @@ export function Navbar({ logout }) {
   ];
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b border-gray-800 bg-gradient-to-r from-gray-950 via-gray-900 to-black text-gray-100 shadow-lg">
+    <header className="sticky top-0 z-50 w-full border-b border-gray-700/30 backdrop-blur-md bg-black/80">
       <div className="container flex h-20 items-center justify-between px-6">
         <div className="flex items-center gap-10">
-          <Link to="/dashboard" className="flex items-center gap-3 group">
-            <Code className="h-8 w-8 text-purple-400 group-hover:rotate-12 transition-transform" />
-            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent">
+          <Link to="/dashboard" className="flex items-center gap-3 group relative">
+            <div className="relative">
+              <Code className="h-8 w-8 text-purple-400 group-hover:rotate-12 group-hover:scale-110 transition-all duration-300" />
+              {/* Glow effect on hover */}
+              <div className="absolute inset-0 h-8 w-8 bg-purple-400/20 rounded-full blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            </div>
+            <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text text-transparent group-hover:from-purple-300 group-hover:via-pink-400 group-hover:to-purple-500 transition-all duration-300">
               Code & Chill
             </span>
+            {/* Subtle background glow */}
+            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
           </Link>
           <NavigationMenu className="hidden lg:flex">
-            <NavigationMenuList>
+            <NavigationMenuList className="flex items-center gap-2">
               {navLinks.map((link) => (
                 <NavigationMenuItem key={link.text}>
-                  <Link to={link.href}>
-                    <NavigationMenuLink className="bg-transparent text-gray-300 font-medium opacity-80 transition hover:opacity-100 hover:text-purple-400 px-3 py-2">
-                      {link.text}
+                  <Link to={link.href} className="group relative">
+                    <NavigationMenuLink className="flex items-center gap-2 px-4 py-2 text-gray-300 font-medium transition-all duration-300 hover:text-white rounded-lg hover:bg-gray-800/50">
+                      <span className="text-gray-400 group-hover:text-purple-400 transition-colors duration-300">
+                        {link.icon}
+                      </span>
+                      <span className="relative">
+                        {link.text}
+                        {/* Animated underline - hidden by default, only shows on hover */}
+                        <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-pink-500 transition-all duration-300 group-hover:w-full opacity-0 group-hover:opacity-100"></span>
+                      </span>
                     </NavigationMenuLink>
                   </Link>
                 </NavigationMenuItem>
@@ -76,20 +89,28 @@ export function Navbar({ logout }) {
           <div className="hidden md:block">
             <SearchBox />
           </div>
-          <NotificationDropdown />
+
+          {/* Enhanced Notification Button */}
+          <div className="relative">
+            <NotificationDropdown />
+          </div>
+
+          {/* Enhanced Avatar */}
           <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="ghost" size="icon" className="rounded-full">
-                <Avatar className="h-10 w-10 border-2 border-purple-500/40">
+              <Button variant="ghost" size="icon" className="rounded-full group relative">
+                <Avatar className="h-10 w-10 border-2 border-purple-500/40 group-hover:border-purple-400/60 transition-all duration-300 group-hover:scale-105">
                   <AvatarImage
                     src={user?.profilePicture || "https://github.com/shadcn.png"}
                     alt="User Avatar"
                     key={user?.profilePicture || 'default'}
                   />
-                  <AvatarFallback>
+                  <AvatarFallback className="bg-gradient-to-br from-purple-500/20 to-pink-500/20 text-purple-300">
                     {user ? user.name.slice(0, 2).toUpperCase() : <User className="text-gray-400" />}
                   </AvatarFallback>
                 </Avatar>
+                {/* Glow effect */}
+                <div className="absolute inset-0 rounded-full bg-purple-400/20 blur-md opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
               </Button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
@@ -196,9 +217,18 @@ export function Navbar({ logout }) {
                       <Link
                         key={link.text}
                         to={link.href}
-                        className="flex items-center gap-4 rounded-lg px-3 py-3 opacity-80 transition-all hover:opacity-100 hover:bg-gray-800 hover:text-purple-400"
+                        className="group flex items-center gap-4 rounded-lg px-4 py-3 transition-all duration-300 hover:bg-gray-800/80 hover:text-purple-400 relative overflow-hidden"
                       >
-                        {link.text}
+                        <span className="text-gray-400 group-hover:text-purple-400 transition-colors duration-300 group-hover:scale-110">
+                          {link.icon}
+                        </span>
+                        <span className="relative">
+                          {link.text}
+                          {/* Mobile underline effect - hidden by default, only shows on hover */}
+                          <span className="absolute -bottom-1 left-0 w-0 h-0.5 bg-gradient-to-r from-purple-400 to-pink-500 transition-all duration-300 group-hover:w-full opacity-0 group-hover:opacity-100"></span>
+                        </span>
+                        {/* Background slide effect */}
+                        <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 to-pink-500/10 translate-x-[-100%] group-hover:translate-x-0 transition-transform duration-300 -z-10"></div>
                       </Link>
                     ))}
                   </nav>

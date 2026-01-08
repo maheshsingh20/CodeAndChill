@@ -1,2 +1,0 @@
-Testing CI/CD Pipeline
-This file will trigger the GitHub Actions workflow.
