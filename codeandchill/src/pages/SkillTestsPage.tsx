@@ -5,6 +5,10 @@ import { useActivityTracking } from '@/hooks/useActivityTracking';
 export const SkillTestsPage: React.FC = () => {
   // Track skill testing activity
   useActivityTracking('skill_testing');
-  
-  return <SkillTestList />;
+
+  return (
+    <div className="w-full min-h-screen bg-black">
+      <SkillTestList />
+    </div>
+  );
 };

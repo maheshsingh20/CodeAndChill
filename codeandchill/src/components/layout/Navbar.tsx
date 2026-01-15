@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { Code, Menu, Sparkles, Zap } from "lucide-react";
+import { Code, Menu, Sparkles, Zap, Users } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import { NavMenu } from "./NavMenu";
@@ -21,7 +21,7 @@ export function Navbar() {
               Code & Chill
             </span>
           </Link>
-          
+
           <div className="hidden md:flex">
             <NavMenu />
           </div>
@@ -31,7 +31,7 @@ export function Navbar() {
         <div className="flex items-center gap-4">
           {/* Live Notifications */}
           <LiveNotifications />
-          
+
           {/* Desktop Auth Buttons */}
           <div className="hidden md:flex items-center gap-3">
             <Button
@@ -84,7 +84,7 @@ export function Navbar() {
                     </Link>
                   </SheetTitle>
                 </SheetHeader>
-                
+
                 <div className="p-6 space-y-6">
                   {/* Mobile Navigation */}
                   <nav className="space-y-2">
@@ -94,6 +94,13 @@ export function Navbar() {
                     >
                       <Code className="w-4 h-4" />
                       Courses
+                    </Link>
+                    <Link
+                      to="/careers"
+                      className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 hover:text-purple-400 hover:bg-gray-800 transition-all duration-200 font-medium"
+                    >
+                      <Users className="w-4 h-4" />
+                      Careers
                     </Link>
                     <Link
                       to="/about"
@@ -110,7 +117,7 @@ export function Navbar() {
                       Contact
                     </Link>
                   </nav>
-                  
+
                   {/* Mobile Auth Buttons */}
                   <div className="space-y-3 pt-4 border-t border-gray-800">
                     <Button

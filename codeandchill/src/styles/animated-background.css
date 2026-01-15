@@ -1,0 +1,131 @@
+/* Animated Background Styles */
+@keyframes backgroundShift {
+
+  0%,
+  100% {
+    background-position: 0% 0%, 0% 0%, 100% 100%, 100% 0%, 0% 100%;
+  }
+
+  25% {
+    background-position: 0% 0%, 25% 25%, 75% 75%, 75% 25%, 25% 75%;
+  }
+
+  50% {
+    background-position: 0% 0%, 50% 50%, 50% 50%, 50% 50%, 50% 50%;
+  }
+
+  75% {
+    background-position: 0% 0%, 75% 75%, 25% 25%, 25% 75%, 75% 25%;
+  }
+}
+
+@keyframes dotPulse {
+
+  0%,
+  100% {
+    opacity: 0.1;
+    transform: scale(1);
+  }
+
+  50% {
+    opacity: 0.3;
+    transform: scale(1.05);
+  }
+}
+
+@keyframes gridFloat {
+
+  0%,
+  100% {
+    transform: translate(0, 0);
+  }
+
+  33% {
+    transform: translate(10px, -10px);
+  }
+
+  66% {
+    transform: translate(-10px, 10px);
+  }
+}
+
+@keyframes glowPulse {
+
+  0%,
+  100% {
+    box-shadow: 0 0 20px rgba(120, 119, 198, 0.1);
+  }
+
+  50% {
+    box-shadow: 0 0 40px rgba(120, 119, 198, 0.2);
+  }
+}
+
+/* Enhanced dotted grid pattern */
+.dotted-grid-bg {
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 255, 255, 0.15) 1px, transparent 0);
+  background-size: 30px 30px;
+  animation: gridFloat 8s ease-in-out infinite;
+}
+
+.dotted-grid-bg::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(120, 119, 198, 0.1) 1px, transparent 0);
+  background-size: 60px 60px;
+  animation: gridFloat 12s ease-in-out infinite reverse;
+}
+
+.dotted-grid-bg::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 1px 1px, rgba(255, 119, 198, 0.08) 1px, transparent 0);
+  background-size: 90px 90px;
+  animation: gridFloat 16s ease-in-out infinite;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  .dotted-grid-bg {
+    background-size: 20px 20px;
+  }
+
+  .dotted-grid-bg::before {
+    background-size: 40px 40px;
+  }
+
+  .dotted-grid-bg::after {
+    background-size: 60px 60px;
+  }
+}
+
+/* Performance optimization for reduced motion */
+@media (prefers-reduced-motion: reduce) {
+
+  .dotted-grid-bg,
+  .dotted-grid-bg::before,
+  .dotted-grid-bg::after {
+    animation: none;
+  }
+
+  @keyframes backgroundShift {
+
+    0%,
+    100% {
+      background-position: 0% 0%;
+    }
+  }
+
+  @keyframes dotPulse {
+
+    0%,
+    100% {
+      opacity: 0.2;
+    }
+  }
+}

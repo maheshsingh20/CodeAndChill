@@ -1,4 +1,4 @@
-import React, { JSX, useState, useEffect } from "react";
+import { JSX, useState, useEffect } from "react";
 import {
   BrowserRouter as Router,
   Route,
@@ -8,6 +8,17 @@ import {
 
 // Import NoirSystem
 import { initNoirAccentSystem } from "./utils/noir-accent";
+
+// import { FloatingParticles } from "./components/ui/FloatingParticles";
+// Import Background Components (commented out - animations disabled to prevent auto-refresh)
+// import { AnimatedBackground, StaticDottedBackground } from "./components/ui/AnimatedBackground";
+// import { AdminBackground } from "./components/ui/AdminBackground";
+// import { usePerformanceMode } from "./hooks/usePerformanceMode";
+import { SmoothScroll } from "./components/ui/SmoothScroll";
+import { PageTransition } from "./components/ui/PageTransition";
+
+// Import background styles
+import "./styles/animated-background.css";
 
 // Import all pages using barrel exports
 import {
@@ -29,6 +40,7 @@ import {
   BlogPage,
   BlogDetailPage,
   PlaygroundPage,
+  ProblemSolverPage,
   ProblemSetsPage,
   ProblemSetDetailPage,
   SolveProblemPage,
@@ -43,13 +55,24 @@ import {
   SkillTestsPage,
   SkillTestTakingPage,
   CertificatesPage,
+  CareersPage,
+  JobDetailPage,
+  MyApplicationsPage,
+  AboutPage,
+  ChatPage,
 } from "./pages";
+
+// Import new learning path pages
+import { LearningPathCategoriesPage } from "./pages/LearningPathCategoriesPage";
+import { LearningPathSearchPage } from "./pages/LearningPathSearchPage";
+import { LearningPathLeaderboardPage } from "./pages/LearningPathLeaderboardPage";
+import { LearningPathStudioPage } from "./pages/LearningPathStudioPage";
+import { LearningPathAnalyticsPage } from "./pages/LearningPathAnalyticsPage";
 
 import { RealContestDetailPage } from "./pages/RealContestDetailPage";
 
 import { EnhancedCourseDetailPage } from "./pages/EnhancedCourseDetailPage";
 
-import { CollaborativePage } from "./pages/CollaborativePage";
 import { performAppCleanup } from "@/utils/cleanup";
 import { AdminLoginPage } from "./pages/admin/AdminLoginPage";
 import { AdminDashboard } from "./pages/admin/AdminDashboard";
@@ -59,15 +82,15 @@ import { AdminProblemsPage } from "./pages/admin/AdminProblemsPage";
 import { AdminQuizzesPage } from "./pages/admin/AdminQuizzesPage";
 import { AdminContestsPage } from "./pages/admin/AdminContestsPage";
 import { AdminContestFormPage } from "./pages/admin/AdminContestFormPage";
+import { AdminJobApplicationsPage } from "./pages/admin/AdminJobApplicationsPage";
 
 import { ShadcnShowcasePage } from "./pages/ShadcnShowcasePage";
 import { CardShowcase } from "./components/showcase/CardShowcase";
 import { RealTimeTest } from "./components/test/RealTimeTest";
-import { CollaborativeTest } from "./components/test/CollaborativeTest";
-import { SimpleCollaborativeTest } from "./components/test/SimpleCollaborativeTest";
-import { DebugCollaborativeTest } from "./components/test/DebugCollaborativeTest";
-import { CollaborativeSystemTest } from "./components/test/CollaborativeSystemTest";
-import { AuthDiagnostic } from "./components/test/AuthDiagnostic";
+import { AnimationShowcase } from "./components/demo/AnimationShowcase";
+
+// OAuth Callback Component
+import { OAuthCallback } from "./components/auth/OAuthCallback";
 
 // Layout components
 import { Navbar as PublicNavbar } from "./components/layout/Navbar";
@@ -82,8 +105,13 @@ import { UserProvider } from "./contexts/UserContext";
 // Constants
 import { STORAGE_KEYS } from "./constants";
 
+import { CardSamples } from "./components/showcase/CardSamples";
+
 // Import Activity Tracker
 import { ActivityTracker } from "./components/activity/ActivityTracker";
+
+// Import Platform Assistant Widget
+import { PlatformAssistantWidget } from "./components/platform-assistant/PlatformAssistantWidget";
 
 // Import PWA components
 import { PWAInstallPrompt } from "./components/pwa/PWAInstallPrompt";
@@ -92,6 +120,7 @@ import "./utils/pwa"; // Initialize PWA manager
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [authChecked, setAuthChecked] = useState(false);
+  // const { isHighPerformance } = usePerformanceMode(); // Disabled - animations turned off
 
   // Validate authentication on mount
   useEffect(() => {
@@ -109,7 +138,7 @@ function App() {
       // Validate token with backend
       try {
         const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
-        const response = await fetch(`${API_URL}/api/user/profile`, {
+        const response = await fetch(`${API_URL}/user/profile`, {
           method: 'GET',
           headers: {
             'Content-Type': 'application/json',
@@ -202,7 +231,7 @@ function App() {
   // Show loading screen while checking authentication
   if (!authChecked) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-950 via-gray-900 to-black">
+      <div className="min-h-screen flex items-center justify-center bg-black">
         <div className="text-center">
           <div className="w-16 h-16 border-4 border-purple-500/30 border-t-purple-500 rounded-full animate-spin mx-auto mb-4"></div>
           <p className="text-slate-400 text-lg">Verifying authentication...</p>
@@ -214,262 +243,310 @@ function App() {
   return (
     <Router>
       <UserProvider>
-        {/* <AuthDebug /> */}
-        {!isAdminRoute && <ActivityTracker isAuthenticated={isAuthenticated} />}
-        <div className="min-h-screen flex flex-col bg-gradient-to-br from-black via-gray-900 to-black">
-          {/* Consistent Dark Background with subtle animated orbs */}
-          {!isAdminRoute && (
-            <div className="fixed inset-0 -z-10">
-              <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-gray-500/3 rounded-full blur-3xl animate-pulse" />
-              <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-gray-600/3 rounded-full blur-3xl animate-pulse delay-1000" />
-            </div>
-          )}
+        <SmoothScroll>
+          {/* <AuthDebug /> */}
+          {!isAdminRoute && <ActivityTracker isAuthenticated={isAuthenticated} />}
 
-          {/* Navbar - Hide for admin routes */}
-          {!isAdminRoute && (
-            <>
-              {isAuthenticated ? (
-                <DashboardNavbar logout={logout} />
-              ) : (
-                <PublicNavbar />
-              )}
-            </>
-          )}
+          {/* {isAdminRoute ? (
+            <AdminBackground />
+          ) : isHighPerformance ? (
+            <AnimatedBackground />
+          ) : (
+            <StaticDottedBackground />
+          )} */}
 
-          {/* Main content */}
-          <main className="flex-grow relative">
-            <Routes>
-              {/* Public Routes */}
-              <Route
-                path="/"
-                element={
-                  !isAuthenticated ? (
-                    <LandingPage />
-                  ) : (
-                    <Navigate to="/dashboard" />
-                  )
-                }
-              />
-              <Route
-                path="/auth"
-                element={
-                  !isAuthenticated ? (
-                    <AuthPage login={login} />
-                  ) : (
-                    <Navigate to="/dashboard" />
-                  )
-                }
-              />
-              {/* Protected Routes */}
-              <Route
-                path="/dashboard"
-                element={<PrivateRoute element={<HomePage />} />}
-              />
-              <Route
-                path="/courses"
-                element={<PrivateRoute element={<CoursesPage />} />}
-              />
-              <Route
-                path="/courses/:slug"
-                element={<PrivateRoute element={<CourseDetailPage />} />}
-              />
-              <Route
-                path="/learn/:courseId"
-                element={<PrivateRoute element={<CoursePlayerPage />} />}
-              />
-              <Route
-                path="/paths"
-                element={<PrivateRoute element={<LearningPathsPage />} />}
-              />
-              <Route
-                path="/paths/:pathId"
-                element={<PrivateRoute element={<PathDetailPage />} />}
-              />
-              <Route
-                path="/learning-paths"
-                element={<PrivateRoute element={<LearningPathsPage />} />}
-              />
-              <Route
-                path="/learning-paths/:pathId"
-                element={<PrivateRoute element={<LearningPathDetailPage />} />}
-              />
-              <Route
-                path="/contests"
-                element={<PrivateRoute element={<ContestsPage />} />}
-              />
-              <Route
-                path="/contests/:contestId"
-                element={<PrivateRoute element={<RealContestDetailPage />} />}
-              />
-              <Route
-                path="/contests/:contestId/compete"
-                element={<PrivateRoute element={<ContestCompetePage />} />}
-              />
-              <Route
-                path="/success-stories"
-                element={<PrivateRoute element={<SuccessStoriesPage />} />}
-              />{" "}
-              <Route
-                path="/profile"
-                element={<PrivateRoute element={<ProfilePage />} />}
-              />
-              <Route
-                path="/ai"
-                element={<PrivateRoute element={<AiAssistantPage />} />}
-              />
-              <Route
-                path="/blogpage"
-                element={<PrivateRoute element={<BlogPage />} />}
-              />
-              <Route
-                path="/blogdesc"
-                element={<PrivateRoute element={<BlogDetailPage />} />}
-              />
-              <Route
-                path="/engineering-courses"
-                element={<PrivateRoute element={<GeneralCoursesPage />} />}
-              />
-              <Route
-                path="engineering-courses/:courseId"
-                element={
-                  <PrivateRoute element={<EnhancedCourseDetailPage />} />
-                }
-              />
-              <Route
-                path="/playground"
-                element={<PrivateRoute element={<PlaygroundPage />} />}
-              />
-              <Route
-                path="/problems"
-                element={<PrivateRoute element={<ProblemSetsPage />} />}
-              />
-              <Route
-                path="/problems/:setId"
-                element={<PrivateRoute element={<ProblemSetDetailPage />} />}
-              />
-              <Route
-                path="/solve/:problemId"
-                element={<PrivateRoute element={<SolveProblemPage />} />}
-              />
-              <Route
-                path="/quiz-system"
-                element={<PrivateRoute element={<QuizPage />} />}
-              />
-              <Route
-                path="/user-dashboard"
-                element={<PrivateRoute element={<DashboardPage />} />}
-              />
-              <Route
-                path="/forum"
-                element={<PrivateRoute element={<ForumPage />} />}
-              />
-              <Route
-                path="/skill-tests"
-                element={<PrivateRoute element={<SkillTestsPage />} />}
-              />
-              <Route
-                path="/skill-test/:testId"
-                element={<PrivateRoute element={<SkillTestTakingPage />} />}
-              />
-              <Route
-                path="/certificates"
-                element={<PrivateRoute element={<CertificatesPage />} />}
-              />
-              <Route
-                path="/collaborative"
-                element={<PrivateRoute element={<CollaborativePage />} />}
-              />
-              <Route
-                path="/collaborative/:sessionToken"
-                element={<PrivateRoute element={<CollaborativePage />} />}
-              />
-              <Route
-                path="/settings"
-                element={<PrivateRoute element={<SettingsPage />} />}
-              />
-              <Route
-                path="/quizzes"
-                element={<PrivateRoute element={<QuizzesPage />} />}
-              />
-              {/* Special Routes */}
-              {/* Catch-all Redirect */}
-              <Route
-                path="*"
-                element={<Navigate to={isAuthenticated ? "/dashboard" : "/"} />}
-              />
-              <Route
-                path="/quizzes/subjects/:subjectSlug"
-                element={<PrivateRoute element={<QuizListPage />} />}
-              />
-              <Route
-                path="/quizzes/play/:quizSlug"
-                element={<PrivateRoute element={<QuizPlayerPage />} />}
-              />
-              <Route
-                path="/quizzes/results/:attemptId"
-                element={<PrivateRoute element={<QuizResultPage />} />}
-              />
-              <Route
-                path="/showcase"
-                element={<PrivateRoute element={<ShadcnShowcasePage />} />}
-              />
-              <Route
-                path="/card-showcase"
-                element={<PrivateRoute element={<CardShowcase />} />}
-              />
-              <Route
-                path="/test-realtime"
-                element={<PrivateRoute element={<RealTimeTest />} />}
-              />
-              <Route
-                path="/test-collaborative"
-                element={<PrivateRoute element={<CollaborativeTest />} />}
-              />
-              <Route
-                path="/test-simple-collaborative"
-                element={<PrivateRoute element={<SimpleCollaborativeTest />} />}
-              />
-              <Route
-                path="/test-debug-collaborative"
-                element={<PrivateRoute element={<DebugCollaborativeTest />} />}
-              />
-              <Route
-                path="/test-collaborative-system"
-                element={<PrivateRoute element={<CollaborativeSystemTest />} />}
-              />
-              <Route
-                path="/auth-diagnostic"
-                element={<PrivateRoute element={<AuthDiagnostic />} />}
-              />
-              {/* Admin Routes */}
-              <Route
-                path="/admin/login"
-                element={
-                  !localStorage.getItem("adminToken") ? (
-                    <AdminLoginPage />
-                  ) : (
-                    <Navigate to="/admin/dashboard" />
-                  )
-                }
-              />
-              <Route path="/admin/dashboard" element={<AdminPrivateRoute element={<AdminDashboard />} />} />
-              <Route path="/admin/users" element={<AdminPrivateRoute element={<AdminUsersPage />} />} />
-              <Route path="/admin/problems" element={<AdminPrivateRoute element={<AdminProblemsPage />} />} />
-              <Route path="/admin/quizzes" element={<AdminPrivateRoute element={<AdminQuizzesPage />} />} />
-              <Route path="/admin/contests" element={<AdminPrivateRoute element={<AdminContestsPage />} />} />
-              <Route path="/admin/contests/create" element={<AdminPrivateRoute element={<AdminContestFormPage />} />} />
-              <Route path="/admin/contests/edit/:contestId" element={<AdminPrivateRoute element={<AdminContestFormPage />} />} />
-              <Route path="/admin/seed-data" element={<AdminPrivateRoute element={<AdminDataSeedPage />} />} />
-              <Route path="/admin/courses" element={<AdminPrivateRoute element={<AdminDashboard />} />} />
-            </Routes>
-          </main>
+          {/* Floating Particles - Only for authenticated users and not admin routes */}
+          {/* {!isAdminRoute && isAuthenticated && <FloatingParticles particleCount={50} />} */}
 
-          {/* Footer - Hide for admin routes */}
-          {!isAdminRoute && isAuthenticated && <Footer />}
+          <div className="min-h-screen flex flex-col relative app-background">
+            {/* Global background orbs */}
+            <div className="background-orbs"></div>
+            {/* Remove the old background elements */}
 
-          {/* PWA Install Prompt */}
-          {!isAdminRoute && <PWAInstallPrompt />}
-        </div>
+            {/* Navbar - Hide for admin routes */}
+            {!isAdminRoute && (
+              <>
+                {isAuthenticated ? (
+                  <DashboardNavbar logout={logout} />
+                ) : (
+                  <PublicNavbar />
+                )}
+              </>
+            )}
+
+            {/* Main content */}
+            <main className="flex-grow relative">
+              <PageTransition>
+                <Routes>
+                  {/* Public Routes */}
+                  <Route
+                    path="/"
+                    element={
+                      !isAuthenticated ? (
+                        <LandingPage />
+                      ) : (
+                        <Navigate to="/dashboard" />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/auth"
+                    element={
+                      !isAuthenticated ? (
+                        <AuthPage login={login} />
+                      ) : (
+                        <Navigate to="/dashboard" />
+                      )
+                    }
+                  />
+                  <Route
+                    path="/auth/callback"
+                    element={<OAuthCallback login={login} />}
+                  />
+                  {/* Public Career Routes */}
+                  <Route path="/careers" element={<CareersPage />} />
+                  <Route path="/careers/:jobId" element={<JobDetailPage />} />
+
+                  {/* Public About Route */}
+                  <Route path="/about" element={<AboutPage />} />
+                  {/* Protected Routes */}
+                  <Route
+                    path="/dashboard"
+                    element={<PrivateRoute element={<HomePage />} />}
+                  />
+                  <Route
+                    path="/courses"
+                    element={<PrivateRoute element={<CoursesPage />} />}
+                  />
+                  <Route
+                    path="/courses/:slug"
+                    element={<PrivateRoute element={<CourseDetailPage />} />}
+                  />
+                  <Route
+                    path="/learn/:courseId"
+                    element={<PrivateRoute element={<CoursePlayerPage />} />}
+                  />
+                  <Route
+                    path="/paths"
+                    element={<PrivateRoute element={<LearningPathsPage />} />}
+                  />
+                  <Route
+                    path="/paths/:pathId"
+                    element={<PrivateRoute element={<PathDetailPage />} />}
+                  />
+                  <Route
+                    path="/learning-paths"
+                    element={<PrivateRoute element={<LearningPathsPage />} />}
+                  />
+                  <Route
+                    path="/learning-paths/categories"
+                    element={<PrivateRoute element={<LearningPathCategoriesPage />} />}
+                  />
+                  <Route
+                    path="/learning-paths/search"
+                    element={<PrivateRoute element={<LearningPathSearchPage />} />}
+                  />
+                  <Route
+                    path="/learning-paths/leaderboard"
+                    element={<PrivateRoute element={<LearningPathLeaderboardPage />} />}
+                  />
+                  <Route
+                    path="/learning-paths/studio"
+                    element={<PrivateRoute element={<LearningPathStudioPage />} />}
+                  />
+                  <Route
+                    path="/learning-paths/analytics"
+                    element={<PrivateRoute element={<LearningPathAnalyticsPage />} />}
+                  />
+                  <Route
+                    path="/learning-paths/:pathId"
+                    element={<PrivateRoute element={<LearningPathDetailPage />} />}
+                  />
+                  <Route
+                    path="/contests"
+                    element={<PrivateRoute element={<ContestsPage />} />}
+                  />
+                  <Route
+                    path="/contests/:contestId"
+                    element={<PrivateRoute element={<RealContestDetailPage />} />}
+                  />
+                  <Route
+                    path="/contests/:contestId/compete"
+                    element={<PrivateRoute element={<ContestCompetePage />} />}
+                  />
+                  <Route
+                    path="/success-stories"
+                    element={<PrivateRoute element={<SuccessStoriesPage />} />}
+                  />{" "}
+                  {/* Career Routes */}
+                  <Route
+                    path="/careers"
+                    element={<PrivateRoute element={<CareersPage />} />}
+                  />
+                  <Route
+                    path="/careers/:jobId"
+                    element={<PrivateRoute element={<JobDetailPage />} />}
+                  />
+                  <Route
+                    path="/careers/my-applications"
+                    element={<PrivateRoute element={<MyApplicationsPage />} />}
+                  />
+                  <Route
+                    path="/profile"
+                    element={<PrivateRoute element={<ProfilePage />} />}
+                  />
+                  <Route
+                    path="/chat"
+                    element={<PrivateRoute element={<ChatPage />} />}
+                  />
+                  <Route
+                    path="/ai"
+                    element={<PrivateRoute element={<AiAssistantPage />} />}
+                  />
+                  <Route
+                    path="/blogpage"
+                    element={<PrivateRoute element={<BlogPage />} />}
+                  />
+                  <Route
+                    path="/blogdesc"
+                    element={<PrivateRoute element={<BlogDetailPage />} />}
+                  />
+                  <Route
+                    path="/engineering-courses"
+                    element={<PrivateRoute element={<GeneralCoursesPage />} />}
+                  />
+                  <Route
+                    path="engineering-courses/:courseId"
+                    element={
+                      <PrivateRoute element={<EnhancedCourseDetailPage />} />
+                    }
+                  />
+                  <Route
+                    path="/playground"
+                    element={<PrivateRoute element={<PlaygroundPage />} />}
+                  />
+                  <Route
+                    path="/problem-solver"
+                    element={<PrivateRoute element={<ProblemSolverPage />} />}
+                  />
+                  <Route
+                    path="/problems"
+                    element={<PrivateRoute element={<ProblemSetsPage />} />}
+                  />
+                  <Route
+                    path="/problems/:setId"
+                    element={<PrivateRoute element={<ProblemSetDetailPage />} />}
+                  />
+                  <Route
+                    path="/solve/:problemId"
+                    element={<PrivateRoute element={<SolveProblemPage />} />}
+                  />
+                  <Route
+                    path="/quiz-system"
+                    element={<PrivateRoute element={<QuizPage />} />}
+                  />
+                  <Route
+                    path="/user-dashboard"
+                    element={<PrivateRoute element={<DashboardPage />} />}
+                  />
+                  <Route
+                    path="/forum"
+                    element={<PrivateRoute element={<ForumPage />} />}
+                  />
+                  <Route
+                    path="/skill-tests"
+                    element={<PrivateRoute element={<SkillTestsPage />} />}
+                  />
+                  <Route
+                    path="/skill-test/:testId"
+                    element={<PrivateRoute element={<SkillTestTakingPage />} />}
+                  />
+                  <Route
+                    path="/certificates"
+                    element={<PrivateRoute element={<CertificatesPage />} />}
+                  />
+                  <Route
+                    path="/settings"
+                    element={<PrivateRoute element={<SettingsPage />} />}
+                  />
+                  <Route
+                    path="/quizzes"
+                    element={<PrivateRoute element={<QuizzesPage />} />}
+                  />
+                  {/* Career Routes */}
+                  {/* Special Routes */}
+                  {/* Catch-all Redirect */}
+                  <Route
+                    path="*"
+                    element={<Navigate to={isAuthenticated ? "/dashboard" : "/"} />}
+                  />
+                  <Route
+                    path="/quizzes/subjects/:subjectSlug"
+                    element={<PrivateRoute element={<QuizListPage />} />}
+                  />
+                  <Route
+                    path="/quizzes/play/:quizSlug"
+                    element={<PrivateRoute element={<QuizPlayerPage />} />}
+                  />
+                  <Route
+                    path="/quizzes/results/:attemptId"
+                    element={<PrivateRoute element={<QuizResultPage />} />}
+                  />
+                  <Route
+                    path="/showcase"
+                    element={<PrivateRoute element={<ShadcnShowcasePage />} />}
+                  />
+                  <Route
+                    path="/card-samples"
+                    element={<PrivateRoute element={<CardSamples />} />}
+                  />
+                  <Route
+                    path="/card-showcase"
+                    element={<PrivateRoute element={<CardShowcase />} />}
+                  />
+                  <Route
+                    path="/test-realtime"
+                    element={<PrivateRoute element={<RealTimeTest />} />}
+                  />
+                  <Route
+                    path="/animation-showcase"
+                    element={<PrivateRoute element={<AnimationShowcase />} />}
+                  />
+                  {/* Admin Routes */}
+                  <Route
+                    path="/admin/login"
+                    element={
+                      !localStorage.getItem("adminToken") ? (
+                        <AdminLoginPage />
+                      ) : (
+                        <Navigate to="/admin/dashboard" />
+                      )
+                    }
+                  />
+                  <Route path="/admin/dashboard" element={<AdminPrivateRoute element={<AdminDashboard />} />} />
+                  <Route path="/admin/users" element={<AdminPrivateRoute element={<AdminUsersPage />} />} />
+                  <Route path="/admin/problems" element={<AdminPrivateRoute element={<AdminProblemsPage />} />} />
+                  <Route path="/admin/quizzes" element={<AdminPrivateRoute element={<AdminQuizzesPage />} />} />
+                  <Route path="/admin/contests" element={<AdminPrivateRoute element={<AdminContestsPage />} />} />
+                  <Route path="/admin/contests/create" element={<AdminPrivateRoute element={<AdminContestFormPage />} />} />
+                  <Route path="/admin/contests/edit/:contestId" element={<AdminPrivateRoute element={<AdminContestFormPage />} />} />
+                  <Route path="/admin/job-applications" element={<AdminPrivateRoute element={<AdminJobApplicationsPage />} />} />
+                  <Route path="/admin/seed-data" element={<AdminPrivateRoute element={<AdminDataSeedPage />} />} />
+                  <Route path="/admin/courses" element={<AdminPrivateRoute element={<AdminDashboard />} />} />
+                </Routes>
+              </PageTransition>
+            </main>
+
+            {/* Footer - Hide for admin routes */}
+            {!isAdminRoute && isAuthenticated && <Footer />}
+
+            {/* Platform Assistant Widget - Show on all pages except admin routes */}
+            {!isAdminRoute && <PlatformAssistantWidget />}
+
+            {/* PWA Install Prompt */}
+            {!isAdminRoute && <PWAInstallPrompt />}
+          </div>
+        </SmoothScroll>
       </UserProvider>
     </Router>
   );

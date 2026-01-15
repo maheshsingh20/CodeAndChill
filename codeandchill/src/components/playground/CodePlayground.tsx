@@ -229,14 +229,14 @@ int main() {
   };
 
   return (
-    <div className="h-screen flex flex-col bg-gray-900">
+    <div className="h-screen flex flex-col bg-black">
       {/* Header */}
-      <div className="flex items-center justify-between p-4 bg-gray-800 border-b border-gray-700">
+      <div className="flex items-center justify-between p-4 bg-gradient-to-br from-gray-900 via-black to-gray-800 border-b border-gray-700">
         <div className="flex items-center space-x-4">
           <div className="flex items-center gap-2">
             <Zap className="w-5 h-5 text-yellow-400" />
-            <h1 className="text-xl font-bold text-white">Code Playground</h1>
-            <span className="text-xs text-gray-400 bg-gray-700 px-2 py-1 rounded">Custom Compiler</span>
+            <h1 className="text-xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Code Playground</h1>
+            <span className="text-xs bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent bg-gray-700 px-2 py-1 rounded">Custom Compiler</span>
           </div>
 
           <Select value={language} onValueChange={changeLanguage}>
@@ -338,28 +338,28 @@ int main() {
         </div>
 
         {/* Right Panel */}
-        <div className="w-96 flex flex-col bg-gray-800">
+        <div className="w-96 flex flex-col bg-gradient-to-br from-gray-900 via-black to-gray-800">
           <Tabs defaultValue="output" className="flex-1 flex flex-col">
-            <TabsList className="grid w-full grid-cols-2 bg-gray-700">
+            <TabsList className="grid w-full grid-cols-2 bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
               <TabsTrigger value="output">Output</TabsTrigger>
               <TabsTrigger value="input">Input</TabsTrigger>
             </TabsList>
 
             <TabsContent value="output" className="flex-1 p-4">
-              <Card className="h-full bg-gray-900 border-gray-600">
+              <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 hover:border-gray-600 rounded-md shadow-lg transition-all duration-300">
                 <div className="p-4 h-full">
-                  <h3 className="text-sm font-medium text-gray-300 mb-2">Output</h3>
+                  <h3 className="text-sm font-medium bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent mb-2">Output</h3>
                   <pre className="text-sm text-green-400 font-mono whitespace-pre-wrap overflow-auto h-full">
                     {output || 'Click "Run" to see output...'}
                   </pre>
                 </div>
-              </Card>
+              </div>
             </TabsContent>
 
             <TabsContent value="input" className="flex-1 p-4">
-              <Card className="h-full bg-gray-900 border-gray-600">
+              <div className="h-full bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 hover:border-gray-600 rounded-md shadow-lg transition-all duration-300">
                 <div className="p-4 h-full flex flex-col">
-                  <h3 className="text-sm font-medium text-gray-300 mb-2">Input</h3>
+                  <h3 className="text-sm font-medium bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent mb-2">Input</h3>
                   <Textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -367,7 +367,7 @@ int main() {
                     className="flex-1 bg-gray-800 border-gray-600 text-white resize-none"
                   />
                 </div>
-              </Card>
+              </div>
             </TabsContent>
           </Tabs>
         </div>

@@ -9,4 +9,16 @@ export default defineConfig({
       "@": path.resolve(__dirname, "./src"),
     },
   },
+  server: {
+    watch: {
+      // Ignore sibling backend folders and temporary upload folders which can
+      // be written by the backend process. Prevents Vite from picking up those
+      // file changes and triggering HMR/full page reloads.
+      ignored: [
+        "../Backend/**",
+        "../Backend/**/temp/**",
+        "../Backend/**/uploads/**",
+      ],
+    },
+  },
 });

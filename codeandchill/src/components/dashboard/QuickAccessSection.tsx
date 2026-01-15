@@ -1,5 +1,6 @@
 import React from "react";
 import { Link } from "react-router-dom";
+import { motion } from "framer-motion";
 import {
   Zap,
   Code,
@@ -8,171 +9,188 @@ import {
   Target,
   BookOpen,
   MessageSquare,
-  Bot
+  MessageCircle,
+  Bot,
+  ArrowRight
 } from "lucide-react";
 
 const quickActions = [
   {
     title: "Solve Problems",
-    description: "Practice coding challenges",
+    description: "Practice coding challenges and improve your skills",
     icon: Zap,
     href: "/problems",
-    bgGradient: "from-yellow-500/10 to-orange-500/20",
-    borderColor: "border-yellow-500/30",
-    iconBg: "bg-yellow-500/20",
-    iconColor: "text-yellow-300",
-    titleColor: "text-yellow-100",
-    descColor: "text-yellow-200/80",
-    hoverGlow: "hover:shadow-yellow-500/25",
+    iconColor: "text-orange-300",
+    category: "Practice"
   },
   {
     title: "Take Courses",
-    description: "Learn new technologies",
+    description: "Learn new technologies with structured content",
     icon: Code,
     href: "/courses",
-    bgGradient: "from-blue-500/10 to-cyan-500/20",
-    borderColor: "border-blue-500/30",
-    iconBg: "bg-blue-500/20",
     iconColor: "text-blue-300",
-    titleColor: "text-blue-100",
-    descColor: "text-blue-200/80",
-    hoverGlow: "hover:shadow-blue-500/25",
+    category: "Learn"
   },
   {
     title: "Join Contests",
-    description: "Compete with others",
+    description: "Compete with developers worldwide",
     icon: Sparkles,
     href: "/contests",
-    bgGradient: "from-purple-500/10 to-pink-500/20",
-    borderColor: "border-purple-500/30",
-    iconBg: "bg-purple-500/20",
     iconColor: "text-purple-300",
-    titleColor: "text-purple-100",
-    descColor: "text-purple-200/80",
-    hoverGlow: "hover:shadow-purple-500/25",
-  },
-  {
-    title: "Live Coding",
-    description: "Code with friends",
-    icon: Users,
-    href: "/collaborative",
-    bgGradient: "from-green-500/10 to-emerald-500/20",
-    borderColor: "border-green-500/30",
-    iconBg: "bg-green-500/20",
-    iconColor: "text-green-300",
-    titleColor: "text-green-100",
-    descColor: "text-green-200/80",
-    hoverGlow: "hover:shadow-green-500/25",
+    category: "Compete"
   },
   {
     title: "Skill Tests",
-    description: "Assess your abilities",
+    description: "Assess and validate your programming abilities",
     icon: Target,
     href: "/skill-tests",
-    bgGradient: "from-orange-500/10 to-red-500/20",
-    borderColor: "border-orange-500/30",
-    iconBg: "bg-orange-500/20",
-    iconColor: "text-orange-300",
-    titleColor: "text-orange-100",
-    descColor: "text-orange-200/80",
-    hoverGlow: "hover:shadow-orange-500/25",
+    iconColor: "text-green-300",
+    category: "Test"
   },
   {
     title: "Learning Paths",
-    description: "Structured learning",
+    description: "Follow structured learning journeys",
     icon: BookOpen,
     href: "/learning-paths",
-    bgGradient: "from-indigo-500/10 to-purple-500/20",
-    borderColor: "border-indigo-500/30",
-    iconBg: "bg-indigo-500/20",
-    iconColor: "text-indigo-300",
-    titleColor: "text-indigo-100",
-    descColor: "text-indigo-200/80",
-    hoverGlow: "hover:shadow-indigo-500/25",
+    iconColor: "text-blue-300",
+    category: "Learn"
+  },
+  {
+    title: "Chat",
+    description: "Connect with other users in real-time",
+    icon: MessageCircle,
+    href: "/chat",
+    iconColor: "text-pink-300",
+    category: "Social"
   },
   {
     title: "Community",
-    description: "Connect & discuss",
+    description: "Connect and discuss with fellow developers",
     icon: MessageSquare,
     href: "/forum",
-    bgGradient: "from-pink-500/10 to-rose-500/20",
-    borderColor: "border-pink-500/30",
-    iconBg: "bg-pink-500/20",
-    iconColor: "text-pink-300",
-    titleColor: "text-pink-100",
-    descColor: "text-pink-200/80",
-    hoverGlow: "hover:shadow-pink-500/25",
+    iconColor: "text-purple-300",
+    category: "Social"
   },
   {
     title: "AI Assistant",
-    description: "Get coding help",
+    description: "Get instant help with coding problems",
     icon: Bot,
     href: "/ai",
-    bgGradient: "from-cyan-500/10 to-teal-500/20",
-    borderColor: "border-cyan-500/30",
-    iconBg: "bg-cyan-500/20",
-    iconColor: "text-cyan-300",
-    titleColor: "text-cyan-100",
-    descColor: "text-cyan-200/80",
-    hoverGlow: "hover:shadow-cyan-500/25",
+    iconColor: "text-green-300",
+    category: "AI"
   }
 ];
 
 export function QuickAccessSection() {
   return (
-    <section className="space-y-6">
-      <div className="text-center">
-        <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold leading-tight bg-gradient-to-r from-gray-100 via-gray-200 to-gray-300 bg-clip-text text-transparent">
-          Quick Access
+    <section className="space-y-10">
+      <motion.div
+        className="text-center"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6 }}
+      >
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold leading-tight mb-4">
+          <span className="bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent">
+            Quick
+          </span>
+          {" "}
+          <span className="bg-gradient-to-r from-purple-400 via-pink-500 to-cyan-400 bg-clip-text text-transparent">
+            Access
+          </span>
         </h2>
-        <p className="text-gray-400 mt-2">
-          Jump right into your favorite activities
+        <p className="text-lg bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent max-w-2xl mx-auto">
+          Jump right into your favorite activities and accelerate your coding journey
         </p>
-      </div>
+      </motion.div>
 
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
         {quickActions.map((action, index) => (
-          <Link key={action.title} to={action.href} className="group">
-            <div className={`
-              relative overflow-hidden rounded-lg p-4 
-              bg-gradient-to-br ${action.bgGradient}
-              border ${action.borderColor}
-              backdrop-blur-sm
-              transition-all duration-300 ease-out
-              hover:scale-105 hover:-translate-y-1
-              hover:shadow-xl ${action.hoverGlow}
-              hover:border-opacity-60
-            `}>
-              {/* Animated background glow */}
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                <div className={`absolute inset-0 bg-gradient-to-br ${action.bgGradient} blur-xl`} />
-              </div>
+          <motion.div
+            key={action.title}
+            initial={{ opacity: 0, y: 30, scale: 0.9 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            transition={{
+              duration: 0.5,
+              delay: index * 0.1,
+              ease: [0.25, 0.46, 0.45, 0.94]
+            }}
+            whileHover={{
+              scale: 1.05,
+              y: -8,
+              transition: { duration: 0.2 }
+            }}
+            whileTap={{ scale: 0.95 }}
+          >
+            <Link to={action.href} className="group block h-full">
+              <div className="h-full min-h-[240px] bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-md p-6 hover:border-gray-600 hover:from-gray-800 hover:via-gray-900 hover:to-gray-700 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-black/60">
+                <div className="flex flex-col h-full">
+                  {/* Category Badge */}
+                  <div className="flex justify-between items-start mb-4">
+                    <div className="px-3 py-1 bg-black/50 backdrop-blur-sm border border-gray-600 rounded-md text-xs font-medium">
+                      <span className="bg-gradient-to-r from-gray-300 via-white to-gray-300 bg-clip-text text-transparent">
+                        {action.category}
+                      </span>
+                    </div>
+                    <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-gray-300 group-hover:translate-x-1 transition-all duration-300" />
+                  </div>
 
-              {/* Content */}
-              <div className="relative z-10 text-center space-y-3">
-                {/* Icon */}
-                <div className={`
-                  mx-auto w-12 h-12 rounded-md ${action.iconBg} 
-                  flex items-center justify-center
-                  group-hover:scale-110 transition-transform duration-300
-                `}>
-                  <action.icon className={`w-6 h-6 ${action.iconColor}`} />
+                  {/* Icon */}
+                  <div className="flex justify-center mb-6">
+                    <div className="w-20 h-20 rounded-md bg-black/30 backdrop-blur-sm border border-gray-600 flex items-center justify-center group-hover:border-gray-500 transition-all duration-300">
+                      <action.icon className={`w-10 h-10 ${action.iconColor} group-hover:scale-110 transition-transform duration-300 drop-shadow-lg`} />
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="text-center space-y-3 flex-grow">
+                    {/* Title */}
+                    <h3 className="font-bold text-xl bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent group-hover:from-white group-hover:via-blue-100 group-hover:to-blue-200 transition-all duration-300">
+                      {action.title}
+                    </h3>
+
+                    {/* Description */}
+                    <p className="text-sm bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent group-hover:from-gray-300 group-hover:via-gray-200 group-hover:to-gray-300 transition-all duration-300 leading-relaxed px-2">
+                      {action.description}
+                    </p>
+                  </div>
+
+                  {/* Action indicator */}
+                  <div className="mt-6 pt-4 border-t border-gray-700">
+                    <div className="flex items-center justify-center space-x-2 text-xs">
+                      <span className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent group-hover:from-gray-300 group-hover:via-gray-200 group-hover:to-gray-300 transition-all duration-300">
+                        Get Started
+                      </span>
+                      <div className="w-4 h-0.5 bg-gray-600 rounded-sm group-hover:bg-gray-500 transition-colors duration-300" />
+                    </div>
+                  </div>
                 </div>
-
-                {/* Title */}
-                <h3 className={`font-semibold text-sm ${action.titleColor} group-hover:text-opacity-90 transition-colors`}>
-                  {action.title}
-                </h3>
-
-                {/* Description */}
-                <p className={`text-xs ${action.descColor} group-hover:opacity-90 transition-opacity`}>
-                  {action.description}
-                </p>
               </div>
-            </div>
-          </Link>
+            </Link>
+          </motion.div>
         ))}
       </div>
+
+      {/* Bottom section */}
+      <motion.div
+        className="text-center pt-8"
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, delay: 0.8 }}
+      >
+        <div className="inline-flex items-center gap-3 px-8 py-4 bg-gradient-to-r from-gray-900 via-black to-gray-800 border border-gray-600 rounded-md">
+          <div className="flex items-center gap-2">
+            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse" />
+            <span className="text-sm bg-gradient-to-r from-gray-300 via-white to-gray-300 bg-clip-text text-transparent font-medium">
+              All systems ready
+            </span>
+          </div>
+          <div className="w-px h-4 bg-gray-600" />
+          <span className="text-xs bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">
+            Choose your path
+          </span>
+        </div>
+      </motion.div>
     </section>
   );
 }

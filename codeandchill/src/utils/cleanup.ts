@@ -1,5 +1,4 @@
 import { ActivityService } from '@/services/activityService';
-import { collaborativeService } from '@/services/collaborativeService';
 import { STORAGE_KEYS } from '@/constants';
 
 export const performAppCleanup = async () => {
@@ -29,13 +28,6 @@ export const performAppCleanup = async () => {
       await ActivityService.cleanup();
     } catch (error) {
       console.log('Activity service cleanup completed (with expected errors)');
-    }
-    
-    // 3. Disconnect collaborative service
-    try {
-      collaborativeService.disconnect();
-    } catch (error) {
-      console.error('Error disconnecting collaborative service:', error);
     }
     
     // 4. Clear any session storage
@@ -73,12 +65,6 @@ export const performFreshLogin = async () => {
     });
     
     // Cleanup services
-    try {
-      collaborativeService.disconnect();
-    } catch (error) {
-      console.error('Error disconnecting collaborative service:', error);
-    }
-    
     try {
       sessionStorage.clear();
     } catch (error) {

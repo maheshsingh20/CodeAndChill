@@ -40,7 +40,7 @@ export const seedBlogAndCommunity = async () => {
         content: 'System design interviews are crucial for senior engineering positions. This guide covers everything from scalability to database design, caching strategies, and more...',
         excerpt: 'Everything you need to ace system design interviews at top tech companies.',
         author: author._id,
-        category: 'Careers',
+        category: 'JavaScript',
         tags: ['system-design', 'interviews', 'career', 'engineering'],
         image: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?q=80&w=2070&auto=format&fit=crop',
         published: true,

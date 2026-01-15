@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { 
-  BarChart3, 
-  TrendingUp, 
-  Clock, 
-  Target, 
+import {
+  BarChart3,
+  TrendingUp,
+  Clock,
+  Target,
   Award,
   Calendar,
   Zap,
@@ -35,10 +35,10 @@ export const ProgressAnalytics: React.FC<ProgressAnalyticsProps> = ({ userProgre
 
   if (!userProgress) {
     return (
-      <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+      <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
         <CardContent className="py-20 text-center">
           <BarChart3 size={64} className="mx-auto text-gray-600 mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">No Analytics Available</h3>
+          <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">No Analytics Available</h3>
           <p className="text-gray-400">Start learning to see your progress analytics</p>
         </CardContent>
       </Card>
@@ -87,7 +87,7 @@ export const ProgressAnalytics: React.FC<ProgressAnalyticsProps> = ({ userProgre
       {/* Stats Grid */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
         {stats.map((stat, index) => (
-          <Card key={index} className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+          <Card key={index} className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
             <CardContent className="p-6">
               <div className="flex items-center gap-4">
                 <div className={`w-12 h-12 rounded-xl ${stat.bgColor} flex items-center justify-center`}>
@@ -104,9 +104,9 @@ export const ProgressAnalytics: React.FC<ProgressAnalyticsProps> = ({ userProgre
       </div>
 
       {/* Course Progress Breakdown */}
-      <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+      <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
         <CardHeader>
-          <CardTitle className="text-white flex items-center gap-2">
+          <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center gap-2">
             <Brain size={20} />
             Course Progress Breakdown
           </CardTitle>
@@ -115,11 +115,11 @@ export const ProgressAnalytics: React.FC<ProgressAnalyticsProps> = ({ userProgre
           {userProgress.progress.map((courseProgress: any, index: number) => (
             <div key={index} className="space-y-2">
               <div className="flex items-center justify-between">
-                <span className="text-white font-medium">{courseProgress.courseId.title}</span>
+                <span className="font-medium bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">{courseProgress.courseId.title}</span>
                 <span className="text-purple-400 font-semibold">{courseProgress.progress}%</span>
               </div>
               <div className="w-full bg-gray-700 rounded-full h-3">
-                <div 
+                <div
                   className="bg-gradient-to-r from-purple-500 to-blue-500 h-3 rounded-full transition-all duration-500"
                   style={{ width: `${courseProgress.progress}%` }}
                 />
@@ -143,9 +143,9 @@ export const ProgressAnalytics: React.FC<ProgressAnalyticsProps> = ({ userProgre
 
       {/* Learning Activity */}
       <div className="grid gap-6 lg:grid-cols-2">
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+        <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center gap-2">
               <Calendar size={20} />
               Recent Activity
             </CardTitle>
@@ -154,30 +154,30 @@ export const ProgressAnalytics: React.FC<ProgressAnalyticsProps> = ({ userProgre
             <div className="flex items-center gap-3 p-3 bg-gray-700/30 rounded-lg">
               <div className="w-2 h-2 rounded-full bg-green-400"></div>
               <div className="flex-1">
-                <p className="text-white text-sm font-medium">Completed a course</p>
+                <p className="font-medium text-sm bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Completed a course</p>
                 <p className="text-gray-400 text-xs">2 hours ago</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-gray-700/30 rounded-lg">
               <div className="w-2 h-2 rounded-full bg-blue-400"></div>
               <div className="flex-1">
-                <p className="text-white text-sm font-medium">Started new lesson</p>
+                <p className="font-medium text-sm bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Started new lesson</p>
                 <p className="text-gray-400 text-xs">5 hours ago</p>
               </div>
             </div>
             <div className="flex items-center gap-3 p-3 bg-gray-700/30 rounded-lg">
               <div className="w-2 h-2 rounded-full bg-purple-400"></div>
               <div className="flex-1">
-                <p className="text-white text-sm font-medium">Earned achievement</p>
+                <p className="font-medium text-sm bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Earned achievement</p>
                 <p className="text-gray-400 text-xs">1 day ago</p>
               </div>
             </div>
           </CardContent>
         </Card>
 
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+        <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
           <CardHeader>
-            <CardTitle className="text-white flex items-center gap-2">
+            <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center gap-2">
               <TrendingUp size={20} />
               Performance Insights
             </CardTitle>

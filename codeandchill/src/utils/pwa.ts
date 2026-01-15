@@ -1,4 +1,5 @@
 // PWA utilities for service worker registration and management
+import { API_BASE_URL } from '@/constants';
 
 interface PWAInstallPrompt extends Event {
   prompt(): Promise<void>;
@@ -92,7 +93,8 @@ class PWAManager {
   public async updateApp(): Promise<void> {
     if (this.registration?.waiting) {
       this.registration.waiting.postMessage({ type: 'SKIP_WAITING' });
-      window.location.reload();
+      // Removed auto refresh - let user manually refresh if needed
+      console.log('App update applied - please refresh manually if needed');
     }
   }
 
@@ -122,11 +124,11 @@ class PWAManager {
       const vapidKey = import.meta.env.VITE_VAPID_PUBLIC_KEY || '';
       const subscription = await this.registration.pushManager.subscribe({
         userVisibleOnly: true,
-        applicationServerKey: this.urlBase64ToUint8Array(vapidKey)
+        applicationServerKey: vapidKey ? this.urlBase64ToUint8Array(vapidKey) as any : undefined
       });
 
       // Send subscription to server
-      await fetch('http://localhost:3001/api/notifications/subscribe', {
+      await fetch(`${API_BASE_URL}/notifications/subscribe`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

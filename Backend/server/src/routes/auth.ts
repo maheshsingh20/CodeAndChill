@@ -1,6 +1,7 @@
 import { Router, Request, Response } from "express";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+import passport from "../config/passport";
 import { User } from "../models";
 
 const router = Router();
@@ -28,6 +29,7 @@ router.post("/signup", async (req: Request, res: Response): Promise<void> => {
       name,
       email,
       password: hashedPassword,
+      provider: 'local'
     });
 
     await newUser.save();
@@ -59,6 +61,19 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
+    // Check if user signed up with OAuth
+    if (!user.password && (user.githubId || user.googleId)) {
+      res.status(400).json({ 
+        message: "This account was created with social login. Please use the appropriate social login button." 
+      });
+      return;
+    }
+
+    if (!user.password) {
+      res.status(400).json({ message: "Invalid credentials." });
+      return;
+    }
+
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) {
       res.status(400).json({ message: "Invalid credentials." });
@@ -80,5 +95,57 @@ router.post("/login", async (req: Request, res: Response): Promise<void> => {
     res.status(500).json({ message: "Server error during login." });
   }
 });
+
+// GitHub OAuth routes
+router.get("/github", passport.authenticate("github", { scope: ["user:email"] }));
+
+router.get("/github/callback", 
+  passport.authenticate("github", { session: false }),
+  async (req: Request, res: Response) => {
+    try {
+      const user = req.user as any;
+      
+      if (!process.env.JWT_SECRET) {
+        return res.redirect(`${process.env.CLIENT_URL}/auth?error=server_error`);
+      }
+
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
+      });
+
+      // Redirect to frontend with token
+      res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
+    } catch (error) {
+      console.error("GitHub callback error:", error);
+      res.redirect(`${process.env.CLIENT_URL}/auth?error=oauth_error`);
+    }
+  }
+);
+
+// Google OAuth routes
+router.get("/google", passport.authenticate("google", { scope: ["profile", "email"] }));
+
+router.get("/google/callback",
+  passport.authenticate("google", { session: false }),
+  async (req: Request, res: Response) => {
+    try {
+      const user = req.user as any;
+      
+      if (!process.env.JWT_SECRET) {
+        return res.redirect(`${process.env.CLIENT_URL}/auth?error=server_error`);
+      }
+
+      const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
+        expiresIn: "1d",
+      });
+
+      // Redirect to frontend with token
+      res.redirect(`${process.env.CLIENT_URL}/auth/callback?token=${token}`);
+    } catch (error) {
+      console.error("Google callback error:", error);
+      res.redirect(`${process.env.CLIENT_URL}/auth?error=oauth_error`);
+    }
+  }
+);
 
 export default router;

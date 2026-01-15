@@ -8,6 +8,23 @@ export class ActivityService {
   private static sessionStartTime: number | null = null;
   private static activityStartTime: number | null = null;
   private static isTracking = false;
+  private static periodicUpdateInterval: ReturnType<typeof setInterval> | null = null;
+  private static lastMetadata: any = null;
+  
+  // Add option to disable activity tracking completely
+  // Can be controlled via environment variable or programmatically
+  private static isEnabled = import.meta.env.VITE_ENABLE_ACTIVITY_TRACKING !== 'false';
+
+  static setEnabled(enabled: boolean) {
+    this.isEnabled = enabled;
+    if (!enabled) {
+      this.cleanup();
+    }
+  }
+
+  static isActivityTrackingEnabled() {
+    return this.isEnabled;
+  }
 
   private static getAuthHeaders() {
     const token = localStorage.getItem('authToken');
@@ -20,6 +37,9 @@ export class ActivityService {
   // Start a new session
   static async startSession(activityType: ActivityType = 'general_browsing', metadata?: any) {
     try {
+      // Check if activity tracking is enabled
+      if (!this.isEnabled) return;
+      
       // Check if we have a valid token before making API calls
       const token = localStorage.getItem('authToken');
       if (this.isTracking || !token) return;
@@ -51,9 +71,18 @@ export class ActivityService {
   // Update current activity
   static async updateActivity(activityType: ActivityType, metadata?: any) {
     try {
+      // Check if activity tracking is enabled
+      if (!this.isEnabled) return;
+      
       // Check if we have a valid token before making API calls
       const token = localStorage.getItem('authToken');
       if (!this.isTracking || !this.sessionId || !token) return;
+
+      // Don't update if it's the same activity type and metadata (reduce API calls)
+      if (this.currentActivity === activityType && 
+          JSON.stringify(metadata) === JSON.stringify(this.lastMetadata)) {
+        return;
+      }
 
       const timeSpent = this.activityStartTime 
         ? Math.floor((Date.now() - this.activityStartTime) / 1000)
@@ -72,10 +101,15 @@ export class ActivityService {
 
       if (!response.ok) throw new Error('Failed to update activity');
 
+      const previousActivity = this.currentActivity;
       this.currentActivity = activityType;
+      this.lastMetadata = metadata;
       this.activityStartTime = Date.now();
 
-      console.log('Activity updated:', activityType);
+      // Only log when activity actually changes
+      if (previousActivity !== activityType) {
+        console.log('Activity updated:', activityType);
+      }
     } catch (error) {
       console.error('Error updating activity:', error);
     }
@@ -158,29 +192,80 @@ export class ActivityService {
     }
   }
 
-  // Start periodic updates (every 30 seconds)
+  // Start periodic updates (every 2 minutes)
   private static startPeriodicUpdates() {
-    setInterval(() => {
+    // Clear any existing interval first
+    if (this.periodicUpdateInterval) {
+      clearInterval(this.periodicUpdateInterval);
+    }
+
+    this.periodicUpdateInterval = setInterval(() => {
       // Check if we still have a valid token before updating
       const token = localStorage.getItem('authToken');
       if (this.isTracking && this.sessionId && this.currentActivity && token) {
-        this.updateActivity(this.currentActivity);
+        // Only update if there's been significant activity (reduce console spam)
+        this.updateActivitySilent(this.currentActivity);
       }
-    }, 30000); // Update every 30 seconds
+    }, 120000); // Increased to every 2 minutes to reduce conflicts
+  }
+
+  // Silent update method that doesn't log to console
+  private static async updateActivitySilent(activityType: ActivityType, metadata?: any) {
+    try {
+      const token = localStorage.getItem('authToken');
+      if (!this.isTracking || !this.sessionId || !token) return;
+
+      const timeSpent = this.activityStartTime 
+        ? Math.floor((Date.now() - this.activityStartTime) / 1000)
+        : 0;
+
+      const response = await fetch(`${API_BASE_URL}/activity/update`, {
+        method: 'POST',
+        headers: this.getAuthHeaders(),
+        body: JSON.stringify({
+          sessionId: this.sessionId,
+          activityType,
+          metadata,
+          timeSpent
+        })
+      });
+
+      if (!response.ok) throw new Error('Failed to update activity');
+
+      this.currentActivity = activityType;
+      this.activityStartTime = Date.now();
+
+      // Only log significant activity changes, not periodic updates
+    } catch (error) {
+      console.error('Error updating activity:', error);
+    }
   }
 
   // Cleanup session data
   private static resetState() {
+    // Clear the periodic update interval
+    if (this.periodicUpdateInterval) {
+      clearInterval(this.periodicUpdateInterval);
+      this.periodicUpdateInterval = null;
+    }
+    
     this.sessionId = null;
     this.currentActivity = null;
     this.sessionStartTime = null;
     this.activityStartTime = null;
+    this.lastMetadata = null;
     this.isTracking = false;
   }
 
   // Public cleanup method for logout
   static async cleanup() {
     try {
+      // Clear the periodic update interval first
+      if (this.periodicUpdateInterval) {
+        clearInterval(this.periodicUpdateInterval);
+        this.periodicUpdateInterval = null;
+      }
+
       // Check if we have a valid token before trying to end session
       const token = localStorage.getItem('authToken');
       if (this.isTracking && this.sessionId && token) {
@@ -195,17 +280,16 @@ export class ActivityService {
       console.error('Error during activity service cleanup:', error);
     } finally {
       // Always reset the state regardless of API call success
-      this.sessionId = null;
-      this.currentActivity = null;
-      this.sessionStartTime = null;
-      this.activityStartTime = null;
-      this.isTracking = false;
+      this.resetState();
     }
   }
 
   // Initialize activity tracking when user logs in
   static async initializeTracking() {
     try {
+      // Check if activity tracking is enabled
+      if (!this.isEnabled) return;
+      
       // Always start a fresh session for new login to avoid conflicts
       await this.startSession();
     } catch (error) {

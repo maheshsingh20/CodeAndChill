@@ -29,6 +29,15 @@ class EmailService {
 
   async sendFeedbackEmail(feedbackData: FeedbackEmailData): Promise<boolean> {
     try {
+      // Check if email service is properly configured
+      if (!this.transporter || 
+          !process.env.GMAIL_APP_PASSWORD || 
+          process.env.GMAIL_APP_PASSWORD === 'placeholder_password' ||
+          process.env.GMAIL_APP_PASSWORD === 'disabled_use_mailto_fallback') {
+        console.log('📧 Email service not configured - feedback will use mailto fallback');
+        return false;
+      }
+
       const { userName, userEmail, userId, category, subject, message, rating } = feedbackData;
       
       const emailSubject = `[Code & Chill Feedback] ${category ? `[${category}] ` : ''}${subject}`;

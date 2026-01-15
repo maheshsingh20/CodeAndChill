@@ -40,12 +40,6 @@ export function BlogHeader() {
             JavaScript
           </ToggleGroupItem>
           <ToggleGroupItem
-            value="careers"
-            className="hover:bg-cyan-600 hover:text-white data-[state=on]:bg-cyan-600 data-[state=on]:text-white transition-transform transform hover:scale-105 rounded-lg"
-          >
-            Careers
-          </ToggleGroupItem>
-          <ToggleGroupItem
             value="devops"
             className="hover:bg-cyan-600 hover:text-white data-[state=on]:bg-cyan-600 data-[state=on]:text-white transition-transform transform hover:scale-105 rounded-lg"
           >

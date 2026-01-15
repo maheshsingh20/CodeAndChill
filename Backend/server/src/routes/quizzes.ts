@@ -4,6 +4,22 @@ import { authMiddleware, AuthRequest } from "../middleware";
 
 const router = Router();
 
+// Get all quizzes (root endpoint)
+router.get("/", async (req, res): Promise<void> => {
+  try {
+    const quizzes = await Quiz.find({})
+      .populate("subject", "name slug")
+      .select("title slug subject createdAt")
+      .limit(10)
+      .lean();
+    
+    res.json({ quizzes });
+  } catch (error) {
+    console.error("Quizzes fetch error:", error);
+    res.status(500).json({ message: "Server error fetching quizzes" });
+  }
+});
+
 // Get all subjects
 router.get("/subjects", async (req, res): Promise<void> => {
   try {

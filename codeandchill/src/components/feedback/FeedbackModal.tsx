@@ -1,23 +1,24 @@
 import React, { useState } from 'react';
-import { 
-  Dialog, 
-  DialogContent, 
-  DialogHeader, 
-  DialogTitle, 
-  DialogTrigger 
+import emailjs from '@emailjs/browser';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
-import { 
+import {
   Select,
   SelectContent,
   SelectItem,
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { MessageSquare, Send, Star } from 'lucide-react';
+import { MessageSquare, Send, Star, CheckCircle } from 'lucide-react';
 import { useUser } from '@/contexts/UserContext';
 
 interface FeedbackModalProps {
@@ -30,7 +31,7 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ children }) => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  
+
   const [formData, setFormData] = useState({
     name: user?.name || '',
     email: user?.email || '',
@@ -57,69 +58,11 @@ export const FeedbackModal: React.FC<FeedbackModalProps> = ({ children }) => {
     }));
   };
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsSubmitting(true);
+  const sendEmailDirectly = async () => {
+    // Create email content
+    const emailSubject = `[Code & Chill Feedback] ${formData.category ? `[${feedbackCategories.find(c => c.value === formData.category)?.label}] ` : ''}${formData.subject}`;
 
-    try {
-      setError(null);
-      
-      // Try to send via backend API first
-      try {
-        const token = localStorage.getItem('authToken');
-        const response = await fetch(`${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/feedback/send`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({
-            category: formData.category,
-            subject: formData.subject,
-            message: formData.message,
-            rating: formData.rating,
-            userName: formData.name,
-            userEmail: formData.email
-          })
-        });
-
-        const result = await response.json();
-
-        if (response.ok && result.success) {
-          // Backend submission successful
-          setSubmitted(true);
-          
-          // Reset form after a delay
-          setTimeout(() => {
-            setIsOpen(false);
-            setSubmitted(false);
-            setError(null);
-            setFormData({
-              name: user?.name || '',
-              email: user?.email || '',
-              category: '',
-              subject: '',
-              message: '',
-              rating: ''
-            });
-          }, 3000);
-          
-          return;
-        } else {
-          throw new Error(result.message || 'Backend submission failed');
-        }
-      } catch (backendError) {
-        console.log('Backend feedback submission failed:', backendError);
-        setError('Unable to send feedback via server. Opening email client as fallback...');
-        
-        // Wait a moment to show the error message
-        await new Promise(resolve => setTimeout(resolve, 1000));
-      }
-
-      // Fallback to email client method
-      const emailSubject = `[Code & Chill Feedback] ${formData.category ? `[${feedbackCategories.find(c => c.value === formData.category)?.label}] ` : ''}${formData.subject}`;
-      
-      const emailBody = `
+    const emailBody = `
 Feedback from Code & Chill Platform
 
 User Details:
@@ -138,33 +81,71 @@ ${formData.message}
 ---
 Sent from Code & Chill Feedback System
 Timestamp: ${new Date().toLocaleString()}
-      `.trim();
+    `.trim();
 
-      // Create mailto link
-      const mailtoLink = `mailto:singhmahesh2924@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
-      
-      // Open email client
-      window.location.href = mailtoLink;
-      
-      // Mark as submitted
-      setSubmitted(true);
-      
-      // Reset form after a delay
-      setTimeout(() => {
-        setIsOpen(false);
-        setSubmitted(false);
-        setFormData({
-          name: user?.name || '',
-          email: user?.email || '',
-          category: '',
-          subject: '',
-          message: '',
-          rating: ''
-        });
-      }, 2000);
+    // Try EmailJS first (if configured)
+    try {
+      if (import.meta.env.VITE_EMAILJS_SERVICE_ID &&
+        import.meta.env.VITE_EMAILJS_TEMPLATE_ID &&
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY &&
+        import.meta.env.VITE_EMAILJS_PUBLIC_KEY !== 'your_emailjs_public_key') {
 
+        await emailjs.send(
+          import.meta.env.VITE_EMAILJS_SERVICE_ID,
+          import.meta.env.VITE_EMAILJS_TEMPLATE_ID,
+          {
+            from_name: formData.name,
+            from_email: formData.email,
+            subject: emailSubject,
+            message: emailBody,
+            to_email: 'maheshsingh2008tm@gmail.com'
+          },
+          import.meta.env.VITE_EMAILJS_PUBLIC_KEY
+        );
+
+        console.log('✅ Feedback sent via EmailJS');
+        return true;
+      }
+    } catch (emailjsError) {
+      console.log('EmailJS failed, using mailto fallback:', emailjsError);
+    }
+
+    // Fallback to mailto
+    const mailtoLink = `mailto:maheshsingh2008tm@gmail.com?subject=${encodeURIComponent(emailSubject)}&body=${encodeURIComponent(emailBody)}`;
+    window.open(mailtoLink, '_blank');
+
+    return true;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSubmitting(true);
+    setError(null);
+
+    try {
+      const success = await sendEmailDirectly();
+
+      if (success) {
+        setSubmitted(true);
+
+        // Reset form after delay
+        setTimeout(() => {
+          setIsOpen(false);
+          setSubmitted(false);
+          setError(null);
+          setFormData({
+            name: user?.name || '',
+            email: user?.email || '',
+            category: '',
+            subject: '',
+            message: '',
+            rating: ''
+          });
+        }, 3000);
+      }
     } catch (error) {
       console.error('Error sending feedback:', error);
+      setError('Failed to send feedback. Please try again.');
     } finally {
       setIsSubmitting(false);
     }
@@ -181,14 +162,13 @@ Timestamp: ${new Date().toLocaleString()}
         <DialogContent className="sm:max-w-md bg-gray-900 border-gray-700">
           <div className="text-center py-8">
             <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-              <Send className="w-8 h-8 text-green-600" />
+              <CheckCircle className="w-8 h-8 text-green-600" />
             </div>
             <h3 className="text-lg font-semibold text-white mb-2">
-              Thank You for Your Feedback!
+              Feedback Sent Successfully!
             </h3>
             <p className="text-gray-400 text-sm">
-              Your feedback has been received and will be sent to our admin team. 
-              We appreciate your input to help improve Code & Chill!
+              Thank you for your feedback! We appreciate your input to help improve Code & Chill.
             </p>
           </div>
         </DialogContent>
@@ -208,7 +188,7 @@ Timestamp: ${new Date().toLocaleString()}
             Send Feedback
           </DialogTitle>
         </DialogHeader>
-        
+
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* User Info */}
           <div className="grid grid-cols-2 gap-4">
@@ -261,11 +241,10 @@ Timestamp: ${new Date().toLocaleString()}
                   key={rating}
                   type="button"
                   onClick={() => handleInputChange('rating', rating.toString())}
-                  className={`p-1 rounded transition-colors ${
-                    parseInt(formData.rating) >= rating
-                      ? 'text-yellow-400'
-                      : 'text-gray-500 hover:text-yellow-300'
-                  }`}
+                  className={`p-1 rounded transition-colors ${parseInt(formData.rating) >= rating
+                    ? 'text-yellow-400'
+                    : 'text-gray-500 hover:text-yellow-300'
+                    }`}
                 >
                   <Star className="w-6 h-6" fill={parseInt(formData.rating) >= rating ? 'currentColor' : 'none'} />
                 </button>
@@ -337,8 +316,8 @@ Timestamp: ${new Date().toLocaleString()}
         </form>
 
         <div className="text-xs text-gray-500 mt-4 p-3 bg-gray-800/50 rounded-lg">
-          <p className="mb-1">📧 This will open your email client with pre-filled feedback.</p>
-          <p>Your feedback will be sent to: <span className="text-blue-400">singhmahesh2924@gmail.com</span></p>
+          <p className="mb-1">📧 Your feedback will be sent directly to our team.</p>
+          <p>Email: <span className="text-blue-400">maheshsingh2008tm@gmail.com</span></p>
         </div>
       </DialogContent>
     </Dialog>

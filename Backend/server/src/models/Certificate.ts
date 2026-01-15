@@ -44,8 +44,7 @@ const CertificateSchema: Schema = new Schema({
   },
   certificateId: {
     type: String,
-    required: true,
-    unique: true
+    required: true
   },
   issuedAt: {
     type: Date,

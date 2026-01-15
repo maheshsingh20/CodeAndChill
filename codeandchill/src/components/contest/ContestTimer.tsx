@@ -54,8 +54,14 @@ export const ContestTimer: React.FC<ContestTimerProps> = ({ startTime, endTime, 
         setTimeLeft(timeString);
         setLabel(newLabel);
       } else {
-        // Time's up, trigger a refresh
-        window.location.reload();
+        // Time's up, update status instead of refreshing
+        if (status === 'upcoming') {
+          setTimeLeft('Contest Started');
+          setLabel('');
+        } else if (status === 'active') {
+          setTimeLeft('Contest Ended');
+          setLabel('');
+        }
       }
     };
 

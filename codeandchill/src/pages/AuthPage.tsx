@@ -9,13 +9,36 @@ import {
   TabsList,
   TabsTrigger,
 } from "@/components/ui/tabs";
-import { Code } from "lucide-react";
+import { Code, Github } from "lucide-react";
 import { performFreshLogin } from "@/utils/cleanup";
 import { TokenManager } from "@/utils/tokenManager";
+import { API_BASE_URL } from "@/constants";
 
 interface AuthPageProps {
   login: (token: string) => void;
 }
+
+// Google Icon Component
+const GoogleIcon = () => (
+  <svg className="w-5 h-5" viewBox="0 0 24 24">
+    <path
+      fill="#4285F4"
+      d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"
+    />
+    <path
+      fill="#34A853"
+      d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"
+    />
+    <path
+      fill="#FBBC05"
+      d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z"
+    />
+    <path
+      fill="#EA4335"
+      d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
+    />
+  </svg>
+);
 
 export function AuthPage({ login }: AuthPageProps) {
   const [loading, setLoading] = useState(false);
@@ -175,11 +198,10 @@ export function AuthPage({ login }: AuthPageProps) {
       // Perform cleanup before login to avoid token conflicts
       await performFreshLogin();
 
-      const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
       const endpoint =
         type === "login"
-          ? `${API_URL}/api/auth/login`
-          : `${API_URL}/api/auth/signup`;
+          ? `${API_BASE_URL}/auth/login`
+          : `${API_BASE_URL}/auth/signup`;
       const payload =
         type === "login" ? { email, password } : { name, email, password };
 
@@ -212,22 +234,7 @@ export function AuthPage({ login }: AuthPageProps) {
   };
 
   return (
-    <div className="min-h-screen relative overflow-hidden bg-gradient-to-br from-gray-950 via-gray-900 to-black">
-      {/* Matching Homepage Background */}
-      <div className="fixed inset-0 -z-10">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
-        <div className="absolute top-1/2 left-1/2 w-96 h-96 bg-indigo-500/5 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
-      </div>
-
-      {/* Animated Grid Pattern */}
-      <div className="absolute inset-0 -z-10 opacity-10">
-        <div className="absolute inset-0" style={{
-          backgroundImage: 'linear-gradient(rgba(139, 92, 246, 0.1) 1px, transparent 1px), linear-gradient(90deg, rgba(139, 92, 246, 0.1) 1px, transparent 1px)',
-          backgroundSize: '50px 50px'
-        }} />
-      </div>
-
+    <div className="min-h-screen bg-black overflow-hidden">
       <div className="flex items-center justify-center min-h-screen px-4 py-12">
         <div className="w-full max-w-md">
           {/* Header */}
@@ -241,13 +248,13 @@ export function AuthPage({ login }: AuthPageProps) {
                 Code & Chill
               </span>
             </div>
-            <p className="text-slate-400 text-lg font-medium">
+            <p className="bg-gradient-to-r from-slate-400 via-slate-300 to-slate-400 bg-clip-text text-transparent text-lg font-medium">
               Your Professional Learning Platform
             </p>
           </div>
 
           <Tabs defaultValue="login" className="w-full">
-            <TabsList className="grid w-full grid-cols-2 mb-8 h-14 bg-gray-800/50 backdrop-blur-xl border border-gray-700/50 rounded-xl p-1">
+            <TabsList className="grid w-full grid-cols-2 mb-8 h-14 bg-gradient-to-br from-gray-900 via-black to-gray-800 backdrop-blur-xl border border-gray-700 rounded-xl p-1">
               <TabsTrigger
                 value="login"
                 className="text-base font-semibold rounded-lg data-[state=active]:bg-gradient-to-r data-[state=active]:from-purple-600 data-[state=active]:to-blue-600 data-[state=active]:text-white transition-all duration-300"
@@ -263,20 +270,17 @@ export function AuthPage({ login }: AuthPageProps) {
             </TabsList>
 
             <TabsContent value="login" className="mt-0">
-              <div className="bg-gray-800/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden">
-                {/* Gradient Border Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-indigo-500/10 rounded-2xl blur-xl -z-10" />
-
+              <div className="bg-gradient-to-br from-gray-900 via-black to-gray-800 backdrop-blur-xl border border-gray-700 hover:border-gray-600 rounded-md shadow-2xl overflow-hidden transition-all duration-300">
                 <div className="p-8">
                   <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold text-white mb-2">Welcome Back</h2>
-                    <p className="text-slate-400">
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent mb-2">Welcome Back</h2>
+                    <p className="bg-gradient-to-r from-slate-400 via-slate-300 to-slate-400 bg-clip-text text-transparent">
                       Enter your credentials to continue learning
                     </p>
                   </div>
                   <div className="space-y-6">
                     <div className="space-y-3">
-                      <Label htmlFor="email-login" className="text-sm font-semibold text-slate-300">Email Address</Label>
+                      <Label htmlFor="email-login" className="text-sm font-semibold bg-gradient-to-r from-slate-300 via-slate-200 to-slate-300 bg-clip-text text-transparent">Email Address</Label>
                       <Input
                         id="email-login"
                         type="email"
@@ -294,7 +298,7 @@ export function AuthPage({ login }: AuthPageProps) {
                       )}
                     </div>
                     <div className="space-y-3">
-                      <Label htmlFor="password-login" className="text-sm font-semibold text-slate-300">Password</Label>
+                      <Label htmlFor="password-login" className="text-sm font-semibold bg-gradient-to-r from-slate-300 via-slate-200 to-slate-300 bg-clip-text text-transparent">Password</Label>
                       <Input
                         id="password-login"
                         type="password"
@@ -328,26 +332,55 @@ export function AuthPage({ login }: AuthPageProps) {
                         </span>
                       ) : "Log In"}
                     </Button>
+
+                    {/* OAuth Divider */}
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-gray-600" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-gray-800 px-2 text-gray-400">Or continue with</span>
+                      </div>
+                    </div>
+
+                    {/* OAuth Buttons */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        onClick={() => window.location.href = `${API_BASE_URL}/auth/github`}
+                        disabled={loading}
+                        variant="outline"
+                        className="h-12 bg-gray-900/50 border-gray-600 text-white hover:bg-gray-800 hover:border-gray-500 transition-all duration-300"
+                      >
+                        <Github className="w-5 h-5 mr-2" />
+                        GitHub
+                      </Button>
+                      <Button
+                        onClick={() => window.location.href = `${API_BASE_URL}/auth/google`}
+                        disabled={loading}
+                        variant="outline"
+                        className="h-12 bg-gray-900/50 border-gray-600 text-white hover:bg-gray-800 hover:border-gray-500 transition-all duration-300"
+                      >
+                        <GoogleIcon />
+                        <span className="ml-2">Google</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>
             </TabsContent>
 
             <TabsContent value="signup" className="mt-0">
-              <div className="bg-gray-800/40 backdrop-blur-xl border border-gray-700/50 rounded-2xl shadow-2xl overflow-hidden relative">
-                {/* Gradient Border Effect */}
-                <div className="absolute inset-0 bg-gradient-to-r from-purple-500/10 via-blue-500/10 to-indigo-500/10 rounded-2xl blur-xl -z-10" />
-
+              <div className="bg-gradient-to-br from-gray-900 via-black to-gray-800 backdrop-blur-xl border border-gray-700 hover:border-gray-600 rounded-md shadow-2xl overflow-hidden relative transition-all duration-300">
                 <div className="p-8">
                   <div className="text-center mb-8">
-                    <h2 className="text-3xl font-bold text-white mb-2">Create Account</h2>
-                    <p className="text-slate-400">
+                    <h2 className="text-3xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent mb-2">Create Account</h2>
+                    <p className="bg-gradient-to-r from-slate-400 via-slate-300 to-slate-400 bg-clip-text text-transparent">
                       Start your learning journey today
                     </p>
                   </div>
                   <div className="space-y-5">
                     <div className="space-y-3">
-                      <Label htmlFor="name-signup" className="text-sm font-semibold text-slate-300">Full Name</Label>
+                      <Label htmlFor="name-signup" className="text-sm font-semibold bg-gradient-to-r from-slate-300 via-slate-200 to-slate-300 bg-clip-text text-transparent">Full Name</Label>
                       <Input
                         id="name-signup"
                         value={name}
@@ -364,7 +397,7 @@ export function AuthPage({ login }: AuthPageProps) {
                       )}
                     </div>
                     <div className="space-y-3">
-                      <Label htmlFor="email-signup" className="text-sm font-semibold text-slate-300">Email Address</Label>
+                      <Label htmlFor="email-signup" className="text-sm font-semibold bg-gradient-to-r from-slate-300 via-slate-200 to-slate-300 bg-clip-text text-transparent">Email Address</Label>
                       <Input
                         id="email-signup"
                         type="email"
@@ -382,7 +415,7 @@ export function AuthPage({ login }: AuthPageProps) {
                       )}
                     </div>
                     <div className="space-y-3">
-                      <Label htmlFor="password-signup" className="text-sm font-semibold text-slate-300">Password</Label>
+                      <Label htmlFor="password-signup" className="text-sm font-semibold bg-gradient-to-r from-slate-300 via-slate-200 to-slate-300 bg-clip-text text-transparent">Password</Label>
                       <Input
                         id="password-signup"
                         type="password"
@@ -401,7 +434,7 @@ export function AuthPage({ login }: AuthPageProps) {
                       {password && !passwordError && (
                         <div className="space-y-2 p-3 bg-gray-900/30 rounded-lg border border-gray-700/50">
                           <div className="flex items-center justify-between text-xs">
-                            <span className="text-slate-400 font-medium">Password Strength:</span>
+                            <span className="bg-gradient-to-r from-slate-400 via-slate-300 to-slate-400 bg-clip-text text-transparent font-medium">Password Strength:</span>
                             <span className={`font-bold ${getPasswordStrength(password).strength === 1 ? 'text-red-400' :
                               getPasswordStrength(password).strength === 2 ? 'text-orange-400' :
                                 getPasswordStrength(password).strength === 3 ? 'text-yellow-400' :
@@ -425,7 +458,7 @@ export function AuthPage({ login }: AuthPageProps) {
                       )}
                     </div>
                     <div className="space-y-3">
-                      <Label htmlFor="confirm-password-signup" className="text-sm font-semibold text-slate-300">Confirm Password</Label>
+                      <Label htmlFor="confirm-password-signup" className="text-sm font-semibold bg-gradient-to-r from-slate-300 via-slate-200 to-slate-300 bg-clip-text text-transparent">Confirm Password</Label>
                       <Input
                         id="confirm-password-signup"
                         type="password"
@@ -464,6 +497,38 @@ export function AuthPage({ login }: AuthPageProps) {
                         </span>
                       ) : "Create Account"}
                     </Button>
+
+                    {/* OAuth Divider */}
+                    <div className="relative">
+                      <div className="absolute inset-0 flex items-center">
+                        <span className="w-full border-t border-gray-600" />
+                      </div>
+                      <div className="relative flex justify-center text-xs uppercase">
+                        <span className="bg-gray-800 px-2 text-gray-400">Or continue with</span>
+                      </div>
+                    </div>
+
+                    {/* OAuth Buttons */}
+                    <div className="grid grid-cols-2 gap-3">
+                      <Button
+                        onClick={() => window.location.href = `${API_BASE_URL}/auth/github`}
+                        disabled={loading}
+                        variant="outline"
+                        className="h-12 bg-gray-900/50 border-gray-600 text-white hover:bg-gray-800 hover:border-gray-500 transition-all duration-300"
+                      >
+                        <Github className="w-5 h-5 mr-2" />
+                        GitHub
+                      </Button>
+                      <Button
+                        onClick={() => window.location.href = `${API_BASE_URL}/auth/google`}
+                        disabled={loading}
+                        variant="outline"
+                        className="h-12 bg-gray-900/50 border-gray-600 text-white hover:bg-gray-800 hover:border-gray-500 transition-all duration-300"
+                      >
+                        <GoogleIcon />
+                        <span className="ml-2">Google</span>
+                      </Button>
+                    </div>
                   </div>
                 </div>
               </div>

@@ -605,4 +605,267 @@ export class LearningPathService {
       throw error;
     }
   }
+
+  // Categories and Search
+  static async getCategories() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/learning-paths/categories`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch categories');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching categories:', error);
+      // Fallback to static categories
+      return [
+        {
+          _id: 'web-development',
+          name: 'Web Development',
+          description: 'Master modern web technologies from frontend to backend',
+          pathCount: 12,
+          totalEnrollments: 15420,
+          averageRating: 4.8,
+          difficulty: 'mixed',
+          estimatedTime: '3-6 months'
+        },
+        {
+          _id: 'mobile-development',
+          name: 'Mobile Development',
+          description: 'Build native and cross-platform mobile applications',
+          pathCount: 8,
+          totalEnrollments: 9850,
+          averageRating: 4.7,
+          difficulty: 'intermediate',
+          estimatedTime: '4-8 months'
+        }
+      ];
+    }
+  }
+
+  static async searchPaths(searchParams: {
+    query?: string;
+    difficulty?: string[];
+    duration?: string[];
+    rating?: number;
+    tags?: string[];
+    sortBy?: string;
+    page?: number;
+    limit?: number;
+  }) {
+    try {
+      const params = new URLSearchParams();
+      
+      if (searchParams.query) params.append('query', searchParams.query);
+      if (searchParams.difficulty?.length) params.append('difficulty', searchParams.difficulty.join(','));
+      if (searchParams.rating) params.append('rating', searchParams.rating.toString());
+      if (searchParams.tags?.length) params.append('tags', searchParams.tags.join(','));
+      if (searchParams.sortBy) params.append('sortBy', searchParams.sortBy);
+      if (searchParams.page) params.append('page', searchParams.page.toString());
+      if (searchParams.limit) params.append('limit', searchParams.limit.toString());
+
+      const response = await fetch(`${API_BASE_URL}/learning-paths/search?${params}`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to search learning paths');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error searching learning paths:', error);
+      // Fallback to existing method
+      const difficulty = searchParams.difficulty?.length ? searchParams.difficulty[0] : undefined;
+      const tags = searchParams.tags;
+      
+      return await this.getLearningPaths(difficulty, tags, searchParams.page, searchParams.limit);
+    }
+  }
+
+  // Leaderboard and Analytics
+  static async getLeaderboard(timeframe: 'week' | 'month' | 'all' = 'month', pathId?: string) {
+    try {
+      const params = new URLSearchParams({
+        timeframe,
+        ...(pathId && { pathId })
+      });
+
+      const response = await fetch(`${API_BASE_URL}/learning-paths/leaderboard?${params}`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch leaderboard');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching leaderboard:', error);
+      // Return mock data as fallback
+      return {
+        users: [
+          {
+            id: '1',
+            name: 'Alex Chen',
+            avatar: '/avatars/alex.jpg',
+            rank: 1,
+            totalPoints: 15420,
+            completedPaths: 8,
+            currentStreak: 45,
+            achievements: []
+          }
+        ]
+      };
+    }
+  }
+
+  static async getUserAnalytics(timeframe: 'week' | 'month' | 'year' = 'month') {
+    try {
+      const response = await fetch(`${API_BASE_URL}/learning-paths/user/analytics?timeframe=${timeframe}`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user analytics');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching user analytics:', error);
+      // Return mock data as fallback
+      return {
+        totalHours: 234,
+        completedPaths: 8,
+        currentStreak: 45,
+        weeklyActivity: []
+      };
+    }
+  }
+
+  static async getUserStats() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/learning-paths/user/stats`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch user stats');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching user stats:', error);
+      // Return mock data as fallback
+      return {
+        totalHours: 234,
+        completedPaths: 8,
+        currentStreak: 45,
+        totalPoints: 15420
+      };
+    }
+  }
+
+  static async getWeeklyActivity() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/learning-paths/user/activity/weekly`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch weekly activity');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching weekly activity:', error);
+      // Return mock data as fallback
+      return [
+        { date: '2024-01-08', hours: 2.5, courses: 1, points: 150 }
+      ];
+    }
+  }
+
+  // Path Creation (Studio)
+  static async createLearningPath(pathData: any) {
+    try {
+      // Mock creation for now
+      return { _id: 'new-path-id', ...pathData };
+    } catch (error) {
+      console.error('Error creating learning path:', error);
+      throw error;
+    }
+  }
+
+  static async updateLearningPath(pathId: string, pathData: any) {
+    try {
+      // Mock update for now
+      return { _id: pathId, ...pathData };
+    } catch (error) {
+      console.error('Error updating learning path:', error);
+      throw error;
+    }
+  }
+
+  static async deleteLearningPath(pathId: string) {
+    try {
+      // Mock deletion for now
+      return { message: 'Path deleted successfully' };
+    } catch (error) {
+      console.error('Error deleting learning path:', error);
+      throw error;
+    }
+  }
+
+  // Available tags and courses for creation
+  static async getAvailableTags() {
+    try {
+      // Return static tags for now
+      return [
+        'javascript', 'python', 'react', 'nodejs', 'mongodb', 'machine-learning',
+        'data-science', 'mobile', 'ios', 'android', 'tensorflow', 'react-native',
+        'backend', 'frontend', 'fullstack', 'api', 'database', 'cloud', 'aws'
+      ];
+    } catch (error) {
+      console.error('Error fetching available tags:', error);
+      throw error;
+    }
+  }
+
+  static async getAvailableCourses() {
+    try {
+      // Return mock courses for now
+      return [];
+    } catch (error) {
+      console.error('Error fetching available courses:', error);
+      throw error;
+    }
+  }
+
+  // Global stats for navigation
+  static async getGlobalStats() {
+    try {
+      const response = await fetch(`${API_BASE_URL}/learning-paths/stats/global`, {
+        headers: this.getAuthHeaders()
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch global stats');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error fetching global stats:', error);
+      // Return mock stats as fallback
+      return {
+        totalPaths: 72,
+        totalStudents: 89200,
+        averageRating: 4.8,
+        totalCategories: 8
+      };
+    }
+  }
 }

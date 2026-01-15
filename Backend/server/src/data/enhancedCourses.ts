@@ -2,10 +2,11 @@ export const enhancedCoursesData = [
   {
     title: "Operating Systems",
     slug: "operating-systems",
-    description: "Master the fundamentals of operating systems including process management, memory allocation, file systems, and system calls.",
+    description:
+      "Master the fundamentals of operating systems including process management, memory allocation, file systems, and system calls.",
     tutor: {
       name: "Dr. Sarah Johnson",
-      image: "https://randomuser.me/api/portraits/women/68.jpg"
+      image: "https://randomuser.me/api/portraits/women/68.jpg",
     },
     cost: 0,
     estimatedDuration: "8 weeks",
@@ -15,7 +16,7 @@ export const enhancedCoursesData = [
       "Understand process and thread management",
       "Master memory management techniques",
       "Learn file system operations",
-      "Implement system calls and interrupts"
+      "Implement system calls and interrupts",
     ],
     modules: [
       {
@@ -37,7 +38,7 @@ Key Functions of an Operating System:
 • Security and Protection: Ensures system integrity and user data protection
 • User Interface: Provides command-line or graphical interfaces for user interaction
 
-The OS serves as a platform that abstracts the complexity of hardware, making it easier for developers to write applications without worrying about low-level hardware details.`
+The OS serves as a platform that abstracts the complexity of hardware, making it easier for developers to write applications without worrying about low-level hardware details.`,
               },
               {
                 title: "Types of Operating Systems",
@@ -66,7 +67,7 @@ The OS serves as a platform that abstracts the complexity of hardware, making it
    • Windows: User-friendly GUI, widely used in personal computers
    • Linux: Open-source, highly customizable, popular in servers
    • macOS: Apple's OS with elegant design and Unix-based architecture
-   • Android/iOS: Mobile operating systems for smartphones and tablets`
+   • Android/iOS: Mobile operating systems for smartphones and tablets`,
               },
               {
                 title: "OS Architecture and Components",
@@ -110,9 +111,9 @@ Key OS Components:
 6. Security Manager:
    • Implements authentication and authorization
    • Manages user accounts and permissions
-   • Protects system resources from unauthorized access`
-              }
-            ]
+   • Protects system resources from unauthorized access`,
+              },
+            ],
           },
           {
             title: "System Calls and APIs",
@@ -165,7 +166,7 @@ System Call Execution Process:
 3. Kernel validates parameters
 4. Kernel executes requested operation
 5. Results returned to application
-6. CPU switches back to user mode`
+6. CPU switches back to user mode`,
               },
               {
                 title: "API vs System Calls",
@@ -193,4 +194,12 @@ Relationship between API and System Calls:
 • System calls provide the actual OS functionality
 
 Example - File Reading:
-API Level (C l
+API Level (C library): fopen(), fread(), fclose()`,
+              },
+            ],
+          },
+        ],
+      },
+    ],
+  },
+];

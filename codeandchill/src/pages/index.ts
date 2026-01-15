@@ -27,9 +27,21 @@ export { AiAssistantPage } from "./AiAssistantPage";
 export { BlogPage } from "./BlogPage";
 export { BlogDetailPage } from "./BlogDetailPage";
 export { PlaygroundPage } from "./PlaygroundPage";
+export { ProblemSolverPage } from "./ProblemSolverPage";
 export { QuizPage } from './QuizPage';
 export { DashboardPage } from './DashboardPage';
 export { ForumPage } from './ForumPage';
 export { SkillTestsPage } from './SkillTestsPage';
 export { SkillTestTakingPage } from './SkillTestTakingPage';
 export { CertificatesPage } from './CertificatesPage';
+
+// Career pages
+export { CareersPage } from './CareersPage';
+export { JobDetailPage } from './JobDetailPage';
+export { MyApplicationsPage } from './MyApplicationsPage';
+
+// About page
+export { AboutPage } from './AboutPage';
+
+// Chat page
+export { ChatPage } from './ChatPage';

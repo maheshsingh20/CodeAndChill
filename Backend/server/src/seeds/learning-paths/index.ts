@@ -3,6 +3,12 @@ import { Course } from '../../models/Course';
 import { User } from '../../models/User';
 import { dsaPathData, dsaCourses, dsaMilestones } from './dsa-path';
 import { webDevPathData, webDevCourses, webDevMilestones } from './web-dev-path';
+import { 
+  mlPathData, mlCourses, mlMilestones,
+  devopsPathData, devopsCourses, devopsMilestones,
+  mobilePathData, mobileCourses, mobileMilestones
+} from './advanced-paths';
+import { cybersecurityPathData, cybersecurityCourses, cybersecurityMilestones } from './cybersecurity-path';
 
 interface LearningPathSeed {
   pathData: any;
@@ -20,6 +26,26 @@ const learningPathSeeds: LearningPathSeed[] = [
     pathData: webDevPathData,
     courses: webDevCourses,
     milestones: webDevMilestones
+  },
+  {
+    pathData: mlPathData,
+    courses: mlCourses,
+    milestones: mlMilestones
+  },
+  {
+    pathData: devopsPathData,
+    courses: devopsCourses,
+    milestones: devopsMilestones
+  },
+  {
+    pathData: mobilePathData,
+    courses: mobileCourses,
+    milestones: mobileMilestones
+  },
+  {
+    pathData: cybersecurityPathData,
+    courses: cybersecurityCourses,
+    milestones: cybersecurityMilestones
   }
 ];
 

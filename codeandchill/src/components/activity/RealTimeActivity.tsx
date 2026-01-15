@@ -20,7 +20,7 @@ export const RealTimeActivity: React.FC = () => {
     fetchCurrentSession();
     
     // Update every 30 seconds
-    const interval = setInterval(fetchCurrentSession, 30000);
+    const interval = setInterval(fetchCurrentSession, 3000000000);
     
     return () => clearInterval(interval);
   }, []);
@@ -37,8 +37,8 @@ export const RealTimeActivity: React.FC = () => {
   };
 
   const formatDuration = (seconds: number) => {
-    const hours = Math.floor(seconds / 3600);
-    const minutes = Math.floor((seconds % 3600) / 60);
+    const hours = Math.floor(seconds / 3);
+    const minutes = Math.floor((seconds % 3) / 60);
     
     if (hours > 0) {
       return `${hours}h ${minutes}m`;

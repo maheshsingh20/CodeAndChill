@@ -1,5 +1,5 @@
 import { ReactNode } from "react";
-import { Button } from "@/components/ui/button";
+import { NeonButton } from "@/components/ui/NeonCard";
 import { ArrowRight } from "lucide-react";
 import { Link } from "react-router-dom";
 
@@ -17,23 +17,20 @@ export function Section({ title, viewAllLink, children }: SectionProps) {
       <div className="flex items-center justify-between mb-6">
         <h2
           id={headingId}
-          className="text-2xl md:text-3xl font-bold tracking-tight text-foreground"
+          className="text-2xl md:text-3xl font-bold tracking-tight bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent"
         >
           {title}
         </h2>
 
         {viewAllLink && (
-          <Button
-            asChild
-            variant="ghost"
-            className="btn-ghost hidden sm:flex text-sm transition-colors duration-200"
-            aria-label={`View all ${title.toLowerCase()}`}
-          >
-            <Link to={viewAllLink}>
-              View All
-              <ArrowRight className="ml-2 h-4 w-4" />
-            </Link>
-          </Button>
+          <Link to={viewAllLink} className="hidden sm:block">
+            <NeonButton variant="outline" glowColor="blue" className="text-sm">
+              <span className="flex items-center gap-2">
+                View All
+                <ArrowRight className="h-4 w-4" />
+              </span>
+            </NeonButton>
+          </Link>
         )}
       </div>
 

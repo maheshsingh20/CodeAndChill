@@ -7,14 +7,14 @@ import { Progress } from '@/components/ui/progress';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LearningPathService, LearningPath, UserLearningPath } from '@/services/learningPathService';
 import { useUser } from '@/contexts/UserContext';
-import { 
-  BookOpen, 
-  Clock, 
-  Users, 
-  Star, 
-  Award, 
-  Target, 
-  CheckCircle, 
+import {
+  BookOpen,
+  Clock,
+  Users,
+  Star,
+  Award,
+  Target,
+  CheckCircle,
   PlayCircle,
   ArrowLeft,
   Trophy,
@@ -75,10 +75,10 @@ export const LearningPathDetailPage: React.FC = () => {
     try {
       const progress = await LearningPathService.getPathProgress(pathId!);
       setUserProgress(progress);
-      
+
       // Update streak when user accesses the page
       await LearningPathService.updateStreak();
-      
+
       // Fetch certificate if completed
       if (progress.overallProgress === 100) {
         fetchCertificate();
@@ -135,7 +135,7 @@ export const LearningPathDetailPage: React.FC = () => {
     try {
       await LearningPathService.updateCourseProgress(pathId, courseId, progress, timeSpent);
       await fetchUserProgress();
-      
+
       // Check for new achievements
       await LearningPathService.checkAchievements(pathId);
     } catch (error) {
@@ -208,18 +208,24 @@ export const LearningPathDetailPage: React.FC = () => {
   const isCompleted = progress === 100;
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-900">
+    <div className="min-h-screen bg-black">
+      {/* Background Effects */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+      </div>
+
       <div className="max-w-7xl mx-auto p-6">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <Link 
-            to="/learning-paths" 
+          <Link
+            to="/learning-paths"
             className="inline-flex items-center gap-2 text-purple-400 hover:text-purple-300 transition-colors"
           >
             <ArrowLeft size={16} />
             Back to Learning Paths
           </Link>
-          
+
           <div className="flex items-center gap-3">
             <Button
               variant="outline"
@@ -241,18 +247,18 @@ export const LearningPathDetailPage: React.FC = () => {
         </div>
 
         {/* Hero Section */}
-        <div className="bg-gradient-to-r from-purple-900/40 to-blue-900/40 rounded-2xl p-8 mb-8 border border-purple-500/20">
+        <div className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-md p-8 mb-8 hover:border-gray-600 transition-all duration-300">
           <div className="flex items-start gap-6">
             <div className="text-7xl">{path.icon}</div>
             <div className="flex-1">
               <div className="flex items-center gap-3 mb-3">
-                <h1 className="text-4xl font-bold text-white">{path.title}</h1>
+                <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">{path.title}</h1>
                 <Badge className={`${LearningPathService.getDifficultyBadgeColor(path.difficulty)} border`}>
                   {path.difficulty.charAt(0).toUpperCase() + path.difficulty.slice(1)}
                 </Badge>
               </div>
-              <p className="text-gray-300 text-lg mb-6">{path.description}</p>
-              
+              <p className="text-lg mb-6 bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">{path.description}</p>
+
               {/* Stats Grid */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
                 <div className="bg-gray-800/50 rounded-lg p-4">
@@ -260,28 +266,28 @@ export const LearningPathDetailPage: React.FC = () => {
                     <Clock size={18} />
                     <span className="text-sm font-medium">Duration</span>
                   </div>
-                  <p className="text-white font-bold">{LearningPathService.formatDuration(path.estimatedDuration)}</p>
+                  <p className="font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">{LearningPathService.formatDuration(path.estimatedDuration)}</p>
                 </div>
                 <div className="bg-gray-800/50 rounded-lg p-4">
                   <div className="flex items-center gap-2 text-green-400 mb-1">
                     <BookOpen size={18} />
                     <span className="text-sm font-medium">Courses</span>
                   </div>
-                  <p className="text-white font-bold">{path.courses.length}</p>
+                  <p className="font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">{path.courses.length}</p>
                 </div>
                 <div className="bg-gray-800/50 rounded-lg p-4">
                   <div className="flex items-center gap-2 text-purple-400 mb-1">
                     <Users size={18} />
                     <span className="text-sm font-medium">Enrolled</span>
                   </div>
-                  <p className="text-white font-bold">{path.enrollmentCount.toLocaleString()}</p>
+                  <p className="font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">{path.enrollmentCount.toLocaleString()}</p>
                 </div>
                 <div className="bg-gray-800/50 rounded-lg p-4">
                   <div className="flex items-center gap-2 text-yellow-400 mb-1">
                     <Star size={18} />
                     <span className="text-sm font-medium">Rating</span>
                   </div>
-                  <p className="text-white font-bold">{path.averageRating.toFixed(1)} ({path.totalRatings})</p>
+                  <p className="font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">{path.averageRating.toFixed(1)} ({path.totalRatings})</p>
                 </div>
               </div>
 
@@ -294,7 +300,7 @@ export const LearningPathDetailPage: React.FC = () => {
                         <div className="flex items-center gap-3">
                           <TrendingUp className="text-blue-400" size={24} />
                           <div>
-                            <span className="text-white font-semibold text-lg">Your Progress</span>
+                            <span className="font-semibold text-lg bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Your Progress</span>
                             <p className="text-gray-400 text-sm">Keep up the great work!</p>
                           </div>
                         </div>
@@ -304,7 +310,7 @@ export const LearningPathDetailPage: React.FC = () => {
                       </div>
                       <div className="relative">
                         <div className="w-full bg-gray-700 rounded-full h-4">
-                          <div 
+                          <div
                             className={`h-4 rounded-full transition-all duration-500 ${LearningPathService.getProgressBarColor(progress)} relative overflow-hidden`}
                             style={{ width: `${progress}%` }}
                           >
@@ -337,7 +343,7 @@ export const LearningPathDetailPage: React.FC = () => {
                           <p className="text-gray-400">Enroll now to track progress, earn certificates, and join the community</p>
                         </div>
                       </div>
-                      <Button 
+                      <Button
                         onClick={handleEnroll}
                         disabled={enrolling}
                         className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8 py-6 text-lg"
@@ -354,7 +360,7 @@ export const LearningPathDetailPage: React.FC = () => {
 
         {/* Main Content Tabs */}
         <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
-          <TabsList className="bg-gray-800/50 border border-gray-700 p-1">
+          <TabsList className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 p-1">
             <TabsTrigger value="overview" className="data-[state=active]:bg-purple-600">
               <BookOpen size={16} className="mr-2" />
               Overview
@@ -382,9 +388,9 @@ export const LearningPathDetailPage: React.FC = () => {
             <div className="grid gap-6 lg:grid-cols-3">
               {/* Course List */}
               <div className="lg:col-span-2">
-                <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+                <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
                   <CardHeader>
-                    <CardTitle className="text-white flex items-center gap-2">
+                    <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center gap-2">
                       <Code size={20} />
                       Course Curriculum ({path.courses.length})
                     </CardTitle>
@@ -397,29 +403,27 @@ export const LearningPathDetailPage: React.FC = () => {
                       const currentProgress = courseProgress?.progress || 0;
 
                       return (
-                        <div 
+                        <div
                           key={course.courseId._id}
                           onClick={() => handleCourseClick(course, index)}
-                          className={`group relative overflow-hidden rounded-xl border transition-all duration-300 ${
-                            canAccess 
-                              ? 'bg-gradient-to-r from-gray-700/40 to-gray-800/40 border-gray-600 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/20 cursor-pointer' 
-                              : 'bg-gray-800/30 border-gray-700 opacity-60 cursor-not-allowed'
-                          }`}
+                          className={`group relative overflow-hidden rounded-xl border transition-all duration-300 ${canAccess
+                            ? 'bg-gradient-to-r from-gray-700/40 to-gray-800/40 border-gray-600 hover:border-purple-500/50 hover:shadow-lg hover:shadow-purple-500/20 cursor-pointer'
+                            : 'bg-gray-800/30 border-gray-700 opacity-60 cursor-not-allowed'
+                            }`}
                         >
                           <div className="flex items-center gap-4 p-5">
-                            <div className={`flex items-center justify-center w-12 h-12 rounded-xl font-bold text-lg transition-all ${
-                              isCompleted 
-                                ? 'bg-green-600 text-white' 
-                                : canAccess 
-                                  ? 'bg-purple-600 text-white group-hover:scale-110' 
-                                  : 'bg-gray-700 text-gray-500'
-                            }`}>
+                            <div className={`flex items-center justify-center w-12 h-12 rounded-xl font-bold text-lg transition-all ${isCompleted
+                              ? 'bg-green-600 text-white'
+                              : canAccess
+                                ? 'bg-purple-600 text-white group-hover:scale-110'
+                                : 'bg-gray-700 text-gray-500'
+                              }`}>
                               {isCompleted ? <CheckCircle size={24} /> : index + 1}
                             </div>
-                            
+
                             <div className="flex-1">
                               <div className="flex items-center gap-2 mb-1">
-                                <h4 className="text-white font-semibold text-lg">{course.courseId.title}</h4>
+                                <h4 className="font-semibold text-lg bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">{course.courseId.title}</h4>
                                 {course.isRequired && (
                                   <Badge variant="outline" className="text-xs border-red-500/50 text-red-400">
                                     Required
@@ -437,7 +441,7 @@ export const LearningPathDetailPage: React.FC = () => {
                                   {course.courseId.difficulty}
                                 </span>
                               </div>
-                              
+
                               {canAccess && currentProgress > 0 && currentProgress < 100 && (
                                 <div className="mt-3">
                                   <div className="flex items-center justify-between text-xs mb-1">
@@ -445,7 +449,7 @@ export const LearningPathDetailPage: React.FC = () => {
                                     <span className="text-purple-400 font-semibold">{currentProgress}%</span>
                                   </div>
                                   <div className="w-full bg-gray-700 rounded-full h-2">
-                                    <div 
+                                    <div
                                       className="bg-gradient-to-r from-purple-500 to-blue-500 h-2 rounded-full transition-all duration-300"
                                       style={{ width: `${currentProgress}%` }}
                                     />
@@ -472,9 +476,9 @@ export const LearningPathDetailPage: React.FC = () => {
 
                 {/* Milestones */}
                 {path.milestones.length > 0 && (
-                  <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700 mt-6">
+                  <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 mt-6">
                     <CardHeader>
-                      <CardTitle className="text-white flex items-center gap-2">
+                      <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center gap-2">
                         <Target size={20} />
                         Learning Milestones ({path.milestones.length})
                       </CardTitle>
@@ -485,19 +489,17 @@ export const LearningPathDetailPage: React.FC = () => {
                         const isCompleted = milestoneProgress?.isCompleted;
 
                         return (
-                          <div key={milestone._id} className={`flex items-start gap-4 p-5 rounded-xl border transition-all ${
-                            isCompleted 
-                              ? 'bg-green-900/20 border-green-500/30' 
-                              : 'bg-gray-700/30 border-gray-600'
-                          }`}>
-                            <div className={`flex items-center justify-center w-12 h-12 rounded-xl font-bold text-lg ${
-                              isCompleted ? 'bg-green-600 text-white' : 'bg-gray-600 text-white'
+                          <div key={milestone._id} className={`flex items-start gap-4 p-5 rounded-xl border transition-all ${isCompleted
+                            ? 'bg-green-900/20 border-green-500/30'
+                            : 'bg-gray-700/30 border-gray-600'
                             }`}>
+                            <div className={`flex items-center justify-center w-12 h-12 rounded-xl font-bold text-lg ${isCompleted ? 'bg-green-600 text-white' : 'bg-gray-600 text-white'
+                              }`}>
                               {isCompleted ? <Award size={24} /> : index + 1}
                             </div>
-                            
+
                             <div className="flex-1">
-                              <h4 className={`font-semibold text-lg mb-1 ${isCompleted ? 'text-green-400' : 'text-white'}`}>
+                              <h4 className={`font-semibold text-lg mb-1 ${isCompleted ? 'text-green-400' : 'bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent'}`}>
                                 {milestone.title}
                               </h4>
                               <p className="text-gray-400 text-sm">{milestone.description}</p>
@@ -520,9 +522,9 @@ export const LearningPathDetailPage: React.FC = () => {
               <div className="space-y-6">
                 {/* Prerequisites */}
                 {path.prerequisites.length > 0 && (
-                  <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+                  <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
                     <CardHeader>
-                      <CardTitle className="text-white text-lg flex items-center gap-2">
+                      <CardTitle className="text-lg flex items-center gap-2 bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">
                         <FileText size={18} />
                         Prerequisites
                       </CardTitle>
@@ -542,9 +544,9 @@ export const LearningPathDetailPage: React.FC = () => {
 
                 {/* Tags */}
                 {path.tags.length > 0 && (
-                  <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+                  <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
                     <CardHeader>
-                      <CardTitle className="text-white text-lg">Topics Covered</CardTitle>
+                      <CardTitle className="text-lg bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Topics Covered</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="flex flex-wrap gap-2">
@@ -560,9 +562,9 @@ export const LearningPathDetailPage: React.FC = () => {
 
                 {/* Creator Info */}
                 {path.createdBy && (
-                  <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+                  <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
                     <CardHeader>
-                      <CardTitle className="text-white text-lg">Created By</CardTitle>
+                      <CardTitle className="text-lg bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Created By</CardTitle>
                     </CardHeader>
                     <CardContent>
                       <div className="flex items-center gap-3">
@@ -570,7 +572,7 @@ export const LearningPathDetailPage: React.FC = () => {
                           {path.createdBy.name?.charAt(0) || 'A'}
                         </div>
                         <div>
-                          <p className="text-white font-semibold">{path.createdBy.name || 'Admin'}</p>
+                          <p className="font-semibold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">{path.createdBy.name || 'Admin'}</p>
                           <p className="text-gray-400 text-sm">Learning Path Creator</p>
                         </div>
                       </div>
@@ -584,17 +586,17 @@ export const LearningPathDetailPage: React.FC = () => {
           {/* Learn Tab */}
           <TabsContent value="learn">
             {selectedCourse ? (
-              <CoursePlayer 
+              <CoursePlayer
                 course={selectedCourse}
                 pathId={pathId!}
                 onProgressUpdate={handleProgressUpdate}
                 onClose={() => setSelectedCourse(null)}
               />
             ) : (
-              <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+              <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
                 <CardContent className="py-20 text-center">
                   <Video size={64} className="mx-auto text-gray-600 mb-4" />
-                  <h3 className="text-xl font-semibold text-white mb-2">Select a Course to Start Learning</h3>
+                  <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Select a Course to Start Learning</h3>
                   <p className="text-gray-400">Choose a course from the overview tab to begin</p>
                 </CardContent>
               </Card>

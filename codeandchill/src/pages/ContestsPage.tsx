@@ -1,12 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { ContestService, Contest } from '@/services/contestService';
-import { ContestTimer } from '@/components/contest/ContestTimer';
-import { Trophy, Users, Clock, Calendar, Tag, Award } from 'lucide-react';
+import { Trophy, Users, Clock, Calendar, Award, ArrowRight } from 'lucide-react';
 
 export const ContestsPage: React.FC = () => {
   const [contests, setContests] = useState<Contest[]>([]);
@@ -45,17 +40,23 @@ export const ContestsPage: React.FC = () => {
     return 'text-red-400';
   };
 
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case 'active': return 'bg-green-500/20 text-green-300 border-green-500/30';
+      case 'upcoming': return 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+      case 'completed': return 'bg-gray-500/20 text-gray-300 border-gray-500/30';
+      default: return 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+    }
+  };
+
   if (loading) {
     return (
-      <div className="min-h-screen p-6">
-        <div className="max-w-7xl mx-auto">
-          <div className="animate-pulse space-y-6">
-            <div className="h-8 bg-gray-700 rounded w-64"></div>
-            <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-64 bg-gray-800 rounded-lg"></div>
-              ))}
-            </div>
+      <div className="w-full min-h-screen bg-black">
+        <div className="container mx-auto max-w-7xl px-4 py-16">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {[...Array(6)].map((_, i) => (
+              <div key={i} className="h-80 bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-md animate-pulse" />
+            ))}
           </div>
         </div>
       </div>
@@ -63,159 +64,186 @@ export const ContestsPage: React.FC = () => {
   }
 
   return (
-    <div className="min-h-screen p-6">
-      <div className="max-w-7xl mx-auto">
+    <div className="w-full min-h-screen bg-black">
+      {/* Background Effects */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-yellow-500/5 rounded-full blur-3xl" />
+      </div>
+
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-16">
         {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-            <Trophy className="text-yellow-400" size={36} />
+        <header className="text-center mb-16">
+          <h1 className="text-4xl md:text-5xl xl:text-6xl font-bold tracking-tight mb-6 bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center justify-center gap-4">
+            <Trophy className="text-yellow-400" size={48} />
             Live Coding Contests
           </h1>
-          <p className="text-gray-300 text-lg">
+          <p className="text-xl text-gray-400 max-w-3xl mx-auto leading-relaxed">
             Compete with developers worldwide in real-time coding challenges
           </p>
-        </div>
+        </header>
 
         {/* Tabs */}
-        <Tabs value={activeTab} onValueChange={setActiveTab} className="mb-8">
-          <TabsList className="bg-gray-800/50 border-gray-700">
-            <TabsTrigger value="all" className="data-[state=active]:bg-purple-600">
-              All Contests
-            </TabsTrigger>
-            <TabsTrigger value="upcoming" className="data-[state=active]:bg-blue-600">
-              Upcoming
-            </TabsTrigger>
-            <TabsTrigger value="active" className="data-[state=active]:bg-green-600">
-              Live Now
-            </TabsTrigger>
-            <TabsTrigger value="completed" className="data-[state=active]:bg-gray-600">
-              Completed
-            </TabsTrigger>
-          </TabsList>
+        <div className="flex flex-wrap justify-center gap-4 mb-12">
+          {[
+            { key: 'all', label: 'All Contests', color: 'purple' },
+            { key: 'upcoming', label: 'Upcoming', color: 'blue' },
+            { key: 'active', label: 'Live Now', color: 'green' },
+            { key: 'completed', label: 'Completed', color: 'gray' }
+          ].map((tab) => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`px-6 py-3 rounded-md font-medium transition-all duration-300 ${activeTab === tab.key
+                  ? 'bg-gradient-to-r from-gray-800 via-gray-900 to-gray-800 border border-gray-500 text-white'
+                  : 'bg-gradient-to-r from-gray-900 via-black to-gray-800 border border-gray-600 text-gray-400 hover:border-gray-500 hover:text-gray-300'
+                }`}
+            >
+              {tab.label}
+            </button>
+          ))}
+        </div>
 
-          <TabsContent value={activeTab} className="mt-6">
-            {contests.length === 0 ? (
-              <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
-                <CardContent className="p-12 text-center">
-                  <Trophy className="mx-auto mb-4 text-gray-500" size={48} />
-                  <h3 className="text-xl font-semibold text-white mb-2">
-                    No contests found
-                  </h3>
-                  <p className="text-gray-400">
-                    {activeTab === 'active' 
-                      ? 'No contests are currently active. Check back soon!'
-                      : `No ${activeTab} contests available at the moment.`
-                    }
-                  </p>
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
-                {contests.map((contest) => (
-                  <Card key={contest._id} className="bg-gray-800/50 backdrop-blur-sm border-gray-700 hover:border-purple-500/50 transition-all duration-300 group">
-                    <CardHeader className="pb-3">
-                      <div className="flex items-start justify-between mb-2">
-                        <Badge className={`${ContestService.getStatusBadgeColor(contest.status)} border`}>
-                          {contest.status.charAt(0).toUpperCase() + contest.status.slice(1)}
-                        </Badge>
-                        {contest.status === 'active' && (
-                          <div className="flex items-center gap-1 text-green-400 text-sm">
-                            <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                            LIVE
-                          </div>
-                        )}
-                      </div>
-                      
-                      <CardTitle className="text-white group-hover:text-purple-300 transition-colors">
-                        {contest.title}
-                      </CardTitle>
-                      
-                      <p className="text-gray-400 text-sm line-clamp-2">
-                        {contest.description}
-                      </p>
-                    </CardHeader>
-
-                    <CardContent className="space-y-4">
-                      {/* Contest Info */}
-                      <div className="space-y-2 text-sm">
-                        <div className="flex items-center gap-2 text-gray-300">
-                          <Calendar size={16} />
-                          <span>{formatDate(contest.startTime)}</span>
-                        </div>
-                        
-                        <div className="flex items-center gap-2 text-gray-300">
-                          <Clock size={16} />
-                          <span>{ContestService.formatDuration(contest.duration)}</span>
-                          {contest.status === 'active' && (
-                            <span className="text-yellow-400 ml-2">
-                              {ContestService.formatTimeRemaining(contest.endTime)}
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center gap-2 text-gray-300">
-                          <Users size={16} />
-                          <span>{contest.participants.length} participants</span>
-                          {contest.maxParticipants && (
-                            <span className="text-gray-500">
-                              / {contest.maxParticipants}
-                            </span>
-                          )}
-                        </div>
-                        
-                        <div className="flex items-center gap-2 text-gray-300">
-                          <Trophy size={16} />
-                          <span className={getDifficultyColor(contest.problems.length)}>
-                            {contest.problems.length} problems
-                          </span>
-                        </div>
-                      </div>
-
-                      {/* Tags */}
-                      {contest.tags.length > 0 && (
-                        <div className="flex flex-wrap gap-1">
-                          {contest.tags.slice(0, 3).map((tag) => (
-                            <Badge key={tag} variant="outline" className="text-xs border-gray-600 text-gray-400">
-                              {tag}
-                            </Badge>
-                          ))}
-                          {contest.tags.length > 3 && (
-                            <Badge variant="outline" className="text-xs border-gray-600 text-gray-400">
-                              +{contest.tags.length - 3}
-                            </Badge>
-                          )}
-                        </div>
-                      )}
-
-                      {/* Prizes */}
-                      {contest.prizes.length > 0 && (
-                        <div className="bg-gray-700/30 rounded-lg p-3">
-                          <div className="flex items-center gap-2 mb-2">
-                            <Award size={14} className="text-yellow-400" />
-                            <span className="text-sm font-medium text-white">Prizes</span>
-                          </div>
-                          <div className="text-xs text-gray-300">
-                            🥇 {contest.prizes[0]?.description}
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Action Button */}
-                      <Link to={`/contests/${contest._id}`} className="block">
-                        <Button 
-                          className="w-full bg-purple-600 hover:bg-purple-700 text-white"
-                          variant="default"
-                        >
-                          {contest.status === 'active' ? 'Join Contest' : 'View Details'}
-                        </Button>
-                      </Link>
-                    </CardContent>
-                  </Card>
-                ))}
+        {/* Main Content */}
+        <main>
+          {contests.length === 0 ? (
+            <div className="text-center py-16">
+              <div className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-md p-12 max-w-md mx-auto">
+                <Trophy className="w-16 h-16 text-gray-500 mx-auto mb-4" />
+                <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent mb-2">
+                  No Contests Found
+                </h2>
+                <p className="text-gray-400">
+                  {activeTab === 'active'
+                    ? 'No contests are currently active. Check back soon!'
+                    : `No ${activeTab} contests available at the moment.`
+                  }
+                </p>
               </div>
-            )}
-          </TabsContent>
-        </Tabs>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              {contests.map((contest) => (
+                <div key={contest._id} className="group h-full">
+                  <Link to={`/contests/${contest._id}`} className="block h-full">
+                    <div className="h-full min-h-[400px] bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-md p-6 hover:border-gray-600 hover:from-gray-800 hover:via-gray-900 hover:to-gray-700 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-black/60">
+                      <div className="flex flex-col h-full">
+                        {/* Header */}
+                        <div className="flex justify-between items-start mb-4">
+                          <div className={`px-3 py-1 rounded-md text-xs font-medium ${getStatusColor(contest.status)}`}>
+                            {contest.status.charAt(0).toUpperCase() + contest.status.slice(1)}
+                          </div>
+                          {contest.status === 'active' && (
+                            <div className="flex items-center gap-1 text-green-400 text-sm">
+                              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+                              LIVE
+                            </div>
+                          )}
+                          <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-gray-300 group-hover:translate-x-1 transition-all duration-300" />
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-grow space-y-4">
+                          {/* Title */}
+                          <h3 className="text-xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent group-hover:from-white group-hover:via-yellow-100 group-hover:to-yellow-200 transition-all duration-300 leading-tight">
+                            {contest.title}
+                          </h3>
+
+                          {/* Description */}
+                          <p className="text-sm bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent group-hover:from-gray-300 group-hover:via-gray-200 group-hover:to-gray-300 transition-all duration-300 leading-relaxed line-clamp-2">
+                            {contest.description}
+                          </p>
+
+                          {/* Contest Info */}
+                          <div className="space-y-3 text-sm">
+                            <div className="flex items-center gap-2">
+                              <Calendar size={14} className="text-gray-500" />
+                              <span className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">
+                                {formatDate(contest.startTime)}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Clock size={14} className="text-gray-500" />
+                              <span className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">
+                                {ContestService.formatDuration(contest.duration)}
+                              </span>
+                              {contest.status === 'active' && (
+                                <span className="text-yellow-400 ml-2 text-xs">
+                                  {ContestService.formatTimeRemaining(contest.endTime)}
+                                </span>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Users size={14} className="text-gray-500" />
+                              <span className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">
+                                {contest.participants.length} participants
+                                {contest.maxParticipants && ` / ${contest.maxParticipants}`}
+                              </span>
+                            </div>
+
+                            <div className="flex items-center gap-2">
+                              <Trophy size={14} className="text-gray-500" />
+                              <span className={`${getDifficultyColor(contest.problems.length)} font-medium`}>
+                                {contest.problems.length} problems
+                              </span>
+                            </div>
+                          </div>
+
+                          {/* Tags */}
+                          {contest.tags.length > 0 && (
+                            <div className="flex flex-wrap gap-2">
+                              {contest.tags.slice(0, 3).map((tag) => (
+                                <div key={tag} className="px-2 py-1 bg-black/30 backdrop-blur-sm border border-gray-600 rounded text-xs">
+                                  <span className="bg-gradient-to-r from-gray-300 via-white to-gray-300 bg-clip-text text-transparent">
+                                    {tag}
+                                  </span>
+                                </div>
+                              ))}
+                              {contest.tags.length > 3 && (
+                                <div className="px-2 py-1 bg-black/30 backdrop-blur-sm border border-gray-600 rounded text-xs">
+                                  <span className="bg-gradient-to-r from-gray-300 via-white to-gray-300 bg-clip-text text-transparent">
+                                    +{contest.tags.length - 3}
+                                  </span>
+                                </div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Prizes */}
+                          {contest.prizes.length > 0 && (
+                            <div className="bg-black/30 backdrop-blur-sm border border-gray-600 rounded-md p-3">
+                              <div className="flex items-center gap-2 mb-2">
+                                <Award size={14} className="text-yellow-400" />
+                                <span className="text-sm font-medium bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">
+                                  Prizes
+                                </span>
+                              </div>
+                              <div className="text-xs bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">
+                                🥇 {contest.prizes[0]?.description}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Footer */}
+                        <div className="mt-6 pt-4 border-t border-gray-700">
+                          <div className="flex items-center justify-center space-x-2 text-xs">
+                            <span className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent group-hover:from-gray-300 group-hover:via-gray-200 group-hover:to-gray-300 transition-all duration-300">
+                              {contest.status === 'active' ? 'Join Contest' : 'View Details'}
+                            </span>
+                            <div className="w-4 h-0.5 bg-gray-600 rounded-sm group-hover:bg-gray-500 transition-colors duration-300" />
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              ))}
+            </div>
+          )}
+        </main>
       </div>
     </div>
   );

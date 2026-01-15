@@ -5,10 +5,10 @@ import { useActivityTracking } from '@/hooks/useActivityTracking';
 
 export const QuizPage: React.FC = () => {
   const { recordActivity } = useUser();
-  
+
   // Track quiz taking activity
   useActivityTracking('quiz_taking', { quizId: 'quiz-1' });
-  
+
   // Mock quiz data
   const quizData = {
     id: 'quiz-1',
@@ -124,7 +124,7 @@ export const QuizPage: React.FC = () => {
 
   const handleQuizComplete = async (results: any) => {
     console.log('Quiz completed:', results);
-    
+
     // Record quiz completion activity
     try {
       await recordActivity('quiz_completed');
@@ -132,12 +132,12 @@ export const QuizPage: React.FC = () => {
     } catch (error) {
       console.error('Failed to record quiz completion:', error);
     }
-    
+
     alert(`Quiz completed! Score: ${results.score}/${results.totalPoints} (${((results.score / results.totalPoints) * 100).toFixed(1)}%)`);
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 py-8">
+    <div className="min-h-screen bg-black py-8">
       <QuizSystem
         quizId={quizData.id}
         title={quizData.title}

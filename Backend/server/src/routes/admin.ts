@@ -5,6 +5,7 @@ import { Admin } from "../models/Admin";
 import { User } from "../models/User";
 import Contest from "../models/Contest";
 import { Problem } from "../models/Problem";
+import JobApplication from "../models/JobApplication";
 import { adminAuthMiddleware, checkPermission, AdminRequest } from "../middleware/adminAuth";
 
 const router = Router();
@@ -903,6 +904,83 @@ router.post("/seed/clear", adminAuthMiddleware, async (req: AdminRequest, res: R
     res.json({ message: "All data cleared successfully" });
   } catch (error) {
     res.status(500).json({ message: "Error clearing data" });
+  }
+});
+
+// Job Applications Management
+router.get("/job-applications", adminAuthMiddleware, async (req: AdminRequest, res: Response): Promise<void> => {
+  try {
+    const applications = await JobApplication.find()
+      .populate('jobId', 'title company location department type')
+      .populate('applicantId', 'name email')
+      .sort({ appliedAt: -1 })
+      .select('-__v');
+
+    res.json(applications);
+  } catch (error) {
+    console.error('Error fetching applications:', error);
+    res.status(500).json({ error: 'Failed to fetch applications' });
+  }
+});
+
+// Update application status (admin only)
+router.patch("/job-applications/:applicationId/status", adminAuthMiddleware, async (req: AdminRequest, res: Response): Promise<void> => {
+  try {
+    const { applicationId } = req.params;
+    const { status } = req.body;
+
+    if (!['pending', 'reviewing', 'shortlisted', 'rejected', 'hired'].includes(status)) {
+      res.status(400).json({ error: 'Invalid status' });
+      return;
+    }
+
+    const application = await JobApplication.findByIdAndUpdate(
+      applicationId,
+      { status, updatedAt: new Date() },
+      { new: true }
+    ).populate('jobId', 'title company')
+     .populate('applicantId', 'name email');
+
+    if (!application) {
+      res.status(404).json({ error: 'Application not found' });
+      return;
+    }
+
+    res.json(application);
+  } catch (error) {
+    console.error('Error updating application status:', error);
+    res.status(500).json({ error: 'Failed to update application status' });
+  }
+});
+
+// Get application statistics (admin only)
+router.get("/job-applications/stats", adminAuthMiddleware, async (req: AdminRequest, res: Response): Promise<void> => {
+  try {
+    const stats = await JobApplication.aggregate([
+      {
+        $group: {
+          _id: '$status',
+          count: { $sum: 1 }
+        }
+      }
+    ]);
+
+    const totalApplications = await JobApplication.countDocuments();
+    const recentApplications = await JobApplication.countDocuments({
+      appliedAt: { $gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) }
+    });
+
+    res.json({
+      total: totalApplications,
+      recent: recentApplications,
+      byStatus: stats.reduce((acc, stat) => {
+        acc[stat._id] = stat.count;
+        return acc;
+      }, {})
+    });
+  } catch (error) {
+    console.error('Error fetching application stats:', error);
+    res.status(500).json({ error: 'Failed to fetch application stats' });
   }
 });
 

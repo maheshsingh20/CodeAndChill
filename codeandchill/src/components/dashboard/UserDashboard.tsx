@@ -1,15 +1,13 @@
-import React, { useState, useEffect } from 'react';
-import { 
-  TrendingUp, 
-  Award, 
-  Clock, 
-  Target, 
-  BookOpen, 
-  Code, 
+import React, { useState } from 'react';
+import {
+  TrendingUp,
+  Award,
+  Clock,
+  Target,
+  BookOpen,
+  Code,
   Trophy,
-  Calendar,
   Flame,
-  Star
 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -17,13 +15,13 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LearningPathProgress } from '@/components/learning-path/LearningPathProgress';
-import { 
-  LineChart, 
-  Line, 
-  XAxis, 
-  YAxis, 
-  CartesianGrid, 
-  Tooltip, 
+import {
+  LineChart,
+  Line,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
   ResponsiveContainer,
   BarChart,
   Bar,
@@ -63,6 +61,7 @@ interface ActivityData {
 }
 
 export const UserDashboard: React.FC = () => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [stats, setStats] = useState<UserStats>({
     totalCourses: 12,
     completedCourses: 8,
@@ -76,6 +75,7 @@ export const UserDashboard: React.FC = () => {
     totalUsers: 1250
   });
 
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [achievements, setAchievements] = useState<Achievement[]>([
     {
       id: '1',
@@ -148,62 +148,62 @@ export const UserDashboard: React.FC = () => {
     <div className="space-y-6">
       {/* Stats Overview */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-        <Card className="p-6 bg-gradient-to-br from-purple-900/50 to-purple-800/30 border-purple-700">
+        <Card className="p-6 bg-gradient-to-br from-purple-900/50 via-black to-purple-800/30 border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-purple-200 text-sm">Course Progress</p>
-              <p className="text-2xl font-bold text-white">
+              <p className="bg-gradient-to-r from-purple-200 via-purple-100 to-purple-200 bg-clip-text text-transparent text-sm">Course Progress</p>
+              <p className="text-2xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">
                 {stats.completedCourses}/{stats.totalCourses}
               </p>
             </div>
             <BookOpen className="text-purple-400" size={24} />
           </div>
-          <Progress 
-            value={getCompletionPercentage(stats.completedCourses, stats.totalCourses)} 
+          <Progress
+            value={getCompletionPercentage(stats.completedCourses, stats.totalCourses)}
             className="mt-3"
           />
         </Card>
 
-        <Card className="p-6 bg-gradient-to-br from-green-900/50 to-green-800/30 border-green-700">
+        <Card className="p-6 bg-gradient-to-br from-green-900/50 via-black to-green-800/30 border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-green-200 text-sm">Problems Solved</p>
-              <p className="text-2xl font-bold text-white">
+              <p className="bg-gradient-to-r from-green-200 via-green-100 to-green-200 bg-clip-text text-transparent text-sm">Problems Solved</p>
+              <p className="text-2xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">
                 {stats.solvedProblems}/{stats.totalProblems}
               </p>
             </div>
             <Code className="text-green-400" size={24} />
           </div>
-          <Progress 
-            value={getCompletionPercentage(stats.solvedProblems, stats.totalProblems)} 
+          <Progress
+            value={getCompletionPercentage(stats.solvedProblems, stats.totalProblems)}
             className="mt-3"
           />
         </Card>
 
-        <Card className="p-6 bg-gradient-to-br from-orange-900/50 to-orange-800/30 border-orange-700">
+        <Card className="p-6 bg-gradient-to-br from-orange-900/50 via-black to-orange-800/30 border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-orange-200 text-sm">Current Streak</p>
-              <p className="text-2xl font-bold text-white">{stats.currentStreak} days</p>
+              <p className="bg-gradient-to-r from-orange-200 via-orange-100 to-orange-200 bg-clip-text text-transparent text-sm">Current Streak</p>
+              <p className="text-2xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">{stats.currentStreak} days</p>
             </div>
             <Flame className="text-orange-400" size={24} />
           </div>
-          <p className="text-orange-300 text-xs mt-2">
+          <p className="bg-gradient-to-r from-orange-300 via-orange-200 to-orange-300 bg-clip-text text-transparent text-xs mt-2">
             Longest: {stats.longestStreak} days
           </p>
         </Card>
 
-        <Card className="p-6 bg-gradient-to-br from-blue-900/50 to-blue-800/30 border-blue-700">
+        <Card className="p-6 bg-gradient-to-br from-blue-900/50 via-black to-blue-800/30 border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300">
           <div className="flex items-center justify-between">
             <div>
-              <p className="text-blue-200 text-sm">Global Rank</p>
-              <p className="text-2xl font-bold text-white">
+              <p className="bg-gradient-to-r from-blue-200 via-blue-100 to-blue-200 bg-clip-text text-transparent text-sm">Global Rank</p>
+              <p className="text-2xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">
                 #{stats.rank}
               </p>
             </div>
             <Trophy className="text-blue-400" size={24} />
           </div>
-          <p className="text-blue-300 text-xs mt-2">
+          <p className="bg-gradient-to-r from-blue-300 via-blue-200 to-blue-300 bg-clip-text text-transparent text-xs mt-2">
             Top {Math.round((stats.rank / stats.totalUsers) * 100)}%
           </p>
         </Card>
@@ -214,16 +214,16 @@ export const UserDashboard: React.FC = () => {
         <div className="lg:col-span-2">
           <LearningPathProgress />
         </div>
-        
+
         {/* Quick Actions */}
-        <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
-          <CardHeader>
-            <CardTitle className="text-white flex items-center">
+        <div className="bg-gradient-to-br from-gray-900 via-black to-gray-800 backdrop-blur-sm border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300">
+          <div className="p-6">
+            <h3 className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center text-lg font-semibold mb-4">
               <Target className="mr-2" size={20} />
               Quick Actions
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
+            </h3>
+          </div>
+          <div className="p-6 pt-0 space-y-3">
             <Button className="w-full bg-blue-600 hover:bg-blue-700 text-white justify-start">
               <BookOpen className="mr-2" size={16} />
               Continue Learning
@@ -236,8 +236,8 @@ export const UserDashboard: React.FC = () => {
               <Trophy className="mr-2" size={16} />
               Join Contest
             </Button>
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       </div>
 
       <Tabs defaultValue="analytics" className="space-y-6">
@@ -249,57 +249,57 @@ export const UserDashboard: React.FC = () => {
 
         <TabsContent value="analytics" className="space-y-6">
           {/* Activity Chart */}
-          <Card className="p-6 bg-gray-900/50 backdrop-blur-sm border-gray-700">
-            <h3 className="text-lg font-semibold text-white mb-4">Study Activity (Last 7 Days)</h3>
+          <div className="p-6 bg-gradient-to-br from-gray-900 via-black to-gray-800 backdrop-blur-sm border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300">
+            <h3 className="text-lg font-semibold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent mb-4">Study Activity (Last 7 Days)</h3>
             <ResponsiveContainer width="100%" height={300}>
               <LineChart data={activityData}>
                 <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis 
-                  dataKey="date" 
+                <XAxis
+                  dataKey="date"
                   stroke="#9CA3AF"
                   tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
                 />
                 <YAxis stroke="#9CA3AF" />
-                <Tooltip 
-                  contentStyle={{ 
-                    backgroundColor: '#1F2937', 
+                <Tooltip
+                  contentStyle={{
+                    backgroundColor: '#1F2937',
                     border: '1px solid #374151',
                     borderRadius: '8px'
                   }}
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="studyTime" 
-                  stroke="#8B5CF6" 
+                <Line
+                  type="monotone"
+                  dataKey="studyTime"
+                  stroke="#8B5CF6"
                   strokeWidth={2}
                   name="Study Time (min)"
                 />
-                <Line 
-                  type="monotone" 
-                  dataKey="problemsSolved" 
-                  stroke="#10B981" 
+                <Line
+                  type="monotone"
+                  dataKey="problemsSolved"
+                  stroke="#10B981"
                   strokeWidth={2}
                   name="Problems Solved"
                 />
               </LineChart>
             </ResponsiveContainer>
-          </Card>
+          </div>
 
           {/* Performance Metrics */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <Card className="p-6 bg-gray-900/50 backdrop-blur-sm border-gray-700">
-              <h3 className="text-lg font-semibold text-white mb-4">Performance Metrics</h3>
+            <Card className="p-6 bg-gradient-to-br from-gray-900 via-black to-gray-800 backdrop-blur-sm border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300">
+              <h3 className="text-lg font-semibold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent mb-4">Performance Metrics</h3>
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Clock className="text-blue-400" size={16} />
-                    <span className="text-gray-300">Total Study Time</span>
+                    <span className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">Total Study Time</span>
                   </div>
-                  <span className="text-white font-semibold">
+                  <span className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent font-semibold">
                     {formatTime(stats.totalStudyTime)}
                   </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <Target className="text-green-400" size={16} />
@@ -309,7 +309,7 @@ export const UserDashboard: React.FC = () => {
                     {stats.averageScore}%
                   </span>
                 </div>
-                
+
                 <div className="flex items-center justify-between">
                   <div className="flex items-center space-x-2">
                     <TrendingUp className="text-purple-400" size={16} />
@@ -327,15 +327,15 @@ export const UserDashboard: React.FC = () => {
               <ResponsiveContainer width="100%" height={200}>
                 <BarChart data={activityData}>
                   <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis 
-                    dataKey="date" 
+                  <XAxis
+                    dataKey="date"
                     stroke="#9CA3AF"
                     tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { weekday: 'short' })}
                   />
                   <YAxis stroke="#9CA3AF" />
-                  <Tooltip 
-                    contentStyle={{ 
-                      backgroundColor: '#1F2937', 
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1F2937',
                       border: '1px solid #374151',
                       borderRadius: '8px'
                     }}
@@ -352,26 +352,24 @@ export const UserDashboard: React.FC = () => {
             <h3 className="text-lg font-semibold text-white mb-4">Achievements</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {achievements.map((achievement) => (
-                <Card 
-                  key={achievement.id} 
-                  className={`p-4 ${
-                    achievement.unlockedAt 
-                      ? 'bg-gradient-to-r from-yellow-900/30 to-yellow-800/20 border-yellow-600' 
-                      : 'bg-gray-800 border-gray-600'
-                  }`}
+                <Card
+                  key={achievement.id}
+                  className={`p-4 ${achievement.unlockedAt
+                    ? 'bg-gradient-to-r from-yellow-900/30 to-yellow-800/20 border-yellow-600'
+                    : 'bg-gray-800 border-gray-600'
+                    }`}
                 >
                   <div className="flex items-start space-x-3">
                     <div className="text-2xl">{achievement.icon}</div>
                     <div className="flex-1">
-                      <h4 className={`font-semibold ${
-                        achievement.unlockedAt ? 'text-yellow-300' : 'text-gray-300'
-                      }`}>
+                      <h4 className={`font-semibold ${achievement.unlockedAt ? 'text-yellow-300' : 'text-gray-300'
+                        }`}>
                         {achievement.title}
                       </h4>
                       <p className="text-sm text-gray-400 mt-1">
                         {achievement.description}
                       </p>
-                      
+
                       {achievement.unlockedAt ? (
                         <Badge variant="secondary" className="mt-2 bg-yellow-600 text-yellow-100">
                           <Award size={12} className="mr-1" />
@@ -379,8 +377,8 @@ export const UserDashboard: React.FC = () => {
                         </Badge>
                       ) : achievement.progress !== undefined ? (
                         <div className="mt-2">
-                          <Progress 
-                            value={(achievement.progress! / achievement.maxProgress!) * 100} 
+                          <Progress
+                            value={(achievement.progress! / achievement.maxProgress!) * 100}
                             className="w-full"
                           />
                           <p className="text-xs text-gray-400 mt-1">

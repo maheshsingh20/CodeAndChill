@@ -12,6 +12,7 @@ export function NavMenu() {
     { label: "Home", to: "/" },
     { label: "Courses", to: "/courses" },
     { label: "Problem Sets", to: "/problems" },
+    { label: "Careers", to: "/careers" },
     { label: "Blog", to: "/blog" },
     { label: "About Us", to: "/about" },
   ];

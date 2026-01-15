@@ -2,7 +2,7 @@ import mongoose, { Document, Schema } from 'mongoose';
 
 export interface IUserProgress extends Document {
   userId: mongoose.Types.ObjectId;
-  courseId: mongoose.Types.ObjectId;
+  courseId: string; // Changed from ObjectId to string to support engineering course identifiers
   completedLessons: string[];
   currentLesson: string;
   progressPercentage: number;
@@ -34,8 +34,7 @@ const UserProgressSchema: Schema = new Schema({
     required: true
   },
   courseId: {
-    type: Schema.Types.ObjectId,
-    ref: 'Course',
+    type: String, // Changed from ObjectId to String to support engineering course identifiers
     required: true
   },
   completedLessons: [{

@@ -26,7 +26,7 @@ export const useSocket = (options: UseSocketOptions = {}) => {
 
     setState(prev => ({ ...prev, connecting: true, error: null }));
 
-    const socket = io(import.meta.env.VITE_API_URL || 'http://localhost:3001', {
+    const socket = io(import.meta.env.VITE_API_URL?.replace('/api', '') || 'http://localhost:3001', {
       auth: { token },
       transports: ['websocket', 'polling'],
       timeout: 10000,

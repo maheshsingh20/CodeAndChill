@@ -151,12 +151,12 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
 
   if (!currentLesson) {
     return (
-      <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+      <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
         <CardContent className="py-20 text-center">
           <BookOpen size={64} className="mx-auto text-gray-600 mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">No Lessons Available</h3>
+          <h3 className="text-xl font-semibold mb-2 bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">No Lessons Available</h3>
           <p className="text-gray-400">This course doesn't have any lessons yet.</p>
-          <Button onClick={onClose} className="mt-4">
+          <Button onClick={onClose} className="mt-4 bg-gradient-to-r from-purple-600 to-purple-700 hover:from-purple-700 hover:to-purple-800">
             Back to Course Overview
           </Button>
         </CardContent>
@@ -167,11 +167,11 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
   return (
     <div className="space-y-6">
       {/* Course Header */}
-      <Card className="bg-gradient-to-r from-purple-900/40 to-blue-900/40 border-purple-500/20">
+      <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-white text-2xl mb-2">
+              <CardTitle className="text-2xl mb-2 bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">
                 {course.courseId.title}
               </CardTitle>
               <div className="flex items-center gap-4 text-sm text-gray-300">
@@ -183,7 +183,7 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
                   <Clock size={16} />
                   {Math.floor(timeSpent / 60)}m {timeSpent % 60}s
                 </span>
-                <Badge className="bg-purple-600/20 text-purple-300 border-purple-500/30">
+                <Badge className="bg-purple-600/20 text-purple-300 border border-purple-500/30">
                   {Math.round(progress)}% Complete
                 </Badge>
               </div>
@@ -211,7 +211,7 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
         <div className="lg:col-span-3 space-y-6">
           {/* Video Player (if video available) */}
           {currentLesson.videoUrl && (
-            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+            <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
               <CardContent className="p-0">
                 <div className="aspect-video bg-black rounded-lg overflow-hidden">
                   <iframe
@@ -233,7 +233,7 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
                       >
                         {isPlaying ? <Pause size={16} /> : <Play size={16} />}
                       </Button>
-                      <span className="text-white font-medium">{currentLesson.title}</span>
+                      <span className="font-medium bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">{currentLesson.title}</span>
                     </div>
                     <div className="flex items-center gap-2">
                       <Volume2 size={16} className="text-gray-400" />
@@ -246,9 +246,9 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
           )}
 
           {/* Lesson Content */}
-          <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+          <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
             <CardHeader>
-              <CardTitle className="text-white flex items-center gap-2">
+              <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center gap-2">
                 <FileText size={20} />
                 {currentLesson.title}
               </CardTitle>
@@ -263,16 +263,16 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
 
           {/* Code Examples */}
           {currentLesson.codeExamples && currentLesson.codeExamples.length > 0 && (
-            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+            <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
+                <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center gap-2">
                   <Code size={20} />
                   Code Examples
                 </CardTitle>
               </CardHeader>
               <CardContent>
                 <Tabs defaultValue="0" className="w-full">
-                  <TabsList className="bg-gray-700/50">
+                  <TabsList className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
                     {currentLesson.codeExamples.map((example, index) => (
                       <TabsTrigger key={index} value={index.toString()}>
                         {example.language}
@@ -296,9 +296,9 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
 
           {/* Quiz */}
           {currentLesson.quiz && currentLesson.quiz.length > 0 && (
-            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+            <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
               <CardHeader>
-                <CardTitle className="text-white flex items-center gap-2">
+                <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center gap-2">
                   <Award size={20} />
                   Knowledge Check
                 </CardTitle>
@@ -410,8 +410,8 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
                   key={lesson.id}
                   onClick={() => setCurrentLessonIndex(index)}
                   className={`w-full text-left p-3 rounded-lg border transition-all ${index === currentLessonIndex
-                      ? 'border-purple-500 bg-purple-500/20'
-                      : 'border-gray-600 hover:border-gray-500'
+                    ? 'border-purple-500 bg-purple-500/20'
+                    : 'border-gray-600 hover:border-gray-500'
                     }`}
                 >
                   <div className="flex items-center justify-between">

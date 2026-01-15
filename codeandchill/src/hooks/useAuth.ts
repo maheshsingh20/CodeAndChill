@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { authUtils } from "@/utils";
+import { API_BASE_URL } from "@/constants";
 import type { User, LoginCredentials, SignupCredentials } from "@/types";
 
 export function useAuth() {
@@ -24,7 +25,7 @@ export function useAuth() {
     setError(null);
     
     try {
-      const response = await fetch("http://localhost:3001/api/auth/login", {
+      const response = await fetch(`${API_BASE_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),
@@ -54,7 +55,7 @@ export function useAuth() {
     setError(null);
     
     try {
-      const response = await fetch("http://localhost:3001/api/auth/signup", {
+      const response = await fetch(`${API_BASE_URL}/auth/signup`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials),

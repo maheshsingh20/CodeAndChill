@@ -38,12 +38,28 @@ export function EnhancedCourseContentSidebar({
   completedLessons
 }: EnhancedCourseContentSidebarProps) {
   const isCompleted = (subtopicId: string) => completedLessons.includes(subtopicId);
-  
+
   const getModuleProgress = (module: Module) => {
-    const totalLessons = module.topics.reduce((sum, topic) => sum + topic.subtopics.length, 0);
-    const completedCount = module.topics.reduce((sum, topic) => 
-      sum + topic.subtopics.filter(s => isCompleted(s.id)).length, 0
-    );
+    // Safety check to ensure topics array exists
+    if (!module.topics || !Array.isArray(module.topics)) {
+      return 0;
+    }
+
+    const totalLessons = module.topics.reduce((sum, topic) => {
+      if (!topic.subtopics || !Array.isArray(topic.subtopics)) {
+        return sum;
+      }
+      return sum + topic.subtopics.length;
+    }, 0);
+
+    const completedCount = module.topics.reduce((sum, topic) => {
+      // Safety check for subtopics
+      if (!topic.subtopics || !Array.isArray(topic.subtopics)) {
+        return sum;
+      }
+      return sum + topic.subtopics.filter(s => isCompleted(s.id)).length;
+    }, 0);
+
     return totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
   };
 
@@ -57,7 +73,7 @@ export function EnhancedCourseContentSidebar({
       >
         {modules.map((module, moduleIndex) => {
           const progress = getModuleProgress(module);
-          
+
           return (
             <AccordionItem
               key={moduleIndex}
@@ -72,7 +88,7 @@ export function EnhancedCourseContentSidebar({
                     </div>
                     <div className="flex items-center gap-2">
                       <div className="w-24 h-1.5 bg-gray-700 rounded-full overflow-hidden">
-                        <div 
+                        <div
                           className="h-full bg-green-500 transition-all duration-300"
                           style={{ width: `${progress}%` }}
                         />
@@ -82,10 +98,10 @@ export function EnhancedCourseContentSidebar({
                   </div>
                 </div>
               </AccordionTrigger>
-              
+
               <AccordionContent className="px-2 pb-2">
                 <Accordion type="single" collapsible>
-                  {module.topics.map((topic, topicIndex) => (
+                  {module.topics && Array.isArray(module.topics) ? module.topics.map((topic, topicIndex) => (
                     <AccordionItem
                       key={topicIndex}
                       value={`topic-${topicIndex}`}
@@ -94,24 +110,23 @@ export function EnhancedCourseContentSidebar({
                       <AccordionTrigger className="px-3 py-2 text-sm hover:bg-gray-700/30 rounded">
                         <span className="text-gray-300">{topic.title}</span>
                       </AccordionTrigger>
-                      
+
                       <AccordionContent className="px-2 py-1">
                         <ul className="space-y-1">
-                          {topic.subtopics.map((subtopic) => {
+                          {topic.subtopics && Array.isArray(topic.subtopics) ? topic.subtopics.map((subtopic) => {
                             const completed = isCompleted(subtopic.id);
                             const isSelected = selectedSubtopicId === subtopic.id;
-                            
+
                             return (
                               <li key={subtopic.id}>
                                 <button
                                   onClick={() => onSelectSubtopic(subtopic)}
-                                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center gap-2 ${
-                                    isSelected
-                                      ? 'bg-blue-600 text-white'
-                                      : completed
+                                  className={`w-full text-left px-3 py-2 rounded-lg text-sm transition-all flex items-center gap-2 ${isSelected
+                                    ? 'bg-blue-600 text-white'
+                                    : completed
                                       ? 'bg-green-900/20 text-green-300 hover:bg-green-900/30'
                                       : 'text-gray-400 hover:bg-gray-700/50 hover:text-gray-300'
-                                  }`}
+                                    }`}
                                 >
                                   {completed ? (
                                     <CheckCircle2 className="w-4 h-4 flex-shrink-0 text-green-400" />
@@ -127,11 +142,15 @@ export function EnhancedCourseContentSidebar({
                                 </button>
                               </li>
                             );
-                          })}
+                          }) : (
+                            <li className="text-gray-500 text-sm px-3 py-2">No lessons available</li>
+                          )}
                         </ul>
                       </AccordionContent>
                     </AccordionItem>
-                  ))}
+                  )) : (
+                    <div className="text-gray-500 text-sm px-3 py-2">No topics available</div>
+                  )}
                 </Accordion>
               </AccordionContent>
             </AccordionItem>

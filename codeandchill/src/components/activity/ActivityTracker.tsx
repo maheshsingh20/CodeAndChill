@@ -1,32 +1,40 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
 import { ActivityService, ActivityType } from '@/services/activityService';
-
 interface ActivityTrackerProps {
   isAuthenticated: boolean;
 }
-
 export const ActivityTracker: React.FC<ActivityTrackerProps> = ({ isAuthenticated }) => {
   const location = useLocation();
-
+  const lastPathRef = useRef<string>('');
+  const initializationRef = useRef<boolean>(false);
   useEffect(() => {
+    // Check if activity tracking is enabled
+    if (!ActivityService.isActivityTrackingEnabled()) return;
     if (!isAuthenticated) {
       // End session if user logs out
-      ActivityService.endSession();
+      ActivityService.cleanup();
+      initializationRef.current = false;
       return;
     }
-
-    // Initialize tracking when user is authenticated
-    ActivityService.initializeTracking();
-
+    // Initialize tracking when user is authenticated (only once)
+    if (!initializationRef.current) {
+      ActivityService.initializeTracking();
+      initializationRef.current = true;
+    }
     return () => {
       // Cleanup on unmount
-      ActivityService.endSession();
+      ActivityService.cleanup();
+      initializationRef.current = false;
     };
   }, [isAuthenticated]);
 
   useEffect(() => {
-    if (!isAuthenticated) return;
+    // Check if activity tracking is enabled
+    if (!ActivityService.isActivityTrackingEnabled() || !isAuthenticated) return;
+    // Only track if the path actually changed
+    if (lastPathRef.current === location.pathname) return;
+    lastPathRef.current = location.pathname;
 
     // Track activity based on current route
     const trackRouteActivity = () => {
@@ -62,10 +70,7 @@ export const ActivityTracker: React.FC<ActivityTrackerProps> = ({ isAuthenticate
       ActivityService.updateActivity(activityType, metadata);
     };
 
-    // Track initial route
-    trackRouteActivity();
-
-    // Set up route change tracking with a small delay to ensure the route has changed
+    // Track route change with a small delay to ensure the route has changed
     const timeoutId = setTimeout(trackRouteActivity, 100);
 
     return () => clearTimeout(timeoutId);
@@ -87,7 +92,7 @@ export const ActivityTracker: React.FC<ActivityTrackerProps> = ({ isAuthenticate
     const handleFormSubmit = (event: Event) => {
       const target = event.target as HTMLFormElement;
       const formType = target.dataset.activityType;
-      
+
       if (formType === 'quiz') {
         ActivityService.trackQuizTaking(target.dataset.quizId || 'unknown');
       } else if (formType === 'problem') {
@@ -98,13 +103,13 @@ export const ActivityTracker: React.FC<ActivityTrackerProps> = ({ isAuthenticate
     // Track clicks on specific elements
     const handleClick = (event: Event) => {
       const target = event.target as HTMLElement;
-      
+
       // Track course navigation
       if (target.closest('[data-activity="course-navigation"]')) {
         const courseId = target.closest('[data-course-id]')?.getAttribute('data-course-id');
         if (courseId) ActivityService.trackCourseViewing(courseId);
       }
-      
+
       // Track problem attempts
       if (target.closest('[data-activity="problem-attempt"]')) {
         const problemId = target.closest('[data-problem-id]')?.getAttribute('data-problem-id');
@@ -124,21 +129,27 @@ export const ActivityTracker: React.FC<ActivityTrackerProps> = ({ isAuthenticate
     };
   }, [isAuthenticated]);
 
-  // Track user engagement (mouse movement, keyboard activity)
+  // Track user engagement (mouse movement, keyboard activity) - Optimized
   useEffect(() => {
     if (!isAuthenticated) return;
 
     let lastActivity = Date.now();
     let isIdle = false;
+    let activityTimeout: ReturnType<typeof setTimeout>;
     const IDLE_THRESHOLD = 5 * 60 * 1000; // 5 minutes
+    const ACTIVITY_DEBOUNCE = 1000; // 1 second debounce
 
     const updateLastActivity = () => {
-      lastActivity = Date.now();
-      if (isIdle) {
-        isIdle = false;
-        // Resume tracking
-        ActivityService.initializeTracking();
-      }
+      // Debounce activity updates to prevent excessive API calls
+      clearTimeout(activityTimeout);
+      activityTimeout = setTimeout(() => {
+        lastActivity = Date.now();
+        if (isIdle) {
+          isIdle = false;
+          // Resume tracking
+          ActivityService.initializeTracking();
+        }
+      }, ACTIVITY_DEBOUNCE);
     };
 
     const checkIdle = () => {
@@ -146,24 +157,25 @@ export const ActivityTracker: React.FC<ActivityTrackerProps> = ({ isAuthenticate
       if (now - lastActivity > IDLE_THRESHOLD && !isIdle) {
         isIdle = true;
         // Pause tracking when idle
-        ActivityService.endSession();
+        ActivityService.cleanup();
       }
     };
 
-    // Track user activity
-    const events = ['mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'];
+    // Track user activity (reduced event list for better performance)
+    const events = ['mousedown', 'keypress', 'click'];
     events.forEach(event => {
-      document.addEventListener(event, updateLastActivity, true);
+      document.addEventListener(event, updateLastActivity, { passive: true });
     });
 
-    // Check for idle state every minute
-    const idleInterval = setInterval(checkIdle, 60000);
+    // Check for idle state every 2 minutes instead of every minute
+    const idleInterval = setInterval(checkIdle, 120000);
 
     return () => {
       events.forEach(event => {
-        document.removeEventListener(event, updateLastActivity, true);
+        document.removeEventListener(event, updateLastActivity);
       });
       clearInterval(idleInterval);
+      clearTimeout(activityTimeout);
     };
   }, [isAuthenticated]);
 

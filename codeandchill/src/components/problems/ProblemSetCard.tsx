@@ -1,9 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, Users, Code, CheckCircle } from "lucide-react";
-import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 
 interface ProblemSetCardProps {
   set: {
@@ -63,95 +60,94 @@ export function ProblemSetCard({ set }: ProblemSetCardProps) {
   const isCompleted = progress && progress.solvedProblems === progress.totalProblems && progress.totalProblems > 0;
 
   return (
-    <Card className={`group h-full flex flex-col transition-all duration-300 hover:shadow-2xl hover:shadow-blue-500/10 hover:-translate-y-2 border-gray-700/40 bg-gradient-to-br from-gray-800/60 via-gray-800/40 to-gray-900/60 backdrop-blur-sm overflow-hidden ${isCompleted ? 'ring-2 ring-green-500/30' : ''}`}>
-      {/* Top accent line */}
-      <div className={`absolute top-0 left-0 right-0 h-1 ${isCompleted ? 'bg-gradient-to-r from-green-400 via-green-500 to-green-400' : 'bg-gradient-to-r from-transparent via-blue-400/60 to-transparent opacity-0 group-hover:opacity-100'} transition-opacity duration-300`}></div>
+    <div className="group h-full">
+      <Link to={`/problems/${set.slug}`} className="block h-full">
+        <div className="h-full min-h-[320px] bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-md p-6 hover:border-gray-600 hover:from-gray-800 hover:via-gray-900 hover:to-gray-700 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-black/60">
+          <div className="flex flex-col h-full">
+            {/* Header */}
+            <div className="flex justify-between items-start mb-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-black/30 backdrop-blur-sm border border-gray-600 rounded-md group-hover:border-gray-500 transition-all duration-300">
+                  <div className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform duration-300 flex items-center justify-center">
+                    {set.icon ? (
+                      React.cloneElement(set.icon as React.ReactElement, {
+                        className: "w-6 h-6"
+                      })
+                    ) : (
+                      <Code className="w-6 h-6" />
+                    )}
+                  </div>
+                </div>
+                {isCompleted && (
+                  <div className="px-2 py-1 bg-green-500/20 border border-green-500/30 rounded-md text-xs font-medium">
+                    <div className="flex items-center gap-1">
+                      <CheckCircle className="w-3 h-3 text-green-400" />
+                      <span className="text-green-400">Completed</span>
+                    </div>
+                  </div>
+                )}
+              </div>
+              <ArrowRight className="w-4 h-4 text-gray-500 group-hover:text-gray-300 group-hover:translate-x-1 transition-all duration-300" />
+            </div>
 
-      {/* Completion badge */}
-      {isCompleted && (
-        <div className="absolute top-4 right-4 z-10">
-          <div className="flex items-center gap-1 bg-green-500/20 border border-green-500/30 rounded-full px-2 py-1">
-            <CheckCircle className="w-3 h-3 text-green-400 fill-current" />
-            <span className="text-xs text-green-400 font-medium">Completed</span>
-          </div>
-        </div>
-      )}
+            {/* Content */}
+            <div className="flex-grow space-y-4">
+              {/* Title */}
+              <h3 className="text-xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent group-hover:from-white group-hover:via-blue-100 group-hover:to-blue-200 transition-all duration-300 leading-tight">
+                {set.title}
+              </h3>
 
-      <CardHeader className="pb-6 relative">
-        <div className="flex items-start gap-4">
-          <div className={`p-4 ${isCompleted ? 'bg-green-500/20 border-green-500/30' : 'bg-blue-500/20 border-blue-500/30'} border rounded-xl group-hover:${isCompleted ? 'bg-green-500/30 border-green-400/50' : 'bg-blue-500/30 border-blue-400/50'} transition-all duration-300 group-hover:scale-110 shadow-lg`}>
-            <div className={`${isCompleted ? 'text-green-400 group-hover:text-green-300' : 'text-blue-400 group-hover:text-blue-300'} transition-colors duration-300 w-6 h-6 flex items-center justify-center`}>
-              {set.icon ? (
-                React.cloneElement(set.icon as React.ReactElement, {
-                  className: "w-6 h-6"
-                })
-              ) : (
-                <Code className="w-6 h-6" />
+              {/* Author */}
+              <div className="flex items-center gap-2 text-sm">
+                <Users size={14} className="text-gray-500" />
+                <span className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">
+                  by {set.author}
+                </span>
+              </div>
+
+              {/* Description */}
+              <p className="text-sm bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent group-hover:from-gray-300 group-hover:via-gray-200 group-hover:to-gray-300 transition-all duration-300 leading-relaxed">
+                {set.description}
+              </p>
+
+              {/* Progress Bar */}
+              {progress && !loading && (
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">Progress</span>
+                    <span className={`font-medium ${isCompleted ? 'text-green-400' : 'text-blue-400'}`}>
+                      {progress.solvedProblems}/{progress.totalProblems} solved ({getProgressPercentage()}%)
+                    </span>
+                  </div>
+                  <div className="w-full bg-gray-700 rounded-full h-2">
+                    <div
+                      className={`h-2 rounded-full transition-all duration-500 ${isCompleted ? 'bg-green-400' : 'bg-blue-400'}`}
+                      style={{ width: `${getProgressPercentage()}%` }}
+                    />
+                  </div>
+                </div>
               )}
             </div>
-          </div>
-          <div className="flex-1 min-w-0">
-            <CardTitle className="text-xl font-bold text-gray-100 group-hover:text-white transition-colors duration-300 leading-tight mb-2 relative">
-              {set.title}
-              {/* Animated underline */}
-              <span className={`absolute -bottom-1 left-0 w-0 h-0.5 ${isCompleted ? 'bg-gradient-to-r from-green-400 to-green-600' : 'bg-gradient-to-r from-blue-400 to-blue-600'} transition-all duration-300 group-hover:w-full`}></span>
-            </CardTitle>
-            <CardDescription className="flex items-center gap-2 mt-2 text-gray-400 group-hover:text-gray-300 transition-colors duration-300">
-              <Users className="w-3 h-3" />
-              by {set.author}
-            </CardDescription>
+
+            {/* Footer */}
+            <div className="mt-6 pt-4 border-t border-gray-700">
+              <div className="flex items-center justify-between">
+                <div className="px-3 py-1 bg-black/30 backdrop-blur-sm border border-gray-600 rounded-md text-xs font-medium">
+                  <span className="bg-gradient-to-r from-gray-300 via-white to-gray-300 bg-clip-text text-transparent">
+                    {set.problemsCount} Problems
+                  </span>
+                </div>
+                <div className="flex items-center space-x-2 text-xs">
+                  <span className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent group-hover:from-gray-300 group-hover:via-gray-200 group-hover:to-gray-300 transition-all duration-300">
+                    {isCompleted ? 'Review' : 'Start Solving'}
+                  </span>
+                  <div className="w-4 h-0.5 bg-gray-600 rounded-sm group-hover:bg-gray-500 transition-colors duration-300" />
+                </div>
+              </div>
+            </div>
           </div>
         </div>
-      </CardHeader>
-
-      <CardContent className="flex-1 pb-6 px-6">
-        <p className="text-gray-400 text-sm leading-relaxed group-hover:text-gray-300 transition-colors duration-300 mb-4">
-          {set.description}
-        </p>
-
-        {/* Progress bar */}
-        {progress && !loading && (
-          <div className="space-y-2">
-            <div className="flex items-center justify-between text-xs">
-              <span className="text-gray-400">Progress</span>
-              <span className={`font-medium ${isCompleted ? 'text-green-400' : 'text-blue-400'}`}>
-                {progress.solvedProblems}/{progress.totalProblems} solved ({getProgressPercentage()}%)
-              </span>
-            </div>
-            <div className="w-full bg-gray-700/50 rounded-full h-2">
-              <div
-                className={`h-2 rounded-full transition-all duration-500 ${isCompleted ? 'bg-gradient-to-r from-green-500 to-green-400' : 'bg-gradient-to-r from-blue-500 to-blue-400'}`}
-                style={{ width: `${getProgressPercentage()}%` }}
-              ></div>
-            </div>
-          </div>
-        )}
-      </CardContent>
-
-      <CardFooter className="flex items-center justify-between pt-6 px-6 pb-6 border-t border-gray-700/40 group-hover:border-gray-600/50 transition-colors duration-300">
-        <Badge
-          variant="secondary"
-          className="bg-gray-700/50 text-gray-300 hover:bg-gray-600/50 border border-gray-600/30 px-3 py-1.5 text-xs font-medium"
-        >
-          {set.problemsCount} Problems
-        </Badge>
-
-        <Link to={`/problems/${set.slug}`}>
-          <Button
-            size="sm"
-            className={`${isCompleted ? 'bg-green-600 hover:bg-green-700' : 'bg-blue-600 hover:bg-blue-700'} text-white transition-all duration-300 group-hover:scale-105 shadow-lg hover:shadow-xl px-4 py-2 font-semibold`}
-          >
-            {isCompleted ? 'Review' : 'Start Solving'}
-            <ArrowRight className="ml-2 h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
-          </Button>
-        </Link>
-      </CardFooter>
-
-      {/* Corner accent */}
-      <div className={`absolute top-0 right-0 w-20 h-20 ${isCompleted ? 'bg-gradient-to-bl from-green-500/10 to-transparent' : 'bg-gradient-to-bl from-blue-500/10 to-transparent'} opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none`}></div>
-
-      {/* Hover glow effect */}
-      <div className={`absolute inset-0 ${isCompleted ? 'bg-gradient-to-br from-green-500/5 via-transparent to-green-500/5' : 'bg-gradient-to-br from-blue-500/5 via-transparent to-purple-500/5'} opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none`}></div>
-    </Card>
+      </Link>
+    </div>
   );
 }

@@ -1,7 +1,6 @@
-import { Section } from "./Section.jsx";
-import { Card } from "@/components/ui/card";
+import { Link } from "react-router-dom";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { MessageSquare, ThumbsUp } from "lucide-react";
+import { MessageSquare, ThumbsUp, ArrowRight, Users } from "lucide-react";
 import { useEffect, useState } from "react";
 import { communityService, CommunityPost } from "@/services/communityService";
 
@@ -12,7 +11,7 @@ export function CommunitySection() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const data = await communityService.getLatestPosts(4);
+        const data = await communityService.getLatestPosts(3);
         setPosts(data);
       } catch (error) {
         console.error('Error fetching community posts:', error);
@@ -24,71 +23,76 @@ export function CommunitySection() {
   }, []);
 
   if (loading) {
-    return <Section title="From the Community" viewAllLink="/community"><div className="text-center text-gray-400">Loading posts...</div></Section>;
+    return (
+      <section className="space-y-8">
+        <div className="text-center text-gray-400">Loading posts...</div>
+      </section>
+    );
   }
 
   return (
-    <Section title="From the Community" viewAllLink="/forum">
-      <Card
-        className="
-          rounded-xl border border-gray-800 
-          bg-gradient-to-r from-gray-950 via-gray-900 to-black
-          shadow-lg
-          p-6 divide-y divide-gray-800
-        "
-        role="list"
-      >
+    <section className="space-y-8">
+      <div className="flex items-center justify-between">
+        <div>
+          <h2 className="text-2xl md:text-3xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center gap-3">
+            <Users className="text-purple-400" size={32} />
+            From the Community
+          </h2>
+          <p className="text-gray-400 mt-2">
+            Latest discussions and insights from our community
+          </p>
+        </div>
+        <Link to="/forum">
+          <div className="px-6 py-3 bg-gradient-to-r from-gray-900 via-black to-gray-800 border border-gray-600 rounded-md hover:border-gray-500 hover:from-gray-800 hover:via-gray-900 hover:to-gray-700 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-black/60">
+            <span className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center gap-2">
+              View All Posts
+              <ArrowRight size={16} />
+            </span>
+          </div>
+        </Link>
+      </div>
+
+      <div className="space-y-4">
         {posts.map((post) => (
-          <article
-            key={post._id}
-            className="
-              group flex items-start gap-4 
-              py-5 transition-all duration-300 
-              cursor-pointer 
-              hover:bg-gradient-to-r hover:from-purple-900/20 hover:to-pink-900/20
-              rounded-lg px-3
-              focus-within:ring-2 focus-within:ring-purple-500 focus-within:outline-none
-            "
-            tabIndex={0}
-            role="listitem"
-            aria-label={`${post.title} by ${post.user.name}, ${post.likes} likes, ${post.comments} comments`}
-          >
-            {/* Avatar */}
-            <Avatar className="mt-1 border-2 border-purple-500/40 group-hover:border-pink-500/50 transition-all duration-300">
-              <AvatarImage src={post.user.profilePicture} alt={`Avatar of ${post.user.name}`} />
-              <AvatarFallback>{post.user.name.charAt(0)}</AvatarFallback>
-            </Avatar>
+          <div key={post._id} className="group">
+            <div className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-md p-6 hover:border-gray-600 hover:from-gray-800 hover:via-gray-900 hover:to-gray-700 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-black/60">
+              <div className="flex items-start gap-4">
+                {/* Avatar */}
+                <Avatar className="mt-1 border-2 border-gray-600 group-hover:border-purple-500 transition-all duration-300">
+                  <AvatarImage src={post.user.profilePicture} alt={`Avatar of ${post.user.name}`} />
+                  <AvatarFallback className="bg-gray-800 text-gray-300">{post.user.name.charAt(0)}</AvatarFallback>
+                </Avatar>
 
-            {/* Content */}
-            <div className="flex-grow min-w-0">
-              <p className="font-medium text-gray-200 leading-tight truncate group-hover:text-purple-400 transition-colors">
-                {post.title}
-              </p>
-              <p className="text-sm text-gray-400 mt-1 truncate">
-                by {post.user.name}
-              </p>
-            </div>
+                {/* Content */}
+                <div className="flex-grow min-w-0">
+                  <h3 className="font-bold text-lg bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent group-hover:from-white group-hover:via-purple-100 group-hover:to-purple-200 transition-all duration-300 leading-tight">
+                    {post.title}
+                  </h3>
+                  <p className="text-sm bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent mt-1">
+                    by {post.user.name}
+                  </p>
+                </div>
 
-            {/* Stats */}
-            <div className="flex flex-col items-end gap-3 text-sm text-gray-400 min-w-[56px]">
-              <span
-                className="flex items-center gap-1 group-hover:text-purple-400 transition-colors"
-                aria-label={`${post.likes} likes`}
-              >
-                <ThumbsUp size={16} className="text-purple-400" />
-                {post.likes}
-              </span>
-              <span
-                className="flex items-center gap-1 group-hover:text-pink-400 transition-colors"
-                aria-label={`${post.comments} comments`}
-              >
-                <MessageSquare size={16} className="text-pink-400" />
-                {post.comments}
-              </span>
+                {/* Stats */}
+                <div className="flex items-center gap-4 text-sm">
+                  <div className="flex items-center gap-1">
+                    <ThumbsUp size={14} className="text-purple-400" />
+                    <span className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">
+                      {post.likes}
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-1">
+                    <MessageSquare size={14} className="text-purple-400" />
+                    <span className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">
+                      {post.comments}
+                    </span>
+                  </div>
+                </div>
+              </div>
             </div>
-          </article>
+          </div>
         ))}
-      </Card>
-    </Section>
+      </div>
+    </section>
   );
 }

@@ -1,6 +1,6 @@
 import React from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { Code, Menu, User, Bell, Sparkles, Zap, Users } from "lucide-react";
+import { Code, Menu, User, Bell, Sparkles, Zap, Users, MessageCircle } from "lucide-react";
 // Removed cn import as it's no longer needed
 import { Button } from "@/components/ui/button";
 import { SearchBox } from "@/components/search/SearchBox";
@@ -45,7 +45,9 @@ export function Navbar({ logout }) {
     { href: "/problems", text: "Problems", icon: <Zap className="w-4 h-4" /> },
     { href: "/courses", text: "Courses", icon: <Code className="w-4 h-4" /> },
     { href: "/contests", text: "Contests", icon: <Sparkles className="w-4 h-4" /> },
-    { href: "/collaborative", text: "Live Coding", icon: <Users className="w-4 h-4" /> },
+    { href: "/chat", text: "Chat", icon: <MessageCircle className="w-4 h-4" /> },
+    { href: "/careers", text: "Careers", icon: <Users className="w-4 h-4" /> },
+    { href: "/about", text: "About", icon: <User className="w-4 h-4" /> },
   ];
 
   return (
@@ -61,8 +63,6 @@ export function Navbar({ logout }) {
             <span className="text-xl font-bold tracking-tight bg-gradient-to-r from-purple-400 via-pink-500 to-purple-600 bg-clip-text text-transparent group-hover:from-purple-300 group-hover:via-pink-400 group-hover:to-purple-500 transition-all duration-300">
               Code & Chill
             </span>
-            {/* Subtle background glow */}
-            <div className="absolute inset-0 bg-gradient-to-r from-purple-500/5 to-pink-500/5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-300 -z-10"></div>
           </Link>
           <NavigationMenu className="hidden lg:flex">
             <NavigationMenuList className="flex items-center gap-2">

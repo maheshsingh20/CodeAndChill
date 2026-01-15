@@ -34,7 +34,7 @@ export function NotificationDropdown() {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/notifications`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/notifications`,
         { headers: { Authorization: `Bearer ${token}` } }
       );
 
@@ -52,7 +52,7 @@ export function NotificationDropdown() {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/notifications/${id}/read`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/notifications/${id}/read`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
@@ -74,7 +74,7 @@ export function NotificationDropdown() {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/notifications/read-all`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/notifications/read-all`,
         {
           method: "PUT",
           headers: { Authorization: `Bearer ${token}` },
@@ -94,7 +94,7 @@ export function NotificationDropdown() {
     try {
       const token = localStorage.getItem("authToken");
       const response = await fetch(
-        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/notifications/${id}`,
+        `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/notifications/${id}`,
         {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },

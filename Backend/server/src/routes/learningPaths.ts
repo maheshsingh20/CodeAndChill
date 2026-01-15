@@ -59,6 +59,175 @@ router.get('/', async (req, res) => {
   }
 });
 
+// Get categories
+router.get('/categories', async (req, res) => {
+  try {
+    // For now, return static categories with dynamic stats
+    const categories = [
+      { _id: 'web-development', name: 'Web Development', description: 'Master modern web technologies from frontend to backend' },
+      { _id: 'mobile-development', name: 'Mobile Development', description: 'Build native and cross-platform mobile applications' },
+      { _id: 'data-science', name: 'Data Science & AI', description: 'Explore machine learning, AI, and data analytics' },
+      { _id: 'backend-development', name: 'Backend Development', description: 'Server-side programming, APIs, and database management' },
+      { _id: 'cybersecurity', name: 'Cybersecurity', description: 'Protect systems and learn ethical hacking techniques' },
+      { _id: 'ui-ux-design', name: 'UI/UX Design', description: 'Design beautiful and user-friendly interfaces' },
+      { _id: 'programming-fundamentals', name: 'Programming Fundamentals', description: 'Learn the basics of programming and computer science' },
+      { _id: 'business-tech', name: 'Business & Technology', description: 'Bridge the gap between technology and business strategy' }
+    ];
+
+    // Add dynamic stats for each category
+    const categoriesWithStats = await Promise.all(categories.map(async (category) => {
+      const pathCount = await LearningPath.countDocuments({ 
+        isPublic: true, 
+        tags: { $in: [category._id.replace('-', ' ')] } 
+      });
+      
+      const paths = await LearningPath.find({ 
+        isPublic: true, 
+        tags: { $in: [category._id.replace('-', ' ')] } 
+      });
+      
+      const totalEnrollments = paths.reduce((sum, path) => sum + (path.enrollmentCount || 0), 0);
+      const averageRating = paths.length > 0 
+        ? paths.reduce((sum, path) => sum + (path.averageRating || 0), 0) / paths.length 
+        : 0;
+
+      return {
+        ...category,
+        pathCount,
+        totalEnrollments,
+        averageRating: Math.round(averageRating * 10) / 10,
+        difficulty: 'mixed',
+        estimatedTime: '2-6 months'
+      };
+    }));
+
+    res.json(categoriesWithStats);
+  } catch (error) {
+    console.error('Error fetching categories:', error);
+    res.status(500).json({ error: 'Failed to fetch categories' });
+  }
+});
+
+// Get available tags
+router.get('/tags', async (req, res) => {
+  try {
+    const tags = await LearningPath.distinct('tags', { isPublic: true });
+    res.json(tags);
+  } catch (error) {
+    console.error('Error fetching tags:', error);
+    res.status(500).json({ error: 'Failed to fetch tags' });
+  }
+});
+
+// Search learning paths
+router.get('/search', async (req, res) => {
+  try {
+    const { 
+      query, 
+      difficulty, 
+      duration, 
+      rating, 
+      tags, 
+      sortBy = 'relevance', 
+      page = 1, 
+      limit = 20 
+    } = req.query;
+
+    const filter: any = { isPublic: true };
+
+    // Text search
+    if (query) {
+      filter.$or = [
+        { title: { $regex: query, $options: 'i' } },
+        { description: { $regex: query, $options: 'i' } },
+        { tags: { $in: [new RegExp(query as string, 'i')] } }
+      ];
+    }
+
+    // Difficulty filter
+    if (difficulty) {
+      const difficultyArray = Array.isArray(difficulty) ? difficulty : (difficulty as string).split(',');
+      filter.difficulty = { $in: difficultyArray };
+    }
+
+    // Rating filter
+    if (rating) {
+      filter.averageRating = { $gte: Number(rating) };
+    }
+
+    // Tags filter
+    if (tags) {
+      const tagArray = Array.isArray(tags) ? tags : (tags as string).split(',');
+      filter.tags = { $in: tagArray };
+    }
+
+    // Sorting
+    let sort: any = {};
+    switch (sortBy) {
+      case 'popular':
+        sort = { enrollmentCount: -1 };
+        break;
+      case 'rating':
+        sort = { averageRating: -1 };
+        break;
+      case 'newest':
+        sort = { createdAt: -1 };
+        break;
+      case 'duration':
+        sort = { estimatedDuration: 1 };
+        break;
+      default:
+        sort = { createdAt: -1 }; // Default to newest for relevance
+    }
+
+    const paths = await LearningPath.find(filter)
+      .populate('createdBy', 'name')
+      .sort(sort)
+      .skip((Number(page) - 1) * Number(limit))
+      .limit(Number(limit));
+
+    const total = await LearningPath.countDocuments(filter);
+
+    res.json({
+      paths,
+      pagination: {
+        page: Number(page),
+        limit: Number(limit),
+        total,
+        pages: Math.ceil(total / Number(limit))
+      }
+    });
+  } catch (error) {
+    console.error('Error searching learning paths:', error);
+    res.status(500).json({ error: 'Failed to search learning paths' });
+  }
+});
+
+// Get global stats
+router.get('/stats/global', async (req, res) => {
+  try {
+    const totalPaths = await LearningPath.countDocuments({ isPublic: true });
+    const paths = await LearningPath.find({ isPublic: true });
+    
+    const totalStudents = paths.reduce((sum, path) => sum + (path.enrollmentCount || 0), 0);
+    const averageRating = paths.length > 0 
+      ? paths.reduce((sum, path) => sum + (path.averageRating || 0), 0) / paths.length 
+      : 0;
+    
+    const totalCategories = await LearningPath.distinct('tags', { isPublic: true });
+
+    res.json({
+      totalPaths,
+      totalStudents,
+      averageRating: Math.round(averageRating * 10) / 10,
+      totalCategories: totalCategories.length
+    });
+  } catch (error) {
+    console.error('Error fetching global stats:', error);
+    res.status(500).json({ error: 'Failed to fetch global stats' });
+  }
+});
+
 // Get learning path by ID
 router.get('/:pathId', async (req, res) => {
   try {
@@ -304,6 +473,192 @@ router.post('/:pathId/rate', authMiddleware, async (req: AuthRequest, res) => {
   } catch (error) {
     console.error('Error rating learning path:', error);
     res.status(500).json({ error: 'Failed to rate learning path' });
+  }
+});
+
+// Get leaderboard
+router.get('/leaderboard', async (req, res) => {
+  try {
+    const { timeframe = 'month', pathId } = req.query;
+    
+    // Mock leaderboard data for now
+    const users = [
+      {
+        id: '1',
+        name: 'Alex Chen',
+        avatar: '/avatars/alex.jpg',
+        rank: 1,
+        previousRank: 2,
+        totalPoints: 15420,
+        completedPaths: 8,
+        currentStreak: 45,
+        longestStreak: 67,
+        totalHours: 234,
+        achievements: [],
+        joinedDate: '2023-06-15'
+      }
+    ];
+
+    res.json({ users, pathLeaderboards: [] });
+  } catch (error) {
+    console.error('Error fetching leaderboard:', error);
+    res.status(500).json({ error: 'Failed to fetch leaderboard' });
+  }
+});
+
+// Get user analytics
+router.get('/user/analytics', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user._id;
+    const { timeframe = 'month' } = req.query;
+    
+    // Mock analytics data for now
+    const analytics = {
+      totalHours: 234,
+      completedPaths: 8,
+      currentStreak: 45,
+      longestStreak: 67,
+      averageRating: 4.8,
+      totalPoints: 15420,
+      rank: 3,
+      weeklyGoal: 10,
+      weeklyProgress: 7.5
+    };
+
+    res.json(analytics);
+  } catch (error) {
+    console.error('Error fetching user analytics:', error);
+    res.status(500).json({ error: 'Failed to fetch user analytics' });
+  }
+});
+
+// Get user stats
+router.get('/user/stats', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user._id;
+    
+    const enrolledPaths = await UserLearningPath.countDocuments({ userId, isActive: true });
+    const completedPaths = await UserLearningPath.countDocuments({ userId, overallProgress: 100 });
+    
+    // Mock additional stats
+    const stats = {
+      totalHours: 234,
+      completedPaths,
+      currentStreak: 45,
+      longestStreak: 67,
+      averageRating: 4.8,
+      totalPoints: 15420,
+      rank: 3,
+      weeklyGoal: 10,
+      weeklyProgress: 7.5
+    };
+
+    res.json(stats);
+  } catch (error) {
+    console.error('Error fetching user stats:', error);
+    res.status(500).json({ error: 'Failed to fetch user stats' });
+  }
+});
+
+// Get weekly activity
+router.get('/user/activity/weekly', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user._id;
+    
+    // Mock weekly activity data
+    const weeklyActivity = [
+      { date: '2024-01-08', hours: 2.5, courses: 1, points: 150 },
+      { date: '2024-01-09', hours: 1.8, courses: 0, points: 80 },
+      { date: '2024-01-10', hours: 3.2, courses: 2, points: 220 },
+      { date: '2024-01-11', hours: 0, courses: 0, points: 0 },
+      { date: '2024-01-12', hours: 2.1, courses: 1, points: 180 },
+      { date: '2024-01-13', hours: 1.5, courses: 1, points: 120 },
+      { date: '2024-01-14', hours: 2.8, courses: 1, points: 200 }
+    ];
+
+    res.json(weeklyActivity);
+  } catch (error) {
+    console.error('Error fetching weekly activity:', error);
+    res.status(500).json({ error: 'Failed to fetch weekly activity' });
+  }
+});
+
+// Create learning path
+router.post('/', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user._id;
+    const pathData = req.body;
+    
+    const newPath = new LearningPath({
+      ...pathData,
+      createdBy: userId,
+      enrollmentCount: 0,
+      averageRating: 0,
+      totalRatings: 0,
+      createdAt: new Date(),
+      updatedAt: new Date()
+    });
+
+    await newPath.save();
+    
+    res.status(201).json(newPath);
+  } catch (error) {
+    console.error('Error creating learning path:', error);
+    res.status(500).json({ error: 'Failed to create learning path' });
+  }
+});
+
+// Update learning path
+router.put('/:pathId', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { pathId } = req.params;
+    const userId = req.user._id;
+    const pathData = req.body;
+    
+    const path = await LearningPath.findById(pathId);
+    
+    if (!path) {
+      return res.status(404).json({ error: 'Learning path not found' });
+    }
+    
+    if (path.createdBy.toString() !== userId.toString()) {
+      return res.status(403).json({ error: 'Not authorized to update this path' });
+    }
+    
+    Object.assign(path, pathData);
+    path.updatedAt = new Date();
+    
+    await path.save();
+    
+    res.json(path);
+  } catch (error) {
+    console.error('Error updating learning path:', error);
+    res.status(500).json({ error: 'Failed to update learning path' });
+  }
+});
+
+// Delete learning path
+router.delete('/:pathId', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const { pathId } = req.params;
+    const userId = req.user._id;
+    
+    const path = await LearningPath.findById(pathId);
+    
+    if (!path) {
+      return res.status(404).json({ error: 'Learning path not found' });
+    }
+    
+    if (path.createdBy.toString() !== userId.toString()) {
+      return res.status(403).json({ error: 'Not authorized to delete this path' });
+    }
+    
+    await path.deleteOne();
+    
+    res.json({ message: 'Learning path deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting learning path:', error);
+    res.status(500).json({ error: 'Failed to delete learning path' });
   }
 });
 

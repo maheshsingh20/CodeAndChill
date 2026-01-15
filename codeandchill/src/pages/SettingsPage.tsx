@@ -8,7 +8,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { 
+import {
   User, Lock, Bell, Palette, Upload, CheckCircle, AlertCircle,
   Github, Linkedin, Twitter, Globe
 } from "lucide-react";
@@ -98,7 +98,7 @@ export function SettingsPage() {
       // Update via context which will sync across all components
       await updateContextUser(profile);
       showMessage("Profile updated successfully!", "success");
-      
+
       // Refresh to ensure all data is in sync
       await refreshUser();
     } catch (error: any) {
@@ -110,7 +110,7 @@ export function SettingsPage() {
 
   const handleChangePassword = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (newPassword !== confirmPassword) {
       showMessage("New passwords do not match!", "error");
       return;
@@ -161,10 +161,10 @@ export function SettingsPage() {
     try {
       // Upload via context which will refresh user data automatically
       await uploadContextProfilePicture(file);
-      
+
       // Force refresh to ensure profile picture updates everywhere
       await refreshUser();
-      
+
       showMessage("Profile picture updated successfully!", "success");
     } catch (error: any) {
       showMessage(error.message, "error");
@@ -190,11 +190,7 @@ export function SettingsPage() {
 
   if (loading) {
     return (
-      <div className="min-h-screen w-full relative p-8">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
-        </div>
+      <div className="min-h-screen w-full bg-black p-8">
         <div className="container mx-auto max-w-5xl">
           <Skeleton className="h-[600px] w-full" />
         </div>
@@ -204,40 +200,31 @@ export function SettingsPage() {
 
   if (!profile) {
     return (
-      <div className="min-h-screen w-full relative p-8">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
-          <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
-        </div>
+      <div className="min-h-screen w-full bg-black p-8">
         <div className="container mx-auto max-w-5xl text-center">
           <AlertCircle className="mx-auto text-red-400 mb-4" size={48} />
-          <h2 className="text-2xl font-bold text-white">Failed to load profile</h2>
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Failed to load profile</h2>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen w-full relative p-8">
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
-      </div>
+    <div className="min-h-screen w-full bg-black p-8">
       <div className="container mx-auto max-w-5xl">
         <header className="mb-8">
-          <h1 className="text-4xl font-bold text-white mb-2">Settings</h1>
-          <p className="text-gray-400 text-lg">
+          <h1 className="text-4xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent mb-2">Settings</h1>
+          <p className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent text-lg">
             Manage your account settings and preferences
           </p>
         </header>
 
         {message && (
           <div
-            className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${
-              message.type === "success"
-                ? "bg-green-900/30 border border-green-500/50 text-green-300"
-                : "bg-red-900/30 border border-red-500/50 text-red-300"
-            }`}
+            className={`mb-6 p-4 rounded-lg flex items-center gap-3 ${message.type === "success"
+              ? "bg-green-900/30 border border-green-500/50 text-green-300"
+              : "bg-red-900/30 border border-red-500/50 text-red-300"
+              }`}
           >
             {message.type === "success" ? (
               <CheckCircle size={20} />
@@ -249,7 +236,7 @@ export function SettingsPage() {
         )}
 
         <Tabs defaultValue="profile" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 bg-gray-800/50 border border-gray-700">
+          <TabsList className="grid w-full grid-cols-4 bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
             <TabsTrigger value="profile" className="data-[state=active]:bg-purple-600">
               <User size={16} className="mr-2" />
               Profile
@@ -270,10 +257,10 @@ export function SettingsPage() {
 
           {/* Profile Tab */}
           <TabsContent value="profile" className="mt-6">
-            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+            <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 backdrop-blur-sm border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-white">Profile Information</CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Profile Information</CardTitle>
+                <CardDescription className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">
                   Update your personal information and social links
                 </CardDescription>
               </CardHeader>
@@ -281,8 +268,8 @@ export function SettingsPage() {
                 <form onSubmit={handleUpdateProfile} className="space-y-6">
                   <div className="flex items-center gap-6">
                     <Avatar className="h-24 w-24">
-                      <AvatarImage 
-                        src={profile.profilePicture ? `${API_BASE_URL}${profile.profilePicture}` : undefined} 
+                      <AvatarImage
+                        src={profile.profilePicture ? `${API_BASE_URL}${profile.profilePicture}` : undefined}
                       />
                       <AvatarFallback className="bg-purple-600 text-white text-2xl">
                         {profile.name.charAt(0).toUpperCase()}
@@ -311,7 +298,7 @@ export function SettingsPage() {
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
-                      <Label htmlFor="name" className="text-gray-300">Name</Label>
+                      <Label htmlFor="name" className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">Name</Label>
                       <Input
                         id="name"
                         value={profile.name}
@@ -320,7 +307,7 @@ export function SettingsPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="email" className="text-gray-300">Email</Label>
+                      <Label htmlFor="email" className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">Email</Label>
                       <Input
                         id="email"
                         type="email"
@@ -330,7 +317,7 @@ export function SettingsPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="location" className="text-gray-300">Location</Label>
+                      <Label htmlFor="location" className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">Location</Label>
                       <Input
                         id="location"
                         value={profile.location || ""}
@@ -340,7 +327,7 @@ export function SettingsPage() {
                       />
                     </div>
                     <div className="space-y-2">
-                      <Label htmlFor="occupation" className="text-gray-300">Occupation</Label>
+                      <Label htmlFor="occupation" className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">Occupation</Label>
                       <Input
                         id="occupation"
                         value={profile.occupation || ""}
@@ -352,7 +339,7 @@ export function SettingsPage() {
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="bio" className="text-gray-300">Bio</Label>
+                    <Label htmlFor="bio" className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">Bio</Label>
                     <Textarea
                       id="bio"
                       value={profile.bio || ""}
@@ -364,10 +351,10 @@ export function SettingsPage() {
                   </div>
 
                   <div className="space-y-4">
-                    <h3 className="text-lg font-semibold text-white">Social Links</h3>
+                    <h3 className="text-lg font-semibold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Social Links</h3>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="website" className="text-gray-300 flex items-center gap-2">
+                        <Label htmlFor="website" className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent flex items-center gap-2">
                           <Globe size={16} />
                           Website
                         </Label>
@@ -380,7 +367,7 @@ export function SettingsPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="github" className="text-gray-300 flex items-center gap-2">
+                        <Label htmlFor="github" className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent flex items-center gap-2">
                           <Github size={16} />
                           GitHub
                         </Label>
@@ -393,7 +380,7 @@ export function SettingsPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="linkedin" className="text-gray-300 flex items-center gap-2">
+                        <Label htmlFor="linkedin" className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent flex items-center gap-2">
                           <Linkedin size={16} />
                           LinkedIn
                         </Label>
@@ -406,7 +393,7 @@ export function SettingsPage() {
                         />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="twitter" className="text-gray-300 flex items-center gap-2">
+                        <Label htmlFor="twitter" className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent flex items-center gap-2">
                           <Twitter size={16} />
                           Twitter
                         </Label>
@@ -421,8 +408,8 @@ export function SettingsPage() {
                     </div>
                   </div>
 
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={saving}
                     className="bg-purple-600 hover:bg-purple-700"
                   >
@@ -435,17 +422,17 @@ export function SettingsPage() {
 
           {/* Security Tab */}
           <TabsContent value="security" className="mt-6">
-            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+            <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 backdrop-blur-sm border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-white">Change Password</CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Change Password</CardTitle>
+                <CardDescription className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">
                   Update your password to keep your account secure
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <form onSubmit={handleChangePassword} className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="current-password" className="text-gray-300">
+                    <Label htmlFor="current-password" className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">
                       Current Password
                     </Label>
                     <Input
@@ -458,7 +445,7 @@ export function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="new-password" className="text-gray-300">
+                    <Label htmlFor="new-password" className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">
                       New Password
                     </Label>
                     <Input
@@ -472,7 +459,7 @@ export function SettingsPage() {
                     />
                   </div>
                   <div className="space-y-2">
-                    <Label htmlFor="confirm-password" className="text-gray-300">
+                    <Label htmlFor="confirm-password" className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">
                       Confirm New Password
                     </Label>
                     <Input
@@ -485,8 +472,8 @@ export function SettingsPage() {
                       className="bg-gray-900 border-gray-700 text-white"
                     />
                   </div>
-                  <Button 
-                    type="submit" 
+                  <Button
+                    type="submit"
                     disabled={saving}
                     className="bg-purple-600 hover:bg-purple-700"
                   >
@@ -499,10 +486,10 @@ export function SettingsPage() {
 
           {/* Preferences Tab */}
           <TabsContent value="preferences" className="mt-6">
-            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+            <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 backdrop-blur-sm border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-white">Appearance & Language</CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Appearance & Language</CardTitle>
+                <CardDescription className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">
                   Customize your experience
                 </CardDescription>
               </CardHeader>
@@ -510,7 +497,7 @@ export function SettingsPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label className="text-gray-300">Theme</Label>
+                      <Label className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">Theme</Label>
                       <p className="text-sm text-gray-500">Choose your preferred theme</p>
                     </div>
                     <select
@@ -531,7 +518,7 @@ export function SettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label className="text-gray-300">Language</Label>
+                      <Label className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">Language</Label>
                       <p className="text-sm text-gray-500">Select your language</p>
                     </div>
                     <select
@@ -553,7 +540,7 @@ export function SettingsPage() {
                   </div>
                 </div>
 
-                <Button 
+                <Button
                   onClick={handleUpdatePreferences}
                   disabled={saving}
                   className="bg-purple-600 hover:bg-purple-700"
@@ -566,10 +553,10 @@ export function SettingsPage() {
 
           {/* Notifications Tab */}
           <TabsContent value="notifications" className="mt-6">
-            <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+            <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 backdrop-blur-sm border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300">
               <CardHeader>
-                <CardTitle className="text-white">Notification Settings</CardTitle>
-                <CardDescription className="text-gray-400">
+                <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Notification Settings</CardTitle>
+                <CardDescription className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">
                   Manage how you receive notifications
                 </CardDescription>
               </CardHeader>
@@ -577,7 +564,7 @@ export function SettingsPage() {
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label className="text-gray-300">Email Notifications</Label>
+                      <Label className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">Email Notifications</Label>
                       <p className="text-sm text-gray-500">Receive updates via email</p>
                     </div>
                     <Switch
@@ -597,7 +584,7 @@ export function SettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label className="text-gray-300">Push Notifications</Label>
+                      <Label className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">Push Notifications</Label>
                       <p className="text-sm text-gray-500">Receive push notifications</p>
                     </div>
                     <Switch
@@ -617,7 +604,7 @@ export function SettingsPage() {
 
                   <div className="flex items-center justify-between">
                     <div>
-                      <Label className="text-gray-300">Achievement Notifications</Label>
+                      <Label className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent">Achievement Notifications</Label>
                       <p className="text-sm text-gray-500">Get notified about achievements</p>
                     </div>
                     <Switch
@@ -636,7 +623,7 @@ export function SettingsPage() {
                   </div>
                 </div>
 
-                <Button 
+                <Button
                   onClick={handleUpdatePreferences}
                   disabled={saving}
                   className="bg-purple-600 hover:bg-purple-700"

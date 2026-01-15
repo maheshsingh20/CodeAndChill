@@ -1,12 +1,16 @@
 import server from "./app";
 import { startContestScheduler } from "./utils/contestScheduler";
+import { chatService } from "./services/chatService";
 
 const PORT = process.env.PORT || 3001;
 
-server.listen(PORT, () => {
+const httpServer = server.listen(PORT, () => {
   console.log(`🚀 Server running at http://localhost:${PORT}`);
   console.log(`📊 Health check: http://localhost:${PORT}/health`);
-  console.log(`🔗 WebSocket server ready for collaborative coding`);
+  
+  // Initialize WebSocket for chat
+  chatService.initialize(httpServer);
+  console.log(`💬 WebSocket chat server initialized`);
   
   // Start contest status scheduler
   startContestScheduler();

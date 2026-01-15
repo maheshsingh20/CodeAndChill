@@ -3,6 +3,7 @@ import authRoutes from "./auth";
 import userRoutes from "./user";
 import coursesRoutes from "./courses";
 import generalCoursesRoutes from "./generalCourses";
+import engineeringCoursesRoutes from "./engineeringCourses";
 import problemsRoutes from "./problems";
 import problemSetsRoutes from "./problemSets";
 import quizzesRoutes from "./quizzes";
@@ -15,7 +16,6 @@ import submissionRoutes from "./submissions";
 import leaderboardRoutes from "./leaderboard";
 import skillTestRoutes from "./skillTests";
 import activityRoutes from "./activity";
-import collaborativeRoutes from "./collaborative";
 import contestRoutes from "./contests";
 import learningPathRoutes from "./learningPaths";
 import searchRoutes from "./search";
@@ -25,7 +25,8 @@ import notificationRoutes from "./notifications";
 import blogRoutes from "./blog";
 import communityRoutes from "./community";
 import codeExecutionRoutes from "./codeExecution";
-
+import jobRoutes from "./jobs";
+import chatRoutes from "./chat";
 const router = Router();
 
 // Mount all routes
@@ -33,6 +34,7 @@ router.use("/auth", authRoutes);
 router.use("/user", userRoutes);
 router.use("/courses", coursesRoutes);
 router.use("/general-courses", generalCoursesRoutes);
+router.use("/engineering-courses", engineeringCoursesRoutes);
 router.use("/problems", problemsRoutes);
 router.use("/problem-sets", problemSetsRoutes);
 router.use("/quizzes", quizzesRoutes);
@@ -44,7 +46,6 @@ router.use("/submissions", submissionRoutes);
 router.use("/leaderboard", leaderboardRoutes);
 router.use("/skill-tests", skillTestRoutes);
 router.use("/activity", activityRoutes);
-router.use("/collaborative", collaborativeRoutes);
 router.use("/contests", contestRoutes);
 router.use("/learning-paths", learningPathRoutes);
 router.use("/search", searchRoutes);
@@ -54,6 +55,8 @@ router.use("/notifications", notificationRoutes);
 router.use("/blog", blogRoutes);
 router.use("/community", communityRoutes);
 router.use("/code", codeExecutionRoutes);
+router.use("/jobs", jobRoutes);
+router.use("/chat", chatRoutes);
 router.use("/", aiRoutes); // AI routes are mounted at root level for /gemini-chat
 
 export default router;

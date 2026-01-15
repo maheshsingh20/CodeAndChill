@@ -19,6 +19,4 @@ export async function unregisterServiceWorkers() {
     }
   }
 }
-
-// Auto-run immediately
 unregisterServiceWorkers();

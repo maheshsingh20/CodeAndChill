@@ -54,9 +54,17 @@ export function GeneralCourseDetailPage() {
       setCourseData(null);
 
       try {
-        const response = await fetch(
-          `http://localhost:3001/api/courses/${courseId}`
-        );
+        // List of engineering course IDs
+        const engineeringCourseIds = ['dsa', 'dbms', 'operating-systems', 'computer-networks', 'software-engineering', 'web-development'];
+
+        let response;
+        if (engineeringCourseIds.includes(courseId || '')) {
+          // Use engineering courses API
+          response = await fetch(`http://localhost:3001/api/engineering-courses/${courseId}`);
+        } else {
+          // Use regular courses API
+          response = await fetch(`http://localhost:3001/api/courses/${courseId}`);
+        }
 
         if (!response.ok) {
           const errorData = await response.json();
@@ -65,12 +73,44 @@ export function GeneralCourseDetailPage() {
           );
         }
 
-        const data: CourseData = await response.json();
+        const data = await response.json();
 
-        if (data && data.modules) {
-          setCourseData(data);
-          if (data.modules[0]?.topics[0]?.subtopics[0]) {
-            const firstLesson = data.modules[0].topics[0].subtopics[0];
+        // Transform engineering course data to match expected format
+        let courseData: CourseData;
+        if (engineeringCourseIds.includes(courseId || '')) {
+          courseData = {
+            _id: data.id,
+            courseTitle: data.title,
+            modules: data.modules ? data.modules.map((module: any, moduleIndex: number) => ({
+              title: module.title,
+              topics: [{
+                title: module.title,
+                subtopics: module.lessons ? module.lessons.map((lesson: string, lessonIndex: number) => ({
+                  id: `${moduleIndex}-${lessonIndex}`,
+                  title: lesson,
+                  content: `Content for ${lesson}. This lesson covers important concepts and practical applications in ${module.title}.
+
+This is a comprehensive lesson that will help you understand the fundamental concepts and practical applications. You'll learn through examples, exercises, and real-world scenarios.
+
+Key topics covered:
+- Core concepts and definitions
+- Practical implementation techniques
+- Best practices and common patterns
+- Real-world applications and use cases
+
+Take your time to understand each concept thoroughly before moving to the next lesson.`
+                })) : []
+              }]
+            })) : []
+          };
+        } else {
+          courseData = data;
+        }
+
+        if (courseData && courseData.modules) {
+          setCourseData(courseData);
+          if (courseData.modules[0]?.topics[0]?.subtopics[0]) {
+            const firstLesson = courseData.modules[0].topics[0].subtopics[0];
             setSelectedContent(firstLesson.content);
             setCurrentLessonId(firstLesson.id);
             setStartTime(new Date());
@@ -130,10 +170,12 @@ export function GeneralCourseDetailPage() {
 
   if (loading) {
     return (
-      <div className="container mx-auto max-w-7xl px-4 py-12">
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
-          <Skeleton className="lg:col-span-1 h-96 w-full rounded-2xl shadow-lg" />
-          <Skeleton className="lg:col-span-3 h-[80vh] w-full rounded-2xl shadow-lg" />
+      <div className="w-full min-h-screen bg-black">
+        <div className="container mx-auto max-w-7xl px-4 py-12">
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-12">
+            <div className="lg:col-span-1 h-96 w-full bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-xl animate-pulse" />
+            <div className="lg:col-span-3 h-[80vh] w-full bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-xl animate-pulse" />
+          </div>
         </div>
       </div>
     );
@@ -141,50 +183,53 @@ export function GeneralCourseDetailPage() {
 
   if (error) {
     return (
-      <div className="container mx-auto p-8 text-center">
-        <h2 className="text-2xl font-bold text-destructive">
-          Failed to Load Course
-        </h2>
-        <p className="text-muted-foreground mt-2">{error}</p>
+      <div className="w-full min-h-screen bg-black flex items-center justify-center">
+        <div className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-xl p-8 max-w-md mx-4">
+          <h2 className="text-2xl font-bold bg-gradient-to-r from-red-400 to-red-600 bg-clip-text text-transparent mb-2">
+            Failed to Load Course
+          </h2>
+          <p className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent">{error}</p>
+        </div>
       </div>
     );
   }
 
   if (!courseData) {
     return (
-      <div className="container mx-auto p-8 text-center">
-        Course data could not be loaded.
+      <div className="w-full min-h-screen bg-black flex items-center justify-center">
+        <div className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-xl p-8 max-w-md mx-4">
+          <p className="bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent text-center">
+            Course data could not be loaded.
+          </p>
+        </div>
       </div>
     );
   }
 
   return (
-    <section className="w-full section-professional relative">
-      {/* Consistent Background */}
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl animate-pulse" />
-        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl animate-pulse delay-1000" />
-      </div>
-      <div className="absolute inset-0 -z-10">
-        <div className="absolute inset-0 gradient-secondary opacity-5" />
-        <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_30%,rgba(120,119,198,0.08),transparent_50%)]" />
+    <div className="w-full min-h-screen bg-black">
+      {/* Background Effects */}
+      <div className="fixed inset-0 -z-10">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl" />
+        <div className="absolute bottom-1/4 right-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl" />
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[800px] h-[800px] bg-gradient-to-r from-purple-500/3 via-blue-500/3 to-cyan-500/3 rounded-full blur-3xl" />
       </div>
 
-      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+      <div className="container mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-8">
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-          <aside className="lg:col-span-1 lg:sticky top-24">
-            <div className="card-professional glass-effect p-6 border-gradient">
-              <h2 className="text-2xl font-bold text-primary mb-6 heading-gradient">
+          <aside className="lg:col-span-1 lg:sticky top-8">
+            <div className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-xl p-6 hover:border-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-black/60">
+              <h2 className="text-2xl font-bold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent mb-6">
                 {courseData.courseTitle}
               </h2>
               <CourseContentSidebar
                 modules={courseData.modules}
                 onSelectContent={(content, lessonId) => handleLessonSelect(content, lessonId)}
               />
-              
+
               {/* Real-time Progress Bar */}
               {courseId && (
-                <div className="mt-6">
+                <div className="mt-6 p-4 bg-black/30 backdrop-blur-sm border border-gray-600 rounded-lg">
                   <RealTimeProgressBar
                     courseId={courseId}
                     totalLessons={courseData.modules.reduce(
@@ -197,22 +242,22 @@ export function GeneralCourseDetailPage() {
               )}
             </div>
           </aside>
-          
+
           <main className="lg:col-span-3">
-            <Card className="card-professional professional-shadow-xl min-h-[80vh] border-0">
-              <CardContent className="p-8 lg:p-12">
-                <div className="prose dark:prose-invert prose-lg max-w-none">
+            <div className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 rounded-xl hover:border-gray-600 transition-all duration-300 shadow-lg hover:shadow-xl hover:shadow-black/60 min-h-[80vh]">
+              <div className="p-8 lg:p-12">
+                <div className="prose prose-invert prose-lg max-w-none">
                   {selectedContent.split("\n").map((paragraph, index) => (
-                    <p key={index} className="mb-6 text-foreground leading-relaxed">
+                    <p key={index} className="mb-6 bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent leading-relaxed">
                       {paragraph}
                     </p>
                   ))}
                 </div>
-              </CardContent>
-            </Card>
+              </div>
+            </div>
           </main>
         </div>
       </div>
-    </section>
+    </div>
   );
 }

@@ -59,7 +59,7 @@ export const BinaryRain: React.FC<BinaryRainProps> = ({
         className={`absolute inset-0 overflow-hidden pointer-events-none ${className}`}
         style={{ zIndex: -1 }}
       />
-      <style jsx>{`
+      <style>{`
         .binary-drop {
           position: absolute;
           top: -20px;

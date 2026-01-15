@@ -3,7 +3,7 @@ import mongoose, { Schema, Document } from "mongoose";
 export interface IUser extends Document {
   name: string;
   email: string;
-  password: string;
+  password?: string; // Make password optional for OAuth users
   location: string;
   occupation: string;
   bio: string;
@@ -53,12 +53,17 @@ export interface IUser extends Document {
     activity: string;
     lastSeen: Date;
   };
+  // OAuth fields
+  githubId?: string;
+  googleId?: string;
+  provider?: 'local' | 'github' | 'google';
+  isEmailVerified?: boolean;
 }
 
 const userSchema = new Schema<IUser>({
   name: { type: String, required: true },
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
+  password: { type: String }, // Remove required for OAuth users
   location: { type: String, default: "Not specified" },
   occupation: { type: String, default: "Developer" },
   bio: { type: String, default: "Learning and growing every day!" },
@@ -107,7 +112,12 @@ const userSchema = new Schema<IUser>({
     status: { type: String, enum: ['online', 'offline', 'away'], default: 'offline' },
     activity: { type: String, default: '' },
     lastSeen: { type: Date, default: Date.now }
-  }
+  },
+  // OAuth fields
+  githubId: { type: String, sparse: true },
+  googleId: { type: String, sparse: true },
+  provider: { type: String, enum: ['local', 'github', 'google'], default: 'local' },
+  isEmailVerified: { type: Boolean, default: false }
 }, {
   timestamps: true
 });

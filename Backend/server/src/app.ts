@@ -8,19 +8,19 @@ dotenv.config({ path: envPath, override: false });
 
 import express from "express";
 import cors from "cors";
+import session from "express-session";
 import { createServer } from "http";
-import { Server as SocketIOServer } from "socket.io";
 import { connectDatabase } from "./config";
 import routes from "./routes";
-import { CollaborativeHandler } from "./websocket/collaborativeHandler";
-import { setupSocketHandlers } from "./socket/socketHandlers";
+import passport from "./config/passport";
 
 // Validate required environment variables
 const requiredEnvVars = [
   "GEMINI_API_KEY",
   "JWT_SECRET",
   "RAZORPAY_KEY_ID",
-  "RAZORPAY_KEY_SECRET"
+  "RAZORPAY_KEY_SECRET",
+  "SESSION_SECRET"
 ];
 
 for (const envVar of requiredEnvVars) {
@@ -33,30 +33,6 @@ for (const envVar of requiredEnvVars) {
 // Create Express app and HTTP server
 const app = express();
 const server = createServer(app);
-
-// Setup Socket.IO with CORS
-const io = new SocketIOServer(server, {
-  cors: {
-    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175"],
-    methods: ["GET", "POST"],
-    credentials: true
-  },
-  transports: ['websocket', 'polling']
-});
-
-// Make io available to routes
-app.set('io', io);
-
-// Initialize collaborative handler
-const collaborativeHandler = new CollaborativeHandler(io);
-
-// Setup enhanced socket handlers
-setupSocketHandlers(io);
-
-// Cleanup inactive sessions every hour
-setInterval(() => {
-  collaborativeHandler.cleanupInactiveSessions();
-}, 60 * 60 * 1000);
 
 // Middleware
 app.use(cors({ 
@@ -84,6 +60,22 @@ app.use(cors({
   preflightContinue: false,
   optionsSuccessStatus: 204
 }));
+
+// Session middleware (required for Passport)
+app.use(session({
+  secret: process.env.SESSION_SECRET!,
+  resave: false,
+  saveUninitialized: false,
+  cookie: {
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: 24 * 60 * 60 * 1000 // 24 hours
+  }
+}));
+
+// Passport middleware
+app.use(passport.initialize());
+app.use(passport.session());
+
 app.use(express.json());
 
 // Serve static files for uploads
@@ -92,12 +84,8 @@ app.use('/uploads', express.static(path.join(__dirname, '../uploads')));
 // Connect to database
 connectDatabase();
 
-// Import additional routes
-import realtimeRoutes from "./routes/realtime";
-
 // Routes
 app.use("/api", routes);
-app.use("/api/realtime", realtimeRoutes);
 
 // Health check endpoint
 app.get("/health", (req, res) => {

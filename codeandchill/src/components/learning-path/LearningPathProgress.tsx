@@ -51,7 +51,7 @@ export const LearningPathProgress: React.FC = () => {
 
   if (!user) {
     return (
-      <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+      <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
         <CardHeader>
           <CardTitle className="text-white flex items-center">
             <BookOpen className="mr-2" size={20} />
@@ -73,9 +73,9 @@ export const LearningPathProgress: React.FC = () => {
 
   if (loading) {
     return (
-      <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+      <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
         <CardHeader>
-          <CardTitle className="text-white flex items-center">
+          <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center">
             <BookOpen className="mr-2" size={20} />
             Learning Path Progress
           </CardTitle>
@@ -99,7 +99,7 @@ export const LearningPathProgress: React.FC = () => {
 
   if (enrolledPaths.length === 0) {
     return (
-      <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+      <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
         <CardHeader>
           <CardTitle className="text-white flex items-center">
             <BookOpen className="mr-2" size={20} />
@@ -108,7 +108,7 @@ export const LearningPathProgress: React.FC = () => {
         </CardHeader>
         <CardContent className="text-center py-8">
           <TrendingUp className="mx-auto mb-4 text-gray-500" size={32} />
-          <h3 className="text-lg font-medium text-white mb-2">Start Your Learning Journey</h3>
+          <h3 className="text-lg font-medium mb-2 bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">Start Your Learning Journey</h3>
           <p className="text-gray-400 mb-4">
             Choose from structured learning paths to master new skills
           </p>
@@ -124,9 +124,9 @@ export const LearningPathProgress: React.FC = () => {
   }
 
   return (
-    <Card className="bg-gray-800/50 backdrop-blur-sm border-gray-700">
+    <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
       <CardHeader>
-        <CardTitle className="text-white flex items-center justify-between">
+        <CardTitle className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent flex items-center justify-between">
           <div className="flex items-center">
             <BookOpen className="mr-2" size={20} />
             Learning Path Progress
@@ -141,7 +141,7 @@ export const LearningPathProgress: React.FC = () => {
           {enrolledPaths.map((userPath) => {
             const progress = userPath.overallProgress;
             const isCompleted = progress === 100;
-            
+
             return (
               <div key={userPath._id} className="space-y-2">
                 <div className="flex items-center justify-between">
@@ -158,16 +158,16 @@ export const LearningPathProgress: React.FC = () => {
                   </span>
                 </div>
                 <div className="relative">
-                  <Progress 
-                    value={progress} 
+                  <Progress
+                    value={progress}
                     className="h-2"
                   />
-                  <div 
+                  <div
                     className={`absolute top-0 left-0 h-2 rounded-full transition-all duration-300 ${getProgressBarColor(progress)}`}
                     style={{ width: `${progress}%` }}
                   />
                 </div>
-                
+
                 {/* Course Progress Summary */}
                 <div className="flex items-center justify-between text-xs text-gray-500">
                   <span>
@@ -181,18 +181,18 @@ export const LearningPathProgress: React.FC = () => {
             );
           })}
         </div>
-        
+
         <div className="mt-6 space-y-2">
           <Link to="/learning-paths" className="block">
             <Button className="w-full bg-purple-600 hover:bg-purple-700">
               View All Paths
             </Button>
           </Link>
-          
+
           {enrolledPaths.length > 0 && enrolledPaths[0].pathId && (
             <div className="text-center">
-              <Link 
-                to={`/learning-paths/${enrolledPaths[0].pathId._id}`} 
+              <Link
+                to={`/learning-paths/${enrolledPaths[0].pathId._id}`}
                 className="text-sm text-purple-400 hover:text-purple-300 transition-colors"
               >
                 Continue Current Path →

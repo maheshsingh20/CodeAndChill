@@ -12,8 +12,7 @@ const LearningStreakSchema: Schema = new Schema({
   userId: {
     type: Schema.Types.ObjectId,
     ref: 'User',
-    required: true,
-    unique: true
+    required: true
   },
   currentStreak: {
     type: Number,
@@ -33,6 +32,6 @@ const LearningStreakSchema: Schema = new Schema({
   timestamps: true
 });
 
-LearningStreakSchema.index({ userId: 1 });
+LearningStreakSchema.index({ userId: 1 }, { unique: true });
 
 export default mongoose.model<ILearningStreak>('LearningStreak', LearningStreakSchema);
