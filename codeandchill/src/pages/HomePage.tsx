@@ -52,8 +52,8 @@ const containerVariants: Variants = {
 
 const animationProps = {
   variants: sectionVariants,
-  initial: "hidden",
-  whileInView: "visible",
+  initial: "hidden" as const,
+  whileInView: "visible" as const,
   viewport: { once: true, margin: "-100px" }
 };
 

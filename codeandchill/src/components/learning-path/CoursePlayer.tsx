@@ -80,13 +80,15 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
   const currentLesson = lessons[currentLessonIndex];
 
   useEffect(() => {
-    let interval: number;
+    let interval: ReturnType<typeof setInterval> | undefined;
     if (isPlaying) {
-      interval = window.setInterval(() => {
+      interval = setInterval(() => {
         setTimeSpent(prev => prev + 1);
       }, 1000);
     }
-    return () => clearInterval(interval);
+    return () => {
+      if (interval) clearInterval(interval);
+    };
   }, [isPlaying]);
 
   useEffect(() => {

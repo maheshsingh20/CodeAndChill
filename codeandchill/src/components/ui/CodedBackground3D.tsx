@@ -6,7 +6,7 @@ interface CodedBackground3DProps {
 
 export const CodedBackground3D: React.FC<CodedBackground3DProps> = ({ className = '' }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     const canvas = canvasRef.current;

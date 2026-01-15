@@ -10,7 +10,7 @@ export const MatrixRain: React.FC<MatrixRainProps> = ({
   opacity = 0.1
 }) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
-  const animationRef = useRef<number>();
+  const animationRef = useRef<number | undefined>(undefined);
 
   useEffect(() => {
     const canvas = canvasRef.current;
