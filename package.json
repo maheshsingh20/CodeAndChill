@@ -1,4 +1,7 @@
 {
+  "scripts": {
+    "vercel-build": "cd codeandchill && npm install && npm run build"
+  },
   "dependencies": {
     "node-fetch": "^3.3.2"
   }
