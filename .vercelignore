@@ -1,0 +1,50 @@
+# Dependencies
+node_modules
+Backend/node_modules
+Backend/server/node_modules
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Build outputs
+Backend/server/dist
+codeandchill/dist
+
+# Logs
+*.log
+npm-debug.log*
+
+# IDE
+.vscode
+.idea
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git
+.gitignore
+
+# Uploads (use cloud storage in production)
+Backend/server/uploads
+
+# Temp files
+Backend/server/temp
+*.tmp
+
+# Jenkins
+jenkins_home
+jenkins.war
+
+# Docker
+docker-compose.yml
+docker-compose.prod.yml
+Dockerfile
+.dockerignore
+
+# Documentation
+*.md
+!README.md
