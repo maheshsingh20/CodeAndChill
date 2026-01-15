@@ -70,9 +70,7 @@ export function ProblemSetCard({ set }: ProblemSetCardProps) {
                 <div className="p-3 bg-black/30 backdrop-blur-sm border border-gray-600 rounded-md group-hover:border-gray-500 transition-all duration-300">
                   <div className="w-6 h-6 text-blue-400 group-hover:scale-110 transition-transform duration-300 flex items-center justify-center">
                     {set.icon ? (
-                      React.cloneElement(set.icon as React.ReactElement, {
-                        className: "w-6 h-6"
-                      })
+                      <span className="w-6 h-6">{set.icon}</span>
                     ) : (
                       <Code className="w-6 h-6" />
                     )}

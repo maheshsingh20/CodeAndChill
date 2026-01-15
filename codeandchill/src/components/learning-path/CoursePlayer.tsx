@@ -80,9 +80,9 @@ export const CoursePlayer: React.FC<CoursePlayerProps> = ({
   const currentLesson = lessons[currentLessonIndex];
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: number;
     if (isPlaying) {
-      interval = setInterval(() => {
+      interval = window.setInterval(() => {
         setTimeSpent(prev => prev + 1);
       }, 1000);
     }
