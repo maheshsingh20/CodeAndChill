@@ -1,6 +1,6 @@
 {
-  "buildCommand": "cd codeandchill && npm run build",
+  "buildCommand": "cd codeandchill && npm install && npm run build",
   "outputDirectory": "codeandchill/dist",
-  "installCommand": "cd codeandchill && npm install",
-  "framework": "vite"
+  "framework": "vite",
+  "installCommand": "npm install --prefix codeandchill"
 }
