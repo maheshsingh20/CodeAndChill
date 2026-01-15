@@ -54,11 +54,7 @@ const animationProps = {
   variants: sectionVariants,
   initial: "hidden",
   whileInView: "visible",
-  viewport: { once: true, margin: "-100px" },
-  whileHover: {
-    scale: 1.02,
-    transition: { duration: 0.3, ease: [0.25, 0.46, 0.45, 0.94] }
-  }
+  viewport: { once: true, margin: "-100px" }
 };
 
 export function HomePage(): JSX.Element {
