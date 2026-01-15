@@ -4,9 +4,9 @@
   "description": "Backend for Code & Chill",
   "main": "src/server.ts",
   "scripts": {
-    "start": "node dist/server.js",
+    "start": "ts-node src/server.ts",
     "dev": "ts-node src/server.ts",
-    "build": "tsc",
+    "build": "tsc --noEmit",
     "seed": "ts-node seed-new.ts",
     "seed-jobs": "ts-node seed-jobs.ts",
     "create-admin": "ts-node create-admin.ts",
