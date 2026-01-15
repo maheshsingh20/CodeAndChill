@@ -1,18 +1,6 @@
 {
-  "version": 2,
-  "builds": [
-    {
-      "src": "codeandchill/package.json",
-      "use": "@vercel/static-build",
-      "config": {
-        "distDir": "codeandchill/dist"
-      }
-    }
-  ],
-  "routes": [
-    {
-      "src": "/(.*)",
-      "dest": "codeandchill/dist/$1"
-    }
-  ]
+  "buildCommand": "cd codeandchill && npm run build",
+  "outputDirectory": "codeandchill/dist",
+  "installCommand": "cd codeandchill && npm install",
+  "framework": "vite"
 }
