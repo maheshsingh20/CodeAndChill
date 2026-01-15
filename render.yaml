@@ -6,7 +6,7 @@ services:
     region: oregon
     plan: free
     buildCommand: cd Backend/server && npm install
-    startCommand: cd Backend/server && npm start
+    startCommand: cd Backend/server && chmod +x start.sh && ./start.sh
     envVars:
       - key: NODE_ENV
         value: production
