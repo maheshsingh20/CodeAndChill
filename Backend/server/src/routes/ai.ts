@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import axios from "axios";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
 const router = Router();
 
@@ -9,8 +9,10 @@ if (!process.env.GEMINI_API_KEY) {
 }
 
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
-const MODEL_NAME = "gemini-2.5-flash"; // Use the stable model
-const GEMINI_API_URL = `https://generativelanguage.googleapis.com/v1/models/${MODEL_NAME}:streamGenerateContent?key=${GEMINI_API_KEY}&alt=sse`;
+const MODEL_NAME = "gemini-flash-latest"; // Always uses the latest Flash model automatically
+
+// Initialize Gemini AI
+const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || '');
 
 // Test endpoint to verify API key
 router.get("/test-gemini", async (req: Request, res: Response) => {
@@ -18,32 +20,23 @@ router.get("/test-gemini", async (req: Request, res: Response) => {
     console.log("Testing Gemini API connection...");
     console.log("API Key present:", !!GEMINI_API_KEY);
     
-    const response = await axios.post(
-      `https://generativelanguage.googleapis.com/v1/models/${MODEL_NAME}:generateContent?key=${GEMINI_API_KEY}`,
-      {
-        contents: [{
-          parts: [{ text: "Say hello in one word" }]
-        }]
-      },
-      {
-        headers: { 'Content-Type': 'application/json' },
-        timeout: 10000
-      }
-    );
-    
-    const text = response.data.candidates[0].content.parts[0].text;
+    const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+    const result = await model.generateContent("Say hello in one word");
+    const response = await result.response;
+    const text = response.text();
     
     res.json({ 
       success: true, 
       message: "Gemini API is working!",
-      response: text 
+      response: text,
+      model: MODEL_NAME
     });
   } catch (error: any) {
-    console.error("Test failed:", error.response?.data || error.message);
+    console.error("Test failed:", error.message);
     res.status(500).json({ 
       success: false, 
       error: error.message,
-      details: error.response?.data || "Unknown error"
+      details: error.cause || "Unknown error"
     });
   }
 });
@@ -62,67 +55,30 @@ router.post(
 
       console.log("Sending request to Gemini API...");
 
-      const response = await axios.post(
-        GEMINI_API_URL,
-        {
-          contents: [{
-            parts: [{ text: prompt }]
-          }]
-        },
-        {
-          headers: { 
-            'Content-Type': 'application/json'
-          },
-          responseType: 'stream',
-          timeout: 60000 // 60 second timeout
-        }
-      );
+      const model = genAI.getGenerativeModel({ model: MODEL_NAME });
+      const result = await model.generateContentStream(prompt);
 
       res.setHeader("Content-Type", "text/plain; charset=utf-8");
       res.setHeader("Transfer-Encoding", "chunked");
 
-      // Parse SSE stream
-      let buffer = '';
-      
-      response.data.on('data', (chunk: Buffer) => {
-        buffer += chunk.toString();
-        const lines = buffer.split('\n');
-        buffer = lines.pop() || '';
-
-        for (const line of lines) {
-          if (line.startsWith('data: ')) {
-            try {
-              const data = JSON.parse(line.slice(6));
-              const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
-              if (text) {
-                res.write(text);
-              }
-            } catch (e) {
-              // Ignore JSON parse errors
-            }
-          }
+      // Stream the response
+      for await (const chunk of result.stream) {
+        const chunkText = chunk.text();
+        if (chunkText) {
+          res.write(chunkText);
         }
-      });
+      }
 
-      response.data.on('end', () => {
-        res.end();
-      });
-
-      response.data.on('error', (error: Error) => {
-        console.error("Stream error:", error);
-        if (!res.headersSent) {
-          res.status(500).json({ error: "Stream error" });
-        }
-      });
+      res.end();
 
     } catch (error: any) {
       console.error("Error in /api/gemini-chat:", error.message);
-      console.error("Error details:", error.response?.data || error.cause);
+      console.error("Error details:", error.cause || error);
       
       if (!res.headersSent) {
         res.status(500).json({ 
           error: "Failed to get response from Gemini",
-          details: error.response?.data?.error?.message || error.message
+          details: error.message
         });
       }
     }

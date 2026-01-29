@@ -671,9 +671,22 @@ const seedDatabase = async () => {
           "Only one valid answer exists."
         ],
         testCases: [
-          { input: "[2,7,11,15]\n9", expectedOutput: "[0,1]" },
-          { input: "[3,2,4]\n6", expectedOutput: "[1,2]" },
-          { input: "[3,3]\n6", expectedOutput: "[0,1]" }
+          { input: `[2,7,11,15]
+9`, expectedOutput: "[0,1]" },
+          { input: `[3,2,4]
+6`, expectedOutput: "[1,2]" },
+          { input: `[3,3]
+6`, expectedOutput: "[0,1]" },
+          { input: `[1,5,3,7,9,2]
+8`, expectedOutput: "[0,3]" },
+          { input: `[0,4,3,0]
+0`, expectedOutput: "[0,3]" },
+          { input: `[-1,-2,-3,-4,-5]
+-8`, expectedOutput: "[2,4]" },
+          { input: `[1,2,3,4,5,6,7,8,9,10]
+19`, expectedOutput: "[8,9]" },
+          { input: `[5,5,5,5]
+10`, expectedOutput: "[0,1]" }
         ]
       },
       {
@@ -695,7 +708,11 @@ const seedDatabase = async () => {
         testCases: [
           { input: "[1,2,3,4,5]", expectedOutput: "[5,4,3,2,1]" },
           { input: "[1,2]", expectedOutput: "[2,1]" },
-          { input: "[]", expectedOutput: "[]" }
+          { input: "[]", expectedOutput: "[]" },
+          { input: "[1]", expectedOutput: "[1]" },
+          { input: "[10,20,30,40,50,60]", expectedOutput: "[60,50,40,30,20,10]" },
+          { input: "[100]", expectedOutput: "[100]" },
+          { input: "[7,14,21,28,35]", expectedOutput: "[35,28,21,14,7]" }
         ]
       },
       {
@@ -725,7 +742,14 @@ const seedDatabase = async () => {
         testCases: [
           { input: "()", expectedOutput: "true" },
           { input: "()[]{}", expectedOutput: "true" },
-          { input: "(]", expectedOutput: "false" }
+          { input: "(]", expectedOutput: "false" },
+          { input: "([)]", expectedOutput: "false" },
+          { input: "{[]}", expectedOutput: "true" },
+          { input: "((()))", expectedOutput: "true" },
+          { input: "()[]{}()", expectedOutput: "true" },
+          { input: "([{}])", expectedOutput: "true" },
+          { input: "((", expectedOutput: "false" },
+          { input: "))", expectedOutput: "false" }
         ]
       },
       {
@@ -748,8 +772,20 @@ const seedDatabase = async () => {
           "nums is sorted in ascending order."
         ],
         testCases: [
-          { input: "[-1,0,3,5,9,12]\n9", expectedOutput: "4" },
-          { input: "[-1,0,3,5,9,12]\n2", expectedOutput: "-1" }
+          { input: `[-1,0,3,5,9,12]
+9`, expectedOutput: "4" },
+          { input: `[-1,0,3,5,9,12]
+2`, expectedOutput: "-1" },
+          { input: `[1,2,3,4,5,6,7,8,9,10]
+7`, expectedOutput: "6" },
+          { input: `[1]
+1`, expectedOutput: "0" },
+          { input: `[1,3,5,7,9]
+5`, expectedOutput: "2" },
+          { input: `[2,4,6,8,10]
+3`, expectedOutput: "-1" },
+          { input: `[-10,-5,0,5,10]
+0`, expectedOutput: "2" }
         ]
       },
       {
@@ -772,7 +808,79 @@ const seedDatabase = async () => {
         testCases: [
           { input: "[-2,1,-3,4,-1,2,1,-5,4]", expectedOutput: "6" },
           { input: "[1]", expectedOutput: "1" },
-          { input: "[5,4,-1,7,8]", expectedOutput: "23" }
+          { input: "[5,4,-1,7,8]", expectedOutput: "23" },
+          { input: "[-1,-2,-3,-4]", expectedOutput: "-1" },
+          { input: "[1,2,3,4,5]", expectedOutput: "15" },
+          { input: "[-5,-2,-8,-1]", expectedOutput: "-1" },
+          { input: "[2,-1,2,3,-2,4]", expectedOutput: "7" }
+        ]
+      },
+      {
+        title: "Palindrome Number",
+        slug: "palindrome-number",
+        difficulty: "Easy",
+        topic: "Math",
+        description: "Given an integer x, return true if x is palindrome integer. An integer is a palindrome when it reads the same backward as forward.",
+        examples: [
+          {
+            input: "x = 121",
+            output: "true",
+            explanation: "121 reads as 121 from left to right and from right to left."
+          },
+          {
+            input: "x = -121",
+            output: "false",
+            explanation: "From left to right, it reads -121. From right to left, it becomes 121-. Therefore it is not a palindrome."
+          }
+        ],
+        constraints: [
+          "-2^31 <= x <= 2^31 - 1"
+        ],
+        testCases: [
+          { input: "121", expectedOutput: "true" },
+          { input: "-121", expectedOutput: "false" },
+          { input: "10", expectedOutput: "false" },
+          { input: "0", expectedOutput: "true" },
+          { input: "1", expectedOutput: "true" },
+          { input: "12321", expectedOutput: "true" },
+          { input: "123321", expectedOutput: "true" },
+          { input: "12345", expectedOutput: "false" },
+          { input: "9", expectedOutput: "true" },
+          { input: "11", expectedOutput: "true" },
+          { input: "1001", expectedOutput: "true" },
+          { input: "1234321", expectedOutput: "true" },
+          { input: "-1", expectedOutput: "false" },
+          { input: "2147447412", expectedOutput: "false" },
+          { input: "1234567899876543210", expectedOutput: "false" }
+        ]
+      },
+      {
+        title: "FizzBuzz",
+        slug: "fizzbuzz",
+        difficulty: "Easy", 
+        topic: "Math",
+        description: "Given an integer n, return a string array answer (1-indexed) where: answer[i] == 'FizzBuzz' if i is divisible by 3 and 5, answer[i] == 'Fizz' if i is divisible by 3, answer[i] == 'Buzz' if i is divisible by 5, answer[i] == i (as a string) if none of the above conditions are true.",
+        examples: [
+          {
+            input: "n = 3",
+            output: '["1","2","Fizz"]'
+          },
+          {
+            input: "n = 5", 
+            output: '["1","2","Fizz","4","Buzz"]'
+          }
+        ],
+        constraints: [
+          "1 <= n <= 10^4"
+        ],
+        testCases: [
+          { input: "3", expectedOutput: '["1","2","Fizz"]' },
+          { input: "5", expectedOutput: '["1","2","Fizz","4","Buzz"]' },
+          { input: "15", expectedOutput: '["1","2","Fizz","4","Buzz","Fizz","7","8","Fizz","Buzz","11","Fizz","13","14","FizzBuzz"]' },
+          { input: "1", expectedOutput: '["1"]' },
+          { input: "10", expectedOutput: '["1","2","Fizz","4","Buzz","Fizz","7","8","Fizz","Buzz"]' },
+          { input: "20", expectedOutput: '["1","2","Fizz","4","Buzz","Fizz","7","8","Fizz","Buzz","11","Fizz","13","14","FizzBuzz","16","17","Fizz","19","Buzz"]' },
+          { input: "30", expectedOutput: '["1","2","Fizz","4","Buzz","Fizz","7","8","Fizz","Buzz","11","Fizz","13","14","FizzBuzz","16","17","Fizz","19","Buzz","Fizz","22","23","Fizz","Buzz","26","Fizz","28","29","FizzBuzz"]' }
         ]
       }
     ];
@@ -839,12 +947,12 @@ const seedDatabase = async () => {
 
     // Seed problem sets with problem references
     const problemSetsWithProblems = problemSetsToSeed.map((set, index) => {
-      if (index === 0) { // Beginner's set
-        set.problems = [createdProblems[0]._id, createdProblems[1]._id, createdProblems[2]._id];
-      } else if (index === 1) { // Array mastery
-        set.problems = [createdProblems[0]._id, createdProblems[4]._id];
-      } else { // Interview prep
-        set.problems = [createdProblems[0]._id, createdProblems[1]._id, createdProblems[4]._id];
+      if (index === 0) { // Beginner's set - Easy problems for beginners
+        set.problems = [createdProblems[0]._id, createdProblems[1]._id, createdProblems[2]._id, createdProblems[5]._id, createdProblems[6]._id];
+      } else if (index === 1) { // Array mastery - Array and math problems
+        set.problems = [createdProblems[0]._id, createdProblems[3]._id, createdProblems[4]._id];
+      } else { // Interview prep - Common interview problems
+        set.problems = [createdProblems[0]._id, createdProblems[1]._id, createdProblems[4]._id, createdProblems[5]._id, createdProblems[6]._id];
       }
       return set;
     });

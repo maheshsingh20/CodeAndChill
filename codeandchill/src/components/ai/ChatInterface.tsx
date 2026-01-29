@@ -1,10 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import React, { useState, useRef, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
-import { Send, Bot, User, Square } from "lucide-react";
+import { Send, Bot, User, Square, Plus, MessageSquare, Trash2, History, Copy, ThumbsUp, ThumbsDown } from "lucide-react";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { cn } from "@/lib/utils";
 import { Prism as SyntaxHighlighter } from "react-syntax-highlighter";
@@ -14,20 +14,44 @@ type Message = {
   id: number;
   text: string;
   sender: "user" | "ai";
+  timestamp: Date;
+  feedback?: 'positive' | 'negative';
+};
+
+type ChatSession = {
+  id: string;
+  title: string;
+  messages: Message[];
+  createdAt: Date;
+  lastUpdated: Date;
 };
 
 export function ChatInterface() {
-  const [messages, setMessages] = useState<Message[]>([
+  const [currentSessionId, setCurrentSessionId] = useState<string>("default");
+  const [chatSessions, setChatSessions] = useState<ChatSession[]>([
     {
-      id: 1,
-      text: "Hello! I'm your AI Assistant, powered by Gemini. How can I help you today?",
-      sender: "ai",
+      id: "default",
+      title: "New Chat",
+      messages: [
+        {
+          id: 1,
+          text: "Hello! I'm your AI Assistant, powered by Gemini Flash Latest. How can I help you today?",
+          sender: "ai",
+          timestamp: new Date(),
+        },
+      ],
+      createdAt: new Date(),
+      lastUpdated: new Date(),
     },
   ]);
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showHistory, setShowHistory] = useState(false);
   const scrollAreaRef = useRef<HTMLDivElement>(null);
   const abortControllerRef = useRef<AbortController | null>(null);
+
+  const currentSession = chatSessions.find(session => session.id === currentSessionId);
+  const messages = currentSession?.messages || [];
 
   // Scroll to bottom smoothly whenever messages change
   useEffect(() => {
@@ -38,6 +62,108 @@ export function ChatInterface() {
       });
     }
   }, [messages]);
+
+  // Save to localStorage whenever sessions change
+  useEffect(() => {
+    localStorage.setItem('ai-chat-sessions', JSON.stringify(chatSessions));
+  }, [chatSessions]);
+
+  // Load from localStorage on mount
+  useEffect(() => {
+    const saved = localStorage.getItem('ai-chat-sessions');
+    if (saved) {
+      try {
+        const parsed = JSON.parse(saved);
+        setChatSessions(parsed.map((session: any) => ({
+          ...session,
+          createdAt: new Date(session.createdAt),
+          lastUpdated: new Date(session.lastUpdated),
+          messages: session.messages.map((msg: any) => ({
+            ...msg,
+            timestamp: new Date(msg.timestamp)
+          }))
+        })));
+      } catch (error) {
+        console.error('Failed to load chat history:', error);
+      }
+    }
+  }, []);
+
+  const createNewChat = () => {
+    const newSessionId = `chat-${Date.now()}`;
+    const newSession: ChatSession = {
+      id: newSessionId,
+      title: "New Chat",
+      messages: [
+        {
+          id: Date.now(),
+          text: "Hello! I'm your AI Assistant, powered by Gemini Flash Latest. How can I help you today?",
+          sender: "ai",
+          timestamp: new Date(),
+        },
+      ],
+      createdAt: new Date(),
+      lastUpdated: new Date(),
+    };
+
+    setChatSessions(prev => [newSession, ...prev]);
+    setCurrentSessionId(newSessionId);
+    setShowHistory(false);
+  };
+
+  const deleteChat = (sessionId: string) => {
+    if (chatSessions.length <= 1) return; // Keep at least one chat
+
+    setChatSessions(prev => prev.filter(session => session.id !== sessionId));
+
+    if (currentSessionId === sessionId) {
+      const remainingSessions = chatSessions.filter(session => session.id !== sessionId);
+      setCurrentSessionId(remainingSessions[0]?.id || "default");
+    }
+  };
+
+  const switchToChat = (sessionId: string) => {
+    setCurrentSessionId(sessionId);
+    setShowHistory(false);
+  };
+
+  const updateSessionTitle = (sessionId: string, firstUserMessage: string) => {
+    const title = firstUserMessage.length > 30
+      ? firstUserMessage.substring(0, 30) + "..."
+      : firstUserMessage;
+
+    setChatSessions(prev => prev.map(session =>
+      session.id === sessionId
+        ? { ...session, title }
+        : session
+    ));
+  };
+
+  const addMessage = (message: Message) => {
+    setChatSessions(prev => prev.map(session =>
+      session.id === currentSessionId
+        ? {
+          ...session,
+          messages: [...session.messages, message],
+          lastUpdated: new Date()
+        }
+        : session
+    ));
+  };
+
+  const updateMessage = (messageId: number, updates: Partial<Message>) => {
+    setChatSessions(prev => prev.map(session =>
+      session.id === currentSessionId
+        ? {
+          ...session,
+          messages: session.messages.map(msg =>
+            msg.id === messageId ? { ...msg, ...updates } : msg
+          ),
+          lastUpdated: new Date()
+        }
+        : session
+    ));
+  };
 
   const handleStop = () => {
     if (abortControllerRef.current) {
@@ -56,8 +182,15 @@ export function ChatInterface() {
       id: Date.now(),
       text: input,
       sender: "user",
+      timestamp: new Date(),
     };
-    setMessages((prev) => [...prev, userMessage]);
+
+    // Update session title if this is the first user message
+    if (currentSession && currentSession.messages.filter(m => m.sender === "user").length === 0) {
+      updateSessionTitle(currentSessionId, input);
+    }
+
+    addMessage(userMessage);
     setInput("");
     setIsLoading(true);
 
@@ -80,43 +213,48 @@ export function ChatInterface() {
       const aiMessageId = Date.now() + 1;
 
       // Add empty AI message to update as stream comes
-      setMessages((prev) => [
-        ...prev,
-        { id: aiMessageId, text: "", sender: "ai" },
-      ]);
+      const aiMessage: Message = {
+        id: aiMessageId,
+        text: "",
+        sender: "ai",
+        timestamp: new Date(),
+      };
+      addMessage(aiMessage);
 
+      let accumulatedText = "";
       while (!done) {
         const { value, done: readerDone } = await reader.read();
         done = readerDone;
         const chunk = decoder.decode(value);
+        accumulatedText += chunk;
 
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === aiMessageId ? { ...msg, text: msg.text + chunk } : msg
-          )
-        );
+        updateMessage(aiMessageId, { text: accumulatedText });
       }
     } catch (error: any) {
       if (error.name === "AbortError") {
-        setMessages((prev) =>
-          prev.map((msg) =>
-            msg.id === Date.now() + 1 && msg.text === ""
-              ? { ...msg, text: "[Response stopped by user]" }
-              : msg
-          )
-        );
+        updateMessage(aiMessageId, { text: "[Response stopped by user]" });
       } else {
+        console.error("AI Assistant Error:", error);
         const errorMessage: Message = {
-          id: Date.now() + 1,
-          text: "Sorry, I'm having trouble connecting to the AI service.",
+          id: aiMessageId,
+          text: "Sorry, I'm having trouble connecting to the AI service. Please check your connection and try again.",
           sender: "ai",
+          timestamp: new Date(),
         };
-        setMessages((prev) => [...prev, errorMessage]);
+        updateMessage(aiMessageId, errorMessage);
       }
     } finally {
       setIsLoading(false);
       abortControllerRef.current = null;
     }
+  };
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text);
+  };
+
+  const provideFeedback = (messageId: number, feedback: 'positive' | 'negative') => {
+    updateMessage(messageId, { feedback });
   };
 
   // Function to render code blocks if detected
@@ -132,14 +270,23 @@ export function ChatInterface() {
         parts.push(text.slice(lastIndex, match.index));
       }
       parts.push(
-        <SyntaxHighlighter
-          language={lang || "javascript"}
-          style={vsDark}
-          key={match.index}
-          className="rounded-md my-2"
-        >
-          {code}
-        </SyntaxHighlighter>
+        <div key={match.index} className="relative">
+          <SyntaxHighlighter
+            language={lang || "javascript"}
+            style={vsDark}
+            className="rounded-md my-2"
+          >
+            {code}
+          </SyntaxHighlighter>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="absolute top-2 right-2 text-gray-400 hover:text-white p-1 h-auto"
+            onClick={() => copyToClipboard(code)}
+          >
+            <Copy size={12} />
+          </Button>
+        </div>
       );
       lastIndex = match.index + full.length;
     }
@@ -152,98 +299,246 @@ export function ChatInterface() {
   };
 
   return (
-    <Card className="rounded-2xl shadow-xl w-full h-[80vh] flex flex-col bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 border border-gray-700">
-      <CardContent className="p-4 md:p-6 flex flex-col flex-grow min-h-0">
-        <ScrollArea
-          className="flex-grow min-h-0 overflow-y-auto pr-4 -mr-4"
-          ref={scrollAreaRef}
-        >
-          <div className="space-y-4">
-            {messages.map((message) => (
-              <div
-                key={message.id}
-                className={cn(
-                  "flex items-start gap-3 max-w-[90%]",
-                  message.sender === "user"
-                    ? "ml-auto flex-row-reverse"
-                    : "mr-auto"
-                )}
+    <div className="flex h-[80vh] w-full gap-2 md:gap-4">
+      {/* Sidebar - Chat History */}
+      <div className={cn(
+        "transition-all duration-300 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 border border-gray-700 rounded-2xl",
+        showHistory ? "w-72 md:w-80" : "w-12 md:w-16"
+      )}>
+        <div className="p-2 md:p-4 h-full flex flex-col">
+          {/* Header */}
+          <div className="flex items-center justify-between mb-2 md:mb-4">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowHistory(!showHistory)}
+              className="text-gray-400 hover:text-white p-1 md:p-2"
+            >
+              <History size={14} className="md:hidden" />
+              <History size={16} className="hidden md:block" />
+            </Button>
+            {showHistory && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={createNewChat}
+                className="text-gray-400 hover:text-white p-1 md:p-2"
               >
-                <Avatar className="h-7 w-7 border border-gray-700 shadow-sm flex-shrink-0">
-                  <AvatarFallback
-                    className={cn(
-                      message.sender === "ai"
-                        ? "bg-cyan-900 text-cyan-300"
-                        : "bg-purple-700 text-white"
-                    )}
-                  >
-                    {message.sender === "ai" ? (
-                      <Bot className="h-4 w-4" />
-                    ) : (
-                      <User className="h-4 w-4" />
-                    )}
-                  </AvatarFallback>
-                </Avatar>
-                <div
-                  className={cn(
-                    "p-3 rounded-xl whitespace-pre-wrap break-words shadow-md text-sm leading-relaxed",
-                    message.sender === "ai"
-                      ? "bg-gray-800 text-gray-200 border border-gray-700 rounded-bl-none"
-                      : "bg-gradient-to-r from-cyan-600 to-purple-700 text-white rounded-br-none"
-                  )}
-                >
-                  {renderMessage(message.text)}
-                </div>
-              </div>
-            ))}
-            {isLoading && (
-              <div className="flex items-start gap-3">
-                <Avatar className="h-7 w-7 border border-gray-700 shadow-sm">
-                  <AvatarFallback className="bg-cyan-900 text-cyan-300">
-                    <Bot className="h-4 w-4" />
-                  </AvatarFallback>
-                </Avatar>
-                <div className="p-3 rounded-xl bg-gray-800 border border-gray-700 shadow-md">
-                  <div className="flex items-center space-x-1">
-                    <span className="h-2 w-2 bg-cyan-400 rounded-full animate-pulse [animation-delay:-0.3s]"></span>
-                    <span className="h-2 w-2 bg-cyan-400 rounded-full animate-pulse [animation-delay:-0.15s]"></span>
-                    <span className="h-2 w-2 bg-cyan-400 rounded-full animate-pulse"></span>
-                  </div>
-                </div>
-              </div>
+                <Plus size={14} className="md:hidden" />
+                <Plus size={16} className="hidden md:block" />
+              </Button>
             )}
           </div>
-        </ScrollArea>
 
-        <div className="mt-4 flex items-center gap-2">
-          <Input
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={(e) => e.key === "Enter" && !isLoading && handleSend()}
-            placeholder="Ask a question about coding..."
-            className="h-10 text-sm rounded-md bg-gray-800 border border-gray-700 text-gray-200 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-cyan-400 flex-grow"
-            disabled={isLoading}
-          />
-          {isLoading ? (
-            <Button
-              onClick={handleStop}
-              variant="destructive"
-              size="sm"
-              className="h-10 w-10 rounded-md flex-shrink-0 bg-red-600 hover:bg-red-700"
-            >
-              <Square className="h-4 w-4" />
-            </Button>
-          ) : (
-            <Button
-              onClick={handleSend}
-              size="sm"
-              className="h-10 w-10 rounded-md flex-shrink-0 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white shadow-md"
-            >
-              <Send className="h-4 w-4" />
-            </Button>
+          {/* Chat List */}
+          {showHistory && (
+            <ScrollArea className="flex-1">
+              <div className="space-y-2">
+                {chatSessions.map((session) => (
+                  <div
+                    key={session.id}
+                    className={cn(
+                      "group flex items-center justify-between p-3 rounded-lg cursor-pointer transition-colors",
+                      currentSessionId === session.id
+                        ? "bg-gray-700 border border-gray-600"
+                        : "hover:bg-gray-800 border border-transparent"
+                    )}
+                    onClick={() => switchToChat(session.id)}
+                  >
+                    <div className="flex items-center space-x-2 flex-1 min-w-0">
+                      <MessageSquare size={12} className="text-gray-400 flex-shrink-0 md:hidden" />
+                      <MessageSquare size={14} className="text-gray-400 flex-shrink-0 hidden md:block" />
+                      <div className="min-w-0 flex-1">
+                        <p className="text-xs md:text-sm text-gray-200 truncate">{session.title}</p>
+                        <p className="text-xs text-gray-500">
+                          {session.lastUpdated.toLocaleDateString()}
+                        </p>
+                      </div>
+                    </div>
+                    {chatSessions.length > 1 && (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          deleteChat(session.id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 text-gray-400 hover:text-red-400 p-1 h-auto"
+                      >
+                        <Trash2 size={12} />
+                      </Button>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </ScrollArea>
           )}
         </div>
-      </CardContent>
-    </Card>
+      </div>
+
+      {/* Main Chat Interface */}
+      <Card className="flex-1 rounded-2xl shadow-xl flex flex-col bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 border border-gray-700">
+        {/* Header */}
+        <CardHeader className="pb-3 md:pb-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center space-x-2">
+              <Bot className="text-cyan-400" size={18} />
+              <div>
+                <h3 className="font-semibold text-white text-sm md:text-base">{currentSession?.title || "AI Assistant"}</h3>
+                <p className="text-xs text-gray-400">Powered by Gemini Flash Latest</p>
+              </div>
+            </div>
+            <div className="flex items-center space-x-2">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={createNewChat}
+                className="text-gray-400 hover:text-white p-1 md:p-2"
+              >
+                <Plus size={14} className="md:hidden" />
+                <Plus size={16} className="hidden md:block" />
+                <span className="ml-1 hidden sm:inline text-xs md:text-sm">New Chat</span>
+              </Button>
+            </div>
+          </div>
+        </CardHeader>
+
+        <CardContent className="flex-1 flex flex-col min-h-0 px-3 md:px-4 lg:px-6 pb-4 md:pb-6">
+          <ScrollArea
+            className="flex-1 min-h-0 overflow-y-auto pr-4 -mr-4"
+            ref={scrollAreaRef}
+          >
+            <div className="space-y-4">
+              {messages.map((message) => (
+                <div
+                  key={message.id}
+                  className={cn(
+                    "flex items-start gap-3 max-w-[90%]",
+                    message.sender === "user"
+                      ? "ml-auto flex-row-reverse"
+                      : "mr-auto"
+                  )}
+                >
+                  <Avatar className="h-6 w-6 md:h-7 md:w-7 border border-gray-700 shadow-sm flex-shrink-0">
+                    <AvatarFallback
+                      className={cn(
+                        message.sender === "ai"
+                          ? "bg-cyan-900 text-cyan-300"
+                          : "bg-purple-700 text-white"
+                      )}
+                    >
+                      {message.sender === "ai" ? (
+                        <Bot className="h-3 w-3 md:h-4 md:w-4" />
+                      ) : (
+                        <User className="h-3 w-3 md:h-4 md:w-4" />
+                      )}
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="flex flex-col space-y-1 flex-1">
+                    <div
+                      className={cn(
+                        "p-2 md:p-3 rounded-xl whitespace-pre-wrap break-words shadow-md text-xs md:text-sm leading-relaxed",
+                        message.sender === "ai"
+                          ? "bg-gray-800 text-gray-200 border border-gray-700 rounded-bl-none"
+                          : "bg-gradient-to-r from-cyan-600 to-purple-700 text-white rounded-br-none"
+                      )}
+                    >
+                      {renderMessage(message.text)}
+                    </div>
+
+                    {/* Message Actions */}
+                    {message.sender === "ai" && message.text && (
+                      <div className="flex items-center justify-between text-xs text-gray-500">
+                        <div className="flex items-center space-x-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => provideFeedback(message.id, 'positive')}
+                            className={cn(
+                              "p-1 h-auto",
+                              message.feedback === 'positive' ? 'text-green-400' : 'text-gray-400 hover:text-green-400'
+                            )}
+                          >
+                            <ThumbsUp size={10} className="md:hidden" />
+                            <ThumbsUp size={12} className="hidden md:block" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => provideFeedback(message.id, 'negative')}
+                            className={cn(
+                              "p-1 h-auto",
+                              message.feedback === 'negative' ? 'text-red-400' : 'text-gray-400 hover:text-red-400'
+                            )}
+                          >
+                            <ThumbsDown size={10} className="md:hidden" />
+                            <ThumbsDown size={12} className="hidden md:block" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => copyToClipboard(message.text)}
+                            className="p-1 h-auto text-gray-400 hover:text-white"
+                          >
+                            <Copy size={10} className="md:hidden" />
+                            <Copy size={12} className="hidden md:block" />
+                          </Button>
+                        </div>
+                        <span>{message.timestamp.toLocaleTimeString()}</span>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+              {isLoading && (
+                <div className="flex items-start gap-2 md:gap-3">
+                  <Avatar className="h-6 w-6 md:h-7 md:w-7 border border-gray-700 shadow-sm">
+                    <AvatarFallback className="bg-cyan-900 text-cyan-300">
+                      <Bot className="h-3 w-3 md:h-4 md:w-4" />
+                    </AvatarFallback>
+                  </Avatar>
+                  <div className="p-2 md:p-3 rounded-xl bg-gray-800 border border-gray-700 shadow-md">
+                    <div className="flex items-center space-x-1">
+                      <span className="h-1.5 w-1.5 md:h-2 md:w-2 bg-cyan-400 rounded-full animate-pulse [animation-delay:-0.3s]"></span>
+                      <span className="h-1.5 w-1.5 md:h-2 md:w-2 bg-cyan-400 rounded-full animate-pulse [animation-delay:-0.15s]"></span>
+                      <span className="h-1.5 w-1.5 md:h-2 md:w-2 bg-cyan-400 rounded-full animate-pulse"></span>
+                    </div>
+                  </div>
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+
+          <div className="mt-3 md:mt-4 flex items-center gap-2">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && !isLoading && handleSend()}
+              placeholder="Ask a question about coding..."
+              className="h-9 md:h-10 text-xs md:text-sm rounded-md bg-gray-800 border border-gray-700 text-gray-200 placeholder:text-gray-400 focus-visible:ring-2 focus-visible:ring-cyan-400 flex-grow"
+              disabled={isLoading}
+            />
+            {isLoading ? (
+              <Button
+                onClick={handleStop}
+                variant="destructive"
+                size="sm"
+                className="h-9 w-9 md:h-10 md:w-10 rounded-md flex-shrink-0 bg-red-600 hover:bg-red-700"
+              >
+                <Square className="h-3 w-3 md:h-4 md:w-4" />
+              </Button>
+            ) : (
+              <Button
+                onClick={handleSend}
+                size="sm"
+                className="h-9 w-9 md:h-10 md:w-10 rounded-md flex-shrink-0 bg-gradient-to-r from-cyan-500 to-purple-600 hover:from-cyan-400 hover:to-purple-500 text-white shadow-md"
+              >
+                <Send className="h-3 w-3 md:h-4 md:w-4" />
+              </Button>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 }

@@ -36,10 +36,9 @@ interface TestResult {
 interface CodeEditorPanelProps {
   testCases: TestCase[];
   problemId: string;
-  problemType?: string;
 }
 
-export function CodeEditorPanel({ testCases, problemId, problemType = "array" }: CodeEditorPanelProps) {
+export function CodeEditorPanel({ testCases, problemId }: CodeEditorPanelProps) {
   const [code, setCode] = useState('');
   const [language, setLanguage] = useState('python'); // Default to Python
   const [availableLanguages, setAvailableLanguages] = useState<string[]>(['python']);
@@ -77,34 +76,46 @@ export function CodeEditorPanel({ testCases, problemId, problemType = "array" }:
 
   // Initialize with proper starter code
   useEffect(() => {
-    setCode(getStarterCode(language, problemType));
-  }, [language, problemType]);
+    setCode(getStarterCode(language));
+  }, [language]);
 
-  // Get starter code based on language and problem type
-  const getStarterCode = (language: string, problemType: string): string => {
+  // Get starter code based on language
+  const getStarterCode = (language: string): string => {
     // Generic starter code templates for different languages
     const starterCodes = {
       python: `# Write your solution here
-def solve():
-    # Your code goes here
-    pass
+# Read input from stdin and print output to stdout
 
-# Example usage:
-# result = solve()
-# print(result)`,
+# Example for reading input:
+# line = input().strip()
+# nums = list(map(int, input().split()))
+
+# Your code goes here
+`,
       javascript: `// Write your solution here
-function solve() {
-    // Your code goes here
-}
+// Read input from stdin and print output to stdout
 
-// Example usage:
-// const result = solve();
-// console.log(result);`,
+// Example for reading input:
+// const readline = require('readline');
+// const rl = readline.createInterface({
+//   input: process.stdin,
+//   output: process.stdout
+// });
+
+// Your code goes here
+`,
       java: `import java.util.*;
+import java.io.*;
 
 public class Solution {
-    public static void main(String[] args) {
+    public static void main(String[] args) throws IOException {
         // Write your solution here
+        // Read input from stdin and print output to stdout
+        
+        BufferedReader br = new BufferedReader(new InputStreamReader(System.in));
+        
+        // Your code goes here
+        
         System.out.println("Hello World");
     }
 }`,
@@ -115,8 +126,30 @@ using namespace std;
 
 int main() {
     // Write your solution here
+    // Read input from stdin and print output to stdout
+    
+    // Your code goes here
+    
     cout << "Hello World" << endl;
     return 0;
+}`,
+      csharp: `using System;
+using System.Collections.Generic;
+using System.Linq;
+
+class Program {
+    static void Main() {
+        // Write your solution here
+        // Read input from stdin and print output to stdout
+        
+        // Example for reading input:
+        // string line = Console.ReadLine();
+        // int[] nums = Console.ReadLine().Split().Select(int.Parse).ToArray();
+        
+        // Your code goes here
+        
+        Console.WriteLine("Hello World");
+    }
 }`
     };
 
@@ -160,8 +193,7 @@ int main() {
         body: JSON.stringify({
           language,
           code,
-          testCases,
-          problemType
+          testCases
         })
       });
 
@@ -379,7 +411,7 @@ int main() {
             )}
             <Select value={language} onValueChange={(value) => {
               setLanguage(value);
-              setCode(getStarterCode(value, problemType));
+              setCode(getStarterCode(value));
             }}>
               <SelectTrigger className="w-32 bg-gray-700/50 border-gray-600 text-sm">
                 <SelectValue />
@@ -397,6 +429,9 @@ int main() {
                 {availableLanguages.includes('cpp') && (
                   <SelectItem value="cpp">⚡ C++</SelectItem>
                 )}
+                {availableLanguages.includes('csharp') && (
+                  <SelectItem value="csharp">🔷 C#</SelectItem>
+                )}
               </SelectContent>
             </Select>
           </div>
@@ -410,7 +445,7 @@ int main() {
       <div className="h-[500px] border-b border-gray-700/40">
         <Editor
           height="100%"
-          language={language === 'cpp' ? 'cpp' : language}
+          language={language === 'cpp' ? 'cpp' : language === 'csharp' ? 'csharp' : language}
           theme="vs-dark"
           value={code}
           onChange={(value) => setCode(value || "")}
@@ -504,11 +539,18 @@ int main() {
 
           <TabsContent value="testcases" className="space-y-4">
             <div className="space-y-3">
-              <h4 className="text-sm font-medium text-gray-300">Available Test Cases ({testCases?.length || 0}):</h4>
+              <div className="flex items-center justify-between">
+                <h4 className="text-sm font-medium text-gray-300">Available Test Cases ({testCases?.length || 0}):</h4>
+                {testCases && testCases.length > 5 && (
+                  <div className="text-xs text-gray-400 bg-gray-800/50 px-2 py-1 rounded">
+                    {testCases.length > 10 ? "Many test cases - scroll to see all" : "Scroll to see all"}
+                  </div>
+                )}
+              </div>
               {testCases && testCases.length > 0 ? (
-                <div className="space-y-3 max-h-48 overflow-y-auto">
+                <div className="space-y-3 max-h-80 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
                   {testCases.map((testCase, index) => (
-                    <div key={index} className="p-3 bg-gray-700/30 border border-gray-600/50 rounded-lg">
+                    <div key={index} className="p-3 bg-gray-700/30 border border-gray-600/50 rounded-lg hover:bg-gray-700/40 transition-colors">
                       <div className="flex items-center justify-between mb-2">
                         <span className="text-sm font-medium text-gray-300">Test Case {index + 1}</span>
                         <Button
@@ -526,14 +568,14 @@ int main() {
                       <div className="space-y-2 text-xs">
                         <div>
                           <span className="text-gray-400">Input: </span>
-                          <code className="text-blue-300 bg-gray-800/50 px-1 py-0.5 rounded">
-                            {testCase.input}
+                          <code className="text-blue-300 bg-gray-800/50 px-1 py-0.5 rounded break-all whitespace-pre-wrap max-w-full inline-block">
+                            {testCase.input.length > 100 ? `${testCase.input.substring(0, 100)}...` : testCase.input}
                           </code>
                         </div>
                         <div>
                           <span className="text-gray-400">Expected: </span>
-                          <code className="text-green-300 bg-gray-800/50 px-1 py-0.5 rounded">
-                            {testCase.expectedOutput}
+                          <code className="text-green-300 bg-gray-800/50 px-1 py-0.5 rounded break-all whitespace-pre-wrap max-w-full inline-block">
+                            {testCase.expectedOutput.length > 100 ? `${testCase.expectedOutput.substring(0, 100)}...` : testCase.expectedOutput}
                           </code>
                         </div>
                       </div>
@@ -549,75 +591,92 @@ int main() {
           </TabsContent>
 
           <TabsContent value="result" className="space-y-4">
-            <div className="bg-gray-700/30 border border-gray-600/50 rounded-lg p-4 h-80 overflow-auto">
+            <div className="bg-gray-700/30 border border-gray-600/50 rounded-lg p-4 h-96 overflow-auto">
               {submissionResult ? (
                 <div className="space-y-2">
                   {submissionResult.every((res) => res.passed) && (
-                    <div className="flex items-center gap-2 p-3 bg-green-500/20 text-green-300 rounded-lg font-semibold">
+                    <div className="flex items-center gap-2 p-3 bg-green-500/20 text-green-300 rounded-lg font-semibold mb-4">
                       <CheckCircle size={20} /> 🎉 All {submissionResult.length} Test Case{submissionResult.length !== 1 ? 's' : ''} Passed!
                     </div>
                   )}
-                  {submissionResult.map((res, i) => (
-                    <div
-                      key={i}
-                      className={`p-4 rounded-lg border mb-3 ${res.passed
-                        ? "bg-green-500/20 text-green-300 border-green-500/30"
-                        : "bg-red-500/20 text-red-300 border-red-500/30"
-                        }`}
-                    >
-                      <div className="flex items-center gap-2 mb-3">
-                        {res.passed ? (
-                          <CheckCircle size={18} />
-                        ) : (
-                          <XCircle size={18} />
-                        )}
-                        <strong className="text-base">Test Case {i + 1}/{submissionResult.length}: {res.status}</strong>
+
+                  {/* Summary Stats */}
+                  <div className="mb-4 p-3 bg-gray-800/50 rounded-lg">
+                    <div className="grid grid-cols-3 gap-4 text-center">
+                      <div>
+                        <div className="text-lg font-bold text-green-400">{submissionResult.filter(r => r.passed).length}</div>
+                        <div className="text-xs text-gray-400">Passed</div>
                       </div>
-
-                      {/* Show detailed test case information */}
-                      <div className="space-y-3 bg-black/30 p-3 rounded-md">
-                        <div className="flex flex-col gap-1">
-                          <span className="text-gray-400 text-sm font-medium">Input:</span>
-                          <code className="text-blue-300 bg-gray-800/50 px-2 py-1 rounded text-sm break-all">
-                            {res.input || 'No input'}
-                          </code>
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <span className="text-gray-400 text-sm font-medium">Expected Output:</span>
-                          <code className="text-green-300 bg-gray-800/50 px-2 py-1 rounded text-sm break-all">
-                            {res.expectedOutput}
-                          </code>
-                        </div>
-
-                        <div className="flex flex-col gap-1">
-                          <span className="text-gray-400 text-sm font-medium">Your Output:</span>
-                          <code className={`${res.passed ? "text-green-300" : "text-red-300"} bg-gray-800/50 px-2 py-1 rounded text-sm break-all`}>
-                            {res.actualOutput}
-                          </code>
-                        </div>
-
-                        {res.executionError && (
-                          <div className="flex flex-col gap-1">
-                            <span className="text-gray-400 text-sm font-medium">Error:</span>
-                            <code className="text-red-300 bg-red-900/20 px-2 py-1 rounded text-sm break-all">
-                              {res.executionError}
-                            </code>
-                          </div>
-                        )}
-
-                        {!res.passed && !res.executionError && (
-                          <div className="mt-2 p-2 bg-yellow-900/20 border border-yellow-500/30 rounded text-yellow-300 text-xs">
-                            💡 Your output doesn't match the expected result. Check your logic!
-                          </div>
-                        )}
+                      <div>
+                        <div className="text-lg font-bold text-red-400">{submissionResult.filter(r => !r.passed).length}</div>
+                        <div className="text-xs text-gray-400">Failed</div>
+                      </div>
+                      <div>
+                        <div className="text-lg font-bold text-blue-400">{submissionResult.length}</div>
+                        <div className="text-xs text-gray-400">Total</div>
                       </div>
                     </div>
-                  ))}
-                  <div className="mt-2 text-xs text-gray-400">
-                    Total: {submissionResult.length} test case{submissionResult.length !== 1 ? 's' : ''} |
-                    Passed: {submissionResult.filter(r => r.passed).length} |
-                    Failed: {submissionResult.filter(r => !r.passed).length}
+                  </div>
+
+                  {/* Test Cases Results */}
+                  <div className="space-y-3 max-h-64 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800">
+                    {submissionResult.map((res, i) => (
+                      <div
+                        key={i}
+                        className={`p-4 rounded-lg border mb-3 ${res.passed
+                          ? "bg-green-500/20 text-green-300 border-green-500/30"
+                          : "bg-red-500/20 text-red-300 border-red-500/30"
+                          }`}
+                      >
+                        <div className="flex items-center gap-2 mb-3">
+                          {res.passed ? (
+                            <CheckCircle size={18} />
+                          ) : (
+                            <XCircle size={18} />
+                          )}
+                          <strong className="text-base">Test Case {i + 1}/{submissionResult.length}: {res.status}</strong>
+                        </div>
+
+                        {/* Show detailed test case information */}
+                        <div className="space-y-3 bg-black/30 p-3 rounded-md">
+                          <div className="flex flex-col gap-1">
+                            <span className="text-gray-400 text-sm font-medium">Input:</span>
+                            <code className="text-blue-300 bg-gray-800/50 px-2 py-1 rounded text-sm break-all whitespace-pre-wrap">
+                              {res.input || 'No input'}
+                            </code>
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <span className="text-gray-400 text-sm font-medium">Expected Output:</span>
+                            <code className="text-green-300 bg-gray-800/50 px-2 py-1 rounded text-sm break-all whitespace-pre-wrap">
+                              {res.expectedOutput}
+                            </code>
+                          </div>
+
+                          <div className="flex flex-col gap-1">
+                            <span className="text-gray-400 text-sm font-medium">Your Output:</span>
+                            <code className={`${res.passed ? "text-green-300" : "text-red-300"} bg-gray-800/50 px-2 py-1 rounded text-sm break-all whitespace-pre-wrap`}>
+                              {res.actualOutput}
+                            </code>
+                          </div>
+
+                          {res.executionError && (
+                            <div className="flex flex-col gap-1">
+                              <span className="text-gray-400 text-sm font-medium">Error:</span>
+                              <code className="text-red-300 bg-red-900/20 px-2 py-1 rounded text-sm break-all whitespace-pre-wrap">
+                                {res.executionError}
+                              </code>
+                            </div>
+                          )}
+
+                          {!res.passed && !res.executionError && (
+                            <div className="mt-2 p-2 bg-yellow-900/20 border border-yellow-500/30 rounded text-yellow-300 text-xs">
+                              💡 Your output doesn't match the expected result. Check your logic!
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </div>
               ) : (

@@ -8,16 +8,13 @@ const codeExecutor = new CodeExecutor();
 router.post('/execute', async (req, res) => {
   try {
     const { language, code, input = '' } = req.body;
-
     if (!language || !code) {
       return res.status(400).json({
         success: false,
         error: 'Language and code are required'
       });
     }
-
     const result = await codeExecutor.executeCode(language, code, input);
-    
     res.json({
       success: result.success,
       output: result.output,
@@ -37,7 +34,7 @@ router.post('/execute', async (req, res) => {
 // Execute code against test cases
 router.post('/test', async (req, res) => {
   try {
-    const { language, code, testCases, problemType = 'array' } = req.body;
+    const { language, code, testCases } = req.body;
 
     if (!language || !code || !testCases || !Array.isArray(testCases)) {
       return res.status(400).json({
@@ -52,7 +49,8 @@ router.post('/test', async (req, res) => {
       expectedOutput: tc.expectedOutput || ''
     }));
 
-    const results = await codeExecutor.executeTestCases(language, code, validTestCases, problemType);
+    // Execute test cases using the universal approach
+    const results = await codeExecutor.executeTestCases(language, code, validTestCases);
     
     // Calculate statistics
     const passedCount = results.filter(r => r.passed).length;
@@ -88,7 +86,8 @@ router.get('/languages', async (req, res) => {
       python: { name: 'Python', extension: '.py' },
       javascript: { name: 'JavaScript', extension: '.js' },
       java: { name: 'Java', extension: '.java' },
-      cpp: { name: 'C++', extension: '.cpp' }
+      cpp: { name: 'C++', extension: '.cpp' },
+      csharp: { name: 'C#', extension: '.cs' }
     };
 
     const supportedLanguages = availableLanguages.map(lang => ({

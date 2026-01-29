@@ -17,6 +17,7 @@ const languages = [
   { id: 62, name: "Java (OpenJDK 13.0.1)", value: "java" },
   { id: 63, name: "JavaScript (Node.js 12.14.0)", value: "javascript" },
   { id: 54, name: "C++ (GCC 9.2.0)", value: "cpp" },
+  { id: 51, name: "C# (Mono 6.6.0.161)", value: "csharp" },
 ];
 
 export function CodeEditor() {
@@ -45,6 +46,10 @@ export function CodeEditor() {
       else if (value === "cpp")
         setCode(
           '#include <iostream>\n\nint main() {\n    std::cout << "Hello, Code & Chill!";\n    return 0;\n}'
+        );
+      else if (value === "csharp")
+        setCode(
+          'using System;\n\nclass Program {\n    static void Main() {\n        Console.WriteLine("Hello, Code & Chill!");\n    }\n}'
         );
       else
         setCode("# Write your Python code here\nprint('Hello, Code & Chill!')");

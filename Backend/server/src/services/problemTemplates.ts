@@ -68,17 +68,35 @@ functions = [name for name, obj in globals().items()
 
 if functions:
     main_func = globals()[functions[0]]  # Use first function found
-    result = main_func(nums)
-    print(result)
+    try:
+        result = main_func(nums)
+        print(json.dumps(result) if isinstance(result, (list, dict)) else result)
+    except Exception as e:
+        print(f"Error: {str(e)}")
 else:
-    print("No function found to execute")`;
+    print("Error: No function found to execute")`;
     } else {
-      // For non-array inputs, just execute the code as-is
+      // For non-array inputs, try to execute with the input
       return `${userCode}
 
 # Test case execution with input: ${arrayInput}
-# Add your test execution logic here
-print("Generic execution - modify as needed")`;
+import inspect
+functions = [name for name, obj in globals().items() 
+            if inspect.isfunction(obj) and not name.startswith('_')]
+
+if functions:
+    main_func = globals()[functions[0]]
+    try:
+        # Try different ways to call the function
+        if '${arrayInput}'.isdigit():
+            result = main_func(int('${arrayInput}'))
+        else:
+            result = main_func('${arrayInput}')
+        print(json.dumps(result) if isinstance(result, (list, dict)) else result)
+    except Exception as e:
+        print(f"Error: {str(e)}")
+else:
+    print("Error: No function found to execute")`;
     }
   }
 
@@ -94,8 +112,34 @@ print("Generic execution - modify as needed")`;
 import json
 nums = json.loads('${arrayPart}')
 target = ${targetPart}
-result = two_sum(nums, target)
-print(json.dumps(result))`;
+
+# Try to find the correct function name
+import inspect
+functions = [name for name, obj in globals().items() 
+            if inspect.isfunction(obj) and not name.startswith('_')]
+
+# Common function names for Two Sum
+possible_names = ['two_sum', 'twoSum', 'two_sum_solution', 'solve', 'solution']
+
+# Find the right function
+main_func = None
+for name in possible_names:
+    if name in globals():
+        main_func = globals()[name]
+        break
+
+# If no specific function found, use the first available function
+if main_func is None and functions:
+    main_func = globals()[functions[0]]
+
+if main_func:
+    try:
+        result = main_func(nums, target)
+        print(json.dumps(result))
+    except Exception as e:
+        print(f"Error: {str(e)}")
+else:
+    print("Error: No suitable function found")`;
   }
 
   private wrapLinkedListProblem(userCode: string, testInput: string): string {
@@ -152,14 +196,32 @@ print(result)`;
 
   parseOutput(output: string): string {
     // Parse JSON output and format for comparison
+    const cleanOutput = output.trim();
+    
+    // Handle error messages
+    if (cleanOutput.startsWith('Error:')) {
+      return cleanOutput;
+    }
+    
     try {
-      const parsed = JSON.parse(output.trim());
+      const parsed = JSON.parse(cleanOutput);
       if (Array.isArray(parsed)) {
         return `[${parsed.join(',')}]`;
       }
-      return output.trim();
+      return String(parsed);
     } catch {
-      return output.trim();
+      // If not JSON, try to clean up the output
+      // Handle Python list format: [0, 1] -> [0,1]
+      if (cleanOutput.startsWith('[') && cleanOutput.endsWith(']')) {
+        try {
+          // Remove spaces after commas and brackets
+          const cleaned = cleanOutput.replace(/\[\s+/g, '[').replace(/\s+\]/g, ']').replace(/,\s+/g, ',');
+          return cleaned;
+        } catch {
+          return cleanOutput;
+        }
+      }
+      return cleanOutput;
     }
   }
 }

@@ -11,7 +11,8 @@ class GeminiService {
     }
     
     this.genAI = new GoogleGenerativeAI(apiKey);
-    this.model = this.genAI.getGenerativeModel({ model: 'models/gemini-2.5-pro' });
+    // Use the latest Flash model - automatically points to newest available Flash model
+    this.model = this.genAI.getGenerativeModel({ model: 'gemini-flash-latest' });
   }
 
   async generateResponse(userMessage: string, context?: any): Promise<string> {

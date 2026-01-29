@@ -178,6 +178,5 @@ export const ActivityTracker: React.FC<ActivityTrackerProps> = ({ isAuthenticate
       clearTimeout(activityTimeout);
     };
   }, [isAuthenticated]);
-
-  return null; // This component doesn't render anything
+  return null;
 };

@@ -65,6 +65,14 @@ using namespace std;
 int main() {
     cout << "Hello, World!" << endl;
     return 0;
+}` },
+    {
+      value: 'csharp', label: '🔷 C#', template: `using System;
+
+class Program {
+    static void Main() {
+        Console.WriteLine("Hello, World!");
+    }
 }` }
   ];
 
@@ -169,6 +177,7 @@ int main() {
       python: 'py',
       java: 'java',
       cpp: 'cpp',
+      csharp: 'cs',
       go: 'go',
       rust: 'rs'
     };
@@ -202,6 +211,7 @@ int main() {
           java: 'java',
           cpp: 'cpp',
           c: 'cpp',
+          cs: 'csharp',
           go: 'go',
           rs: 'rust'
         };
@@ -377,7 +387,7 @@ int main() {
       <input
         ref={fileInputRef}
         type="file"
-        accept=".js,.ts,.py,.java,.cpp,.c,.go,.rs,.txt"
+        accept=".js,.ts,.py,.java,.cpp,.c,.cs,.go,.rs,.txt"
         onChange={uploadFile}
         className="hidden"
       />

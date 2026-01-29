@@ -1,26 +1,20 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Shield,
   Users,
-  BookOpen,
   Trophy,
   Code,
   TrendingUp,
   Activity,
-  Calendar,
   Settings,
   LogOut,
   Plus,
   Eye,
-  Edit,
-  Trash2,
   BarChart3,
-  PieChart,
-  Clock,
   UserCheck,
   FileText,
   Zap
