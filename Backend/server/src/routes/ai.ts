@@ -1,19 +1,14 @@
 import { Router, Request, Response } from "express";
 import { GoogleGenerativeAI } from '@google/generative-ai';
-
 const router = Router();
-
 // Check if API key is set
 if (!process.env.GEMINI_API_KEY) {
   console.error("⚠️  GEMINI_API_KEY is not set in environment variables!");
 }
-
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY;
 const MODEL_NAME = "gemini-flash-latest"; // Always uses the latest Flash model automatically
-
 // Initialize Gemini AI
 const genAI = new GoogleGenerativeAI(GEMINI_API_KEY || '');
-
 // Test endpoint to verify API key
 router.get("/test-gemini", async (req: Request, res: Response) => {
   try {

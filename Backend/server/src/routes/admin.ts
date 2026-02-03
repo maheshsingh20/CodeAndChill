@@ -868,12 +868,155 @@ router.post("/seed/courses", adminAuthMiddleware, async (req: AdminRequest, res:
 
 router.post("/seed/problems", adminAuthMiddleware, async (req: AdminRequest, res: Response): Promise<void> => {
   try {
-    // This is a placeholder - you can implement actual problem seeding
+    // Import the Problem model
+    const { Problem } = require('../models/Problem');
+
+    // Sample problems data (same as in seeds/index.ts)
+    const problemsToSeed = [
+      {
+        title: "Two Sum",
+        slug: "two-sum",
+        difficulty: "Easy",
+        topic: "Arrays",
+        description: "Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target. You may assume that each input would have exactly one solution, and you may not use the same element twice.",
+        examples: [
+          {
+            input: "nums = [2,7,11,15], target = 9",
+            output: "[0,1]",
+            explanation: "Because nums[0] + nums[1] == 9, we return [0, 1]."
+          }
+        ],
+        constraints: [
+          "2 <= nums.length <= 10^4",
+          "-10^9 <= nums[i] <= 10^9",
+          "-10^9 <= target <= 10^9",
+          "Only one valid answer exists."
+        ],
+        testCases: [
+          { input: `[2,7,11,15]\n9`, expectedOutput: "[0,1]" },
+          { input: `[3,2,4]\n6`, expectedOutput: "[1,2]" },
+          { input: `[3,3]\n6`, expectedOutput: "[0,1]" }
+        ]
+      },
+      {
+        title: "Reverse Linked List",
+        slug: "reverse-linked-list",
+        difficulty: "Easy",
+        topic: "Linked Lists",
+        description: "Given the head of a singly linked list, reverse the list, and return the reversed list.",
+        examples: [
+          {
+            input: "head = [1,2,3,4,5]",
+            output: "[5,4,3,2,1]"
+          }
+        ],
+        constraints: [
+          "The number of nodes in the list is the range [0, 5000].",
+          "-5000 <= Node.val <= 5000"
+        ],
+        testCases: [
+          { input: "[1,2,3,4,5]", expectedOutput: "[5,4,3,2,1]" },
+          { input: "[1,2]", expectedOutput: "[2,1]" },
+          { input: "[]", expectedOutput: "[]" }
+        ]
+      },
+      {
+        title: "Valid Parentheses",
+        slug: "valid-parentheses",
+        difficulty: "Easy",
+        topic: "Stack",
+        description: "Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid. An input string is valid if: Open brackets must be closed by the same type of brackets. Open brackets must be closed in the correct order.",
+        examples: [
+          {
+            input: 's = "()"',
+            output: "true"
+          },
+          {
+            input: 's = "()[]{}"',
+            output: "true"
+          },
+          {
+            input: 's = "(]"',
+            output: "false"
+          }
+        ],
+        constraints: [
+          "1 <= s.length <= 10^4",
+          "s consists of parentheses only '()[]{}'."
+        ],
+        testCases: [
+          { input: "()", expectedOutput: "true" },
+          { input: "()[]{}", expectedOutput: "true" },
+          { input: "(]", expectedOutput: "false" }
+        ]
+      },
+      {
+        title: "Palindrome Number",
+        slug: "palindrome-number",
+        difficulty: "Easy",
+        topic: "Math",
+        description: "Given an integer x, return true if x is palindrome integer. An integer is a palindrome when it reads the same backward as forward.",
+        examples: [
+          {
+            input: "x = 121",
+            output: "true",
+            explanation: "121 reads as 121 from left to right and from right to left."
+          },
+          {
+            input: "x = -121",
+            output: "false",
+            explanation: "From left to right, it reads -121. From right to left, it becomes 121-. Therefore it is not a palindrome."
+          }
+        ],
+        constraints: [
+          "-2^31 <= x <= 2^31 - 1"
+        ],
+        testCases: [
+          { input: "121", expectedOutput: "true" },
+          { input: "-121", expectedOutput: "false" },
+          { input: "10", expectedOutput: "false" },
+          { input: "0", expectedOutput: "true" }
+        ]
+      },
+      {
+        title: "FizzBuzz",
+        slug: "fizzbuzz",
+        difficulty: "Easy", 
+        topic: "Math",
+        description: "Given an integer n, return a string array answer (1-indexed) where: answer[i] == 'FizzBuzz' if i is divisible by 3 and 5, answer[i] == 'Fizz' if i is divisible by 3, answer[i] == 'Buzz' if i is divisible by 5, answer[i] == i (as a string) if none of the above conditions are true.",
+        examples: [
+          {
+            input: "n = 3",
+            output: '["1","2","Fizz"]'
+          },
+          {
+            input: "n = 5", 
+            output: '["1","2","Fizz","4","Buzz"]'
+          }
+        ],
+        constraints: [
+          "1 <= n <= 10^4"
+        ],
+        testCases: [
+          { input: "3", expectedOutput: '["1","2","Fizz"]' },
+          { input: "5", expectedOutput: '["1","2","Fizz","4","Buzz"]' },
+          { input: "15", expectedOutput: '["1","2","Fizz","4","Buzz","Fizz","7","8","Fizz","Buzz","11","Fizz","13","14","FizzBuzz"]' }
+        ]
+      }
+    ];
+
+    // Clear existing problems
+    await Problem.deleteMany({});
+    
+    // Insert new problems
+    const created = await Problem.insertMany(problemsToSeed);
+    
     res.json({ 
-      message: "Problem seeding not yet implemented", 
-      count: 0 
+      message: "Sample problems seeded successfully", 
+      count: created.length 
     });
   } catch (error) {
+    console.error("Error seeding problems:", error);
     res.status(500).json({ message: "Error seeding problems" });
   }
 });

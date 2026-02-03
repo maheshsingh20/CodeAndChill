@@ -131,6 +131,14 @@ export function AdminDashboard() {
       color: "from-green-500 to-green-600"
     },
     {
+      title: "Engineering Courses",
+      description: "Manage engineering courses and content",
+      icon: BookOpen,
+      path: "/admin/engineering-courses",
+      count: 0, // Will be updated with actual course count
+      color: "from-indigo-500 to-indigo-600"
+    },
+    {
       title: "Contest Management",
       description: "Organize and manage contests",
       icon: Trophy,

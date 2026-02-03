@@ -5,6 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import ReactMarkdown from 'react-markdown';
+import remarkGfm from 'remark-gfm';
 import {
   CheckCircle2,
   Clock,
@@ -97,15 +99,15 @@ export function EnhancedCourseDetailPage() {
   const fetchCourseData = async () => {
     try {
       // List of engineering course IDs
-      const engineeringCourseIds = ['dsa', 'dbms', 'operating-systems', 'computer-networks', 'software-engineering', 'web-development'];
+      const engineeringCourseIds = ['dsa', 'dbms', 'operating-systems', 'computer-networks', 'software-engineering', 'web-development', 'dotnet-development'];
 
       let response;
       if (engineeringCourseIds.includes(courseId || '')) {
         // Use engineering courses API
         response = await fetch(`http://localhost:3001/api/engineering-courses/${courseId}`);
       } else {
-        // Use regular courses API
-        response = await fetch(`http://localhost:3001/api/courses/${courseId}`);
+        // This shouldn't happen for engineering courses, but keeping for safety
+        throw new Error('Course not found');
       }
 
       if (!response.ok) throw new Error('Failed to fetch course');
@@ -121,12 +123,32 @@ export function EnhancedCourseDetailPage() {
             title: module.title,
             topics: [{
               title: module.title,
-              subtopics: module.lessons ? module.lessons.map((lesson: string, lessonIndex: number) => ({
-                id: `${moduleIndex}-${lessonIndex}`,
-                title: lesson,
-                content: `Content for ${lesson}. This lesson covers important concepts and practical applications.`,
-                duration: 30 // Default duration
-              })) : []
+              subtopics: module.lessons ? module.lessons.map((lesson: any, lessonIndex: number) => {
+                // Handle both old string format and new object format
+                if (typeof lesson === 'string') {
+                  return {
+                    id: `${moduleIndex}-${lessonIndex}`,
+                    title: lesson,
+                    content: `Content for ${lesson}. This lesson covers important concepts and practical applications.`,
+                    duration: 30,
+                    codeExamples: [],
+                    quiz: [],
+                    resources: []
+                  };
+                } else {
+                  // New object format from database
+                  return {
+                    id: lesson.id || `${moduleIndex}-${lessonIndex}`,
+                    title: lesson.title || 'Untitled Lesson',
+                    content: lesson.content || `Content for ${lesson.title || 'this lesson'}. This lesson covers important concepts and practical applications.`,
+                    duration: lesson.duration || 30,
+                    videoUrl: lesson.videoUrl || undefined,
+                    codeExamples: Array.isArray(lesson.codeExamples) ? lesson.codeExamples : [],
+                    quiz: Array.isArray(lesson.quiz) ? lesson.quiz : [],
+                    resources: Array.isArray(lesson.resources) ? lesson.resources : []
+                  };
+                }
+              }) : []
             }]
           })) : []
         };
@@ -141,12 +163,32 @@ export function EnhancedCourseDetailPage() {
           title: module.title,
           topics: [{
             title: module.title,
-            subtopics: module.lessons ? module.lessons.map((lesson: string, lessonIndex: number) => ({
-              id: `${moduleIndex}-${lessonIndex}`,
-              title: lesson,
-              content: `Content for ${lesson}. This lesson covers important concepts and practical applications.`,
-              duration: 30
-            })) : []
+            subtopics: module.lessons ? module.lessons.map((lesson: any, lessonIndex: number) => {
+              // Handle both old string format and new object format
+              if (typeof lesson === 'string') {
+                return {
+                  id: `${moduleIndex}-${lessonIndex}`,
+                  title: lesson,
+                  content: `Content for ${lesson}. This lesson covers important concepts and practical applications.`,
+                  duration: 30,
+                  codeExamples: [],
+                  quiz: [],
+                  resources: []
+                };
+              } else {
+                // New object format from database
+                return {
+                  id: lesson.id || `${moduleIndex}-${lessonIndex}`,
+                  title: lesson.title || 'Untitled Lesson',
+                  content: lesson.content || `Content for ${lesson.title || 'this lesson'}. This lesson covers important concepts and practical applications.`,
+                  duration: lesson.duration || 30,
+                  videoUrl: lesson.videoUrl || undefined,
+                  codeExamples: Array.isArray(lesson.codeExamples) ? lesson.codeExamples : [],
+                  quiz: Array.isArray(lesson.quiz) ? lesson.quiz : [],
+                  resources: Array.isArray(lesson.resources) ? lesson.resources : []
+                };
+              }
+            }) : []
           }]
         })) : []) :
         data.modules;
@@ -166,7 +208,7 @@ export function EnhancedCourseDetailPage() {
       const token = localStorage.getItem('authToken');
 
       // List of engineering course IDs
-      const engineeringCourseIds = ['dsa', 'dbms', 'operating-systems', 'computer-networks', 'software-engineering', 'web-development'];
+      const engineeringCourseIds = ['dsa', 'dbms', 'operating-systems', 'computer-networks', 'software-engineering', 'web-development', 'dotnet-development'];
 
       let response;
       if (engineeringCourseIds.includes(courseId || '')) {
@@ -195,10 +237,8 @@ export function EnhancedCourseDetailPage() {
   const markLessonComplete = async (lessonId: string) => {
     try {
       const token = localStorage.getItem('authToken');
-
       // List of engineering course IDs
-      const engineeringCourseIds = ['dsa', 'dbms', 'operating-systems', 'computer-networks', 'software-engineering', 'web-development'];
-
+      const engineeringCourseIds = ['dsa', 'dbms', 'operating-systems', 'computer-networks', 'software-engineering', 'web-development', 'dotnet-development'];
       let response;
       if (engineeringCourseIds.includes(courseId || '')) {
         // Use engineering courses progress API
@@ -436,11 +476,40 @@ export function EnhancedCourseDetailPage() {
                       )}
 
                       <div className="prose prose-invert max-w-none">
-                        {selectedSubtopic.content.split('\n\n').map((paragraph, index) => (
-                          <p key={index} className="bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent leading-relaxed mb-4">
-                            {paragraph}
-                          </p>
-                        ))}
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            h1: ({ children }) => <h1 className="text-2xl font-bold text-white mb-4">{children}</h1>,
+                            h2: ({ children }) => <h2 className="text-xl font-semibold text-gray-100 mb-3 mt-6">{children}</h2>,
+                            h3: ({ children }) => <h3 className="text-lg font-medium text-gray-200 mb-2 mt-4">{children}</h3>,
+                            p: ({ children }) => <p className="text-gray-300 leading-relaxed mb-4">{children}</p>,
+                            ul: ({ children }) => <ul className="list-disc list-inside text-gray-300 mb-4 space-y-1">{children}</ul>,
+                            ol: ({ children }) => <ol className="list-decimal list-inside text-gray-300 mb-4 space-y-1">{children}</ol>,
+                            li: ({ children }) => <li className="text-gray-300">{children}</li>,
+                            code: ({ children, className }) => {
+                              const isInline = !className;
+                              return isInline ? (
+                                <code className="bg-gray-800 text-purple-300 px-1 py-0.5 rounded text-sm">{children}</code>
+                              ) : (
+                                <code className={className}>{children}</code>
+                              );
+                            },
+                            pre: ({ children }) => (
+                              <pre className="bg-black/50 p-4 rounded-lg overflow-x-auto border border-gray-700 mb-4">
+                                {children}
+                              </pre>
+                            ),
+                            blockquote: ({ children }) => (
+                              <blockquote className="border-l-4 border-purple-500 pl-4 italic text-gray-400 mb-4">
+                                {children}
+                              </blockquote>
+                            ),
+                            strong: ({ children }) => <strong className="text-white font-semibold">{children}</strong>,
+                            em: ({ children }) => <em className="text-gray-200 italic">{children}</em>,
+                          }}
+                        >
+                          {selectedSubtopic.content}
+                        </ReactMarkdown>
                       </div>
                     </TabsContent>
 

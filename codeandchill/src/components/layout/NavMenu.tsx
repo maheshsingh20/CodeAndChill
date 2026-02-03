@@ -10,7 +10,7 @@ import {
 export function NavMenu() {
   const menuItems = [
     { label: "Home", to: "/" },
-    { label: "Courses", to: "/courses" },
+    { label: "Learning Paths", to: "/learning-paths" },
     { label: "Problem Sets", to: "/problems" },
     { label: "Careers", to: "/careers" },
     { label: "Blog", to: "/blog" },

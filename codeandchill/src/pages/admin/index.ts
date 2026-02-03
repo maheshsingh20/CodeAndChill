@@ -4,3 +4,4 @@ export { AdminUsersPage } from './AdminUsersPage';
 export { AdminDataSeedPage } from './AdminDataSeedPage';
 export { AdminProblemsPage } from './AdminProblemsPage';
 export { AdminQuizzesPage } from './AdminQuizzesPage';
+export { AdminEngineeringCoursesPage } from './AdminEngineeringCoursesPage';

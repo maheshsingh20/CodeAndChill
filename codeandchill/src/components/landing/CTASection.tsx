@@ -26,7 +26,7 @@ export const CTASection: React.FC = () => {
 
             <div className="flex flex-col sm:flex-row gap-4 justify-center items-center pt-4">
               <button
-                onClick={() => navigate('/courses')}
+                onClick={() => navigate('/learning-paths')}
                 className="group px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-md font-semibold text-white hover:shadow-lg hover:shadow-black/50 transition-all duration-300 hover:scale-105 flex items-center gap-2 border border-gray-700"
               >
                 Start Learning Free

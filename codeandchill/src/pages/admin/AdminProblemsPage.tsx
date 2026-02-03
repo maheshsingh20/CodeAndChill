@@ -14,13 +14,13 @@ import { Badge } from "@/components/ui/badge";
 interface Problem {
   _id?: string;
   title: string;
+  slug?: string;
   description: string;
   difficulty: 'Easy' | 'Medium' | 'Hard';
-  topic?: string; // Add topic field
-  category: string; // Keep category for form compatibility
-  testCases: Array<{ input: string; output: string }>;
-  starterCode?: string;
-  solution?: string;
+  topic: string;
+  examples: Array<{ input: string; output: string; explanation?: string }>;
+  constraints: string[];
+  testCases: Array<{ input: string; expectedOutput: string }>;
 }
 
 export function AdminProblemsPage() {
@@ -31,10 +31,10 @@ export function AdminProblemsPage() {
     title: "",
     description: "",
     difficulty: "Easy",
-    category: "",
-    testCases: [{ input: "", output: "" }],
-    starterCode: "",
-    solution: ""
+    topic: "",
+    examples: [{ input: "", output: "", explanation: "" }],
+    constraints: [""],
+    testCases: [{ input: "", expectedOutput: "" }]
   });
   const navigate = useNavigate();
 
@@ -66,18 +66,20 @@ export function AdminProblemsPage() {
         ? `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/admin/problems/${editingProblem._id}`
         : `${import.meta.env.VITE_API_URL || 'http://localhost:3001'}/api/admin/problems`;
 
-      // Transform the data to match backend expectations
+      // Generate slug from title if not provided
+      const slug = formData.slug || formData.title.toLowerCase()
+        .replace(/[^a-z0-9]+/g, '-')
+        .replace(/(^-|-$)/g, '');
+
       const backendData = {
         title: formData.title,
+        slug: slug,
         description: formData.description,
         difficulty: formData.difficulty,
-        topic: formData.category, // Map category to topic
-        testCases: formData.testCases.map(tc => ({
-          input: tc.input,
-          expectedOutput: tc.output // Map output to expectedOutput
-        })),
-        examples: [], // Add empty examples array
-        constraints: [] // Add empty constraints array
+        topic: formData.topic,
+        examples: formData.examples.filter(ex => ex.input && ex.output),
+        constraints: formData.constraints.filter(c => c.trim()),
+        testCases: formData.testCases.filter(tc => tc.input && tc.expectedOutput)
       };
 
       console.log('Sending data to backend:', backendData);
@@ -134,10 +136,10 @@ export function AdminProblemsPage() {
       title: "",
       description: "",
       difficulty: "Easy",
-      category: "",
-      testCases: [{ input: "", output: "" }],
-      starterCode: "",
-      solution: ""
+      topic: "",
+      examples: [{ input: "", output: "", explanation: "" }],
+      constraints: [""],
+      testCases: [{ input: "", expectedOutput: "" }]
     });
     setEditingProblem(null);
     setShowForm(false);
@@ -146,11 +148,11 @@ export function AdminProblemsPage() {
   const addTestCase = () => {
     setFormData({
       ...formData,
-      testCases: [...formData.testCases, { input: "", output: "" }]
+      testCases: [...formData.testCases, { input: "", expectedOutput: "" }]
     });
   };
 
-  const updateTestCase = (index: number, field: 'input' | 'output', value: string) => {
+  const updateTestCase = (index: number, field: 'input' | 'expectedOutput', value: string) => {
     const newTestCases = [...formData.testCases];
     newTestCases[index][field] = value;
     setFormData({ ...formData, testCases: newTestCases });
@@ -160,6 +162,46 @@ export function AdminProblemsPage() {
     setFormData({
       ...formData,
       testCases: formData.testCases.filter((_, i) => i !== index)
+    });
+  };
+
+  const addExample = () => {
+    setFormData({
+      ...formData,
+      examples: [...formData.examples, { input: "", output: "", explanation: "" }]
+    });
+  };
+
+  const updateExample = (index: number, field: 'input' | 'output' | 'explanation', value: string) => {
+    const newExamples = [...formData.examples];
+    newExamples[index][field] = value;
+    setFormData({ ...formData, examples: newExamples });
+  };
+
+  const removeExample = (index: number) => {
+    setFormData({
+      ...formData,
+      examples: formData.examples.filter((_, i) => i !== index)
+    });
+  };
+
+  const addConstraint = () => {
+    setFormData({
+      ...formData,
+      constraints: [...formData.constraints, ""]
+    });
+  };
+
+  const updateConstraint = (index: number, value: string) => {
+    const newConstraints = [...formData.constraints];
+    newConstraints[index] = value;
+    setFormData({ ...formData, constraints: newConstraints });
+  };
+
+  const removeConstraint = (index: number) => {
+    setFormData({
+      ...formData,
+      constraints: formData.constraints.filter((_, i) => i !== index)
     });
   };
 
@@ -221,7 +263,7 @@ export function AdminProblemsPage() {
                           {problem.difficulty}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-gray-300">{problem.topic || problem.category}</TableCell>
+                      <TableCell className="text-gray-300">{problem.topic}</TableCell>
                       <TableCell className="text-gray-300">{problem.testCases?.length || 0}</TableCell>
                       <TableCell>
                         <div className="flex gap-2">
@@ -230,14 +272,11 @@ export function AdminProblemsPage() {
                             size="icon"
                             onClick={() => {
                               setEditingProblem(problem);
-                              // Map backend data to form format
                               setFormData({
                                 ...problem,
-                                category: problem.topic || problem.category || '',
-                                testCases: problem.testCases?.map(tc => ({
-                                  input: tc.input,
-                                  output: (tc as any).expectedOutput || tc.output || ''
-                                })) || [{ input: '', output: '' }]
+                                examples: problem.examples?.length ? problem.examples : [{ input: "", output: "", explanation: "" }],
+                                constraints: problem.constraints?.length ? problem.constraints : [""],
+                                testCases: problem.testCases?.length ? problem.testCases : [{ input: "", expectedOutput: "" }]
                               });
                               setShowForm(true);
                             }}
@@ -310,10 +349,10 @@ export function AdminProblemsPage() {
               </div>
 
               <div>
-                <Label>Topic/Category</Label>
+                <Label>Topic</Label>
                 <Input
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
+                  value={formData.topic}
+                  onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
                   className="bg-gray-700 border-gray-600 text-white"
                   placeholder="e.g., Arrays, Strings, Dynamic Programming"
                   required
@@ -322,13 +361,90 @@ export function AdminProblemsPage() {
             </div>
 
             <div>
-              <Label>Starter Code (Optional)</Label>
-              <Textarea
-                value={formData.starterCode}
-                onChange={(e) => setFormData({ ...formData, starterCode: e.target.value })}
-                className="bg-gray-700 border-gray-600 text-white font-mono text-sm"
-                placeholder="function solution() { ... }"
-              />
+              <div className="flex items-center justify-between mb-2">
+                <Label>Examples</Label>
+                <Button type="button" onClick={addExample} size="sm" variant="outline" className="border-gray-600">
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Example
+                </Button>
+              </div>
+              {formData.examples.map((example, index) => (
+                <div key={index} className="space-y-2 mb-4 p-3 bg-gray-700/50 rounded">
+                  <div className="grid grid-cols-2 gap-2">
+                    <div>
+                      <Label className="text-xs">Input</Label>
+                      <Input
+                        value={example.input}
+                        onChange={(e) => updateExample(index, 'input', e.target.value)}
+                        className="bg-gray-700 border-gray-600 text-white text-sm"
+                        placeholder="nums = [2,7,11,15], target = 9"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <div className="flex-1">
+                        <Label className="text-xs">Output</Label>
+                        <Input
+                          value={example.output}
+                          onChange={(e) => updateExample(index, 'output', e.target.value)}
+                          className="bg-gray-700 border-gray-600 text-white text-sm"
+                          placeholder="[0,1]"
+                        />
+                      </div>
+                      {formData.examples.length > 1 && (
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => removeExample(index)}
+                          className="text-red-400 hover:text-red-300 mt-5"
+                        >
+                          <Trash2 className="w-4 h-4" />
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                  <div>
+                    <Label className="text-xs">Explanation (Optional)</Label>
+                    <Input
+                      value={example.explanation || ""}
+                      onChange={(e) => updateExample(index, 'explanation', e.target.value)}
+                      className="bg-gray-700 border-gray-600 text-white text-sm"
+                      placeholder="Because nums[0] + nums[1] == 9, we return [0, 1]."
+                    />
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-2">
+                <Label>Constraints</Label>
+                <Button type="button" onClick={addConstraint} size="sm" variant="outline" className="border-gray-600">
+                  <Plus className="w-4 h-4 mr-1" />
+                  Add Constraint
+                </Button>
+              </div>
+              {formData.constraints.map((constraint, index) => (
+                <div key={index} className="flex gap-2 mb-2">
+                  <Input
+                    value={constraint}
+                    onChange={(e) => updateConstraint(index, e.target.value)}
+                    className="bg-gray-700 border-gray-600 text-white text-sm"
+                    placeholder="2 <= nums.length <= 10^4"
+                  />
+                  {formData.constraints.length > 1 && (
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => removeConstraint(index)}
+                      className="text-red-400 hover:text-red-300"
+                    >
+                      <Trash2 className="w-4 h-4" />
+                    </Button>
+                  )}
+                </div>
+              ))}
             </div>
 
             <div>
@@ -353,10 +469,10 @@ export function AdminProblemsPage() {
                   </div>
                   <div className="flex gap-2">
                     <div className="flex-1">
-                      <Label className="text-xs">Output</Label>
+                      <Label className="text-xs">Expected Output</Label>
                       <Input
-                        value={testCase.output}
-                        onChange={(e) => updateTestCase(index, 'output', e.target.value)}
+                        value={testCase.expectedOutput}
+                        onChange={(e) => updateTestCase(index, 'expectedOutput', e.target.value)}
                         className="bg-gray-700 border-gray-600 text-white text-sm"
                         placeholder="6"
                         required

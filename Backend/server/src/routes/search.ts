@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { GeneralCourse, ProblemSet, Subject, Quiz, Contest } from "../models";
+import { ProblemSet, Subject, Quiz, Contest } from "../models";
 import SkillTest from "../models/SkillTest";
 import { authMiddleware, AuthRequest } from "../middleware";
 
@@ -37,34 +37,6 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
 
     // Create regex for case-insensitive search
     const searchRegex = new RegExp(searchQuery, 'i');
-
-    // Search courses
-    try {
-      const courses = await GeneralCourse.find({
-        $or: [
-          { title: searchRegex },
-          { description: searchRegex },
-          { category: searchRegex },
-          { tags: { $in: [searchRegex] } }
-        ]
-      }).limit(10);
-
-      courses.forEach(course => {
-        const score = calculateRelevanceScore(course.title, course.description, searchQuery);
-        results.push({
-          id: course._id.toString(),
-          title: course.title,
-          description: course.description,
-          type: 'course',
-          url: `/courses/${course.slug}`,
-          category: course.category,
-          tags: course.tags,
-          score
-        });
-      });
-    } catch (error) {
-      console.error('Course search error:', error);
-    }
 
     // Search problem sets and problems
     try {

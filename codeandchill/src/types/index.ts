@@ -35,37 +35,6 @@ export interface Subtopic {
   content: string;
 }
 
-export interface GeneralCourse {
-  _id: string;
-  title: string;
-  slug: string;
-  description: string;
-  tutor: {
-    name: string;
-    image: string;
-  };
-  cost: number;
-  modules: GeneralModule[];
-}
-
-export interface GeneralModule {
-  title: string;
-  lessons: Lesson[];
-}
-
-export interface Lesson {
-  title: string;
-  topics: GeneralTopic[];
-}
-
-export interface GeneralTopic {
-  title: string;
-  contentType: "video" | "text" | "table";
-  videoUrl?: string;
-  textContent?: string;
-  tableData?: string[][];
-}
-
 export interface Problem {
   _id: string;
   title: string;

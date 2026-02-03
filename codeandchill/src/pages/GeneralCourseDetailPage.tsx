@@ -55,15 +55,15 @@ export function GeneralCourseDetailPage() {
 
       try {
         // List of engineering course IDs
-        const engineeringCourseIds = ['dsa', 'dbms', 'operating-systems', 'computer-networks', 'software-engineering', 'web-development'];
+        const engineeringCourseIds = ['dsa', 'dbms', 'operating-systems', 'computer-networks', 'software-engineering', 'web-development', 'dotnet-development'];
 
         let response;
         if (engineeringCourseIds.includes(courseId || '')) {
           // Use engineering courses API
           response = await fetch(`http://localhost:3001/api/engineering-courses/${courseId}`);
         } else {
-          // Use regular courses API
-          response = await fetch(`http://localhost:3001/api/courses/${courseId}`);
+          // This shouldn't happen for engineering courses, but keeping for safety
+          return res.status(404).json({ error: 'Course not found' });
         }
 
         if (!response.ok) {

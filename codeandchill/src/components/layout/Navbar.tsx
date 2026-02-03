@@ -89,11 +89,11 @@ export function Navbar() {
                   {/* Mobile Navigation */}
                   <nav className="space-y-2">
                     <Link
-                      to="/courses"
+                      to="/learning-paths"
                       className="flex items-center gap-3 rounded-lg px-4 py-3 text-gray-300 hover:text-purple-400 hover:bg-gray-800 transition-all duration-200 font-medium"
                     >
                       <Code className="w-4 h-4" />
-                      Courses
+                      Learning Paths
                     </Link>
                     <Link
                       to="/careers"

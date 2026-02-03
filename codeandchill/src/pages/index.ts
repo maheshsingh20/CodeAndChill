@@ -2,9 +2,6 @@
 export { LandingPage } from "./LandingPage";
 export { AuthPage } from "./AuthPage";
 export { HomePage } from "./HomePage";
-export { CoursesPage } from "./CoursesPage";
-export { CourseDetailPage } from "./CourseDetailPage";
-export { CoursePlayerPage } from "./CoursePlayerPage";
 export { GeneralCoursesPage } from "./GeneralCoursesPage";
 export { GeneralCourseDetailPage } from "./GeneralCourseDetailPage";
 export { LearningPathsPage } from "./LearningPathsPage";

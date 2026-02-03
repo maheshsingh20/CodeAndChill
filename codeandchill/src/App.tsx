@@ -5,6 +5,7 @@ import {
   Routes,
   Navigate,
 } from "react-router-dom";
+import { Toaster } from "react-hot-toast";
 
 // Import NoirSystem
 import { initNoirAccentSystem } from "./utils/noir-accent";
@@ -25,9 +26,6 @@ import {
   LandingPage,
   AuthPage,
   HomePage,
-  CoursesPage,
-  CourseDetailPage,
-  CoursePlayerPage,
   GeneralCoursesPage,
   LearningPathsPage,
   LearningPathDetailPage,
@@ -83,6 +81,7 @@ import { AdminQuizzesPage } from "./pages/admin/AdminQuizzesPage";
 import { AdminContestsPage } from "./pages/admin/AdminContestsPage";
 import { AdminContestFormPage } from "./pages/admin/AdminContestFormPage";
 import { AdminJobApplicationsPage } from "./pages/admin/AdminJobApplicationsPage";
+import { AdminEngineeringCoursesPage } from "./pages/admin/AdminEngineeringCoursesPage";
 
 import { ShadcnShowcasePage } from "./pages/ShadcnShowcasePage";
 import { CardShowcase } from "./components/showcase/CardShowcase";
@@ -247,6 +246,33 @@ function App() {
           {/* <AuthDebug /> */}
           {!isAdminRoute && <ActivityTracker isAuthenticated={isAuthenticated} />}
 
+          {/* Toast notifications */}
+          <Toaster
+            position="top-right"
+            toastOptions={{
+              duration: 4000,
+              style: {
+                background: '#1f2937',
+                color: '#f3f4f6',
+                border: '1px solid #374151',
+              },
+              success: {
+                style: {
+                  background: '#065f46',
+                  color: '#d1fae5',
+                  border: '1px solid #10b981',
+                },
+              },
+              error: {
+                style: {
+                  background: '#7f1d1d',
+                  color: '#fecaca',
+                  border: '1px solid #ef4444',
+                },
+              },
+            }}
+          />
+
           {/* {isAdminRoute ? (
             <AdminBackground />
           ) : isHighPerformance ? (
@@ -313,18 +339,6 @@ function App() {
                   <Route
                     path="/dashboard"
                     element={<PrivateRoute element={<HomePage />} />}
-                  />
-                  <Route
-                    path="/courses"
-                    element={<PrivateRoute element={<CoursesPage />} />}
-                  />
-                  <Route
-                    path="/courses/:slug"
-                    element={<PrivateRoute element={<CourseDetailPage />} />}
-                  />
-                  <Route
-                    path="/learn/:courseId"
-                    element={<PrivateRoute element={<CoursePlayerPage />} />}
                   />
                   <Route
                     path="/paths"
@@ -532,7 +546,7 @@ function App() {
                   <Route path="/admin/contests/edit/:contestId" element={<AdminPrivateRoute element={<AdminContestFormPage />} />} />
                   <Route path="/admin/job-applications" element={<AdminPrivateRoute element={<AdminJobApplicationsPage />} />} />
                   <Route path="/admin/seed-data" element={<AdminPrivateRoute element={<AdminDataSeedPage />} />} />
-                  <Route path="/admin/courses" element={<AdminPrivateRoute element={<AdminDashboard />} />} />
+                  <Route path="/admin/engineering-courses" element={<AdminPrivateRoute element={<AdminEngineeringCoursesPage />} />} />
                 </Routes>
               </PageTransition>
             </main>

@@ -43,7 +43,7 @@ export function Navbar({ logout }) {
   // Keep only essential navigation items
   const navLinks = [
     { href: "/problems", text: "Problems", icon: <Zap className="w-4 h-4" /> },
-    { href: "/courses", text: "Courses", icon: <Code className="w-4 h-4" /> },
+    { href: "/learning-paths", text: "Learning Paths", icon: <Code className="w-4 h-4" /> },
     { href: "/contests", text: "Contests", icon: <Sparkles className="w-4 h-4" /> },
     { href: "/careers", text: "Careers", icon: <Users className="w-4 h-4" /> },
     { href: "/about", text: "About", icon: <User className="w-4 h-4" /> },

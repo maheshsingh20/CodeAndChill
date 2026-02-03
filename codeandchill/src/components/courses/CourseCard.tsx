@@ -27,7 +27,7 @@ interface CourseCardProps {
 export function CourseCard({ course }: CourseCardProps) {
   return (
     <Link
-      to={`/courses/${course.id}`}
+      to={`/learning-paths/${course.id}`}
       className="group block h-full"
     >
       <EnhancedCard

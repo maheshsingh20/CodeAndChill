@@ -1,6 +1,6 @@
 import { api } from "@/utils";
 import { API_ENDPOINTS } from "@/constants";
-import type { Course, GeneralCourse } from "@/types";
+import type { Course } from "@/types";
 
 export const courseService = {
   // CS Courses (Free)
@@ -12,13 +12,13 @@ export const courseService = {
     return api.get<Course>(`${API_ENDPOINTS.COURSES}/${slug}`);
   },
 
-  // General Courses (Paid/Free)
-  getGeneralCourses: async (): Promise<GeneralCourse[]> => {
-    return api.get<GeneralCourse[]>(API_ENDPOINTS.GENERAL_COURSES);
+  // Engineering Courses
+  getEngineeringCourses: async (): Promise<Course[]> => {
+    return api.get<Course[]>('/api/engineering-courses');
   },
 
-  getGeneralCourseBySlug: async (slug: string): Promise<GeneralCourse> => {
-    return api.get<GeneralCourse>(`${API_ENDPOINTS.GENERAL_COURSES}/${slug}`);
+  getEngineeringCourseById: async (id: string): Promise<Course> => {
+    return api.get<Course>(`/api/engineering-courses/${id}`);
   },
 
   // Enrollment

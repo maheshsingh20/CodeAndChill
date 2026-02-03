@@ -47,7 +47,7 @@ export const WhyChooseSection: React.FC = () => {
             </div>
           ))}
           <button
-            onClick={() => navigate('/courses')}
+            onClick={() => navigate('/learning-paths')}
             className="mt-8 px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-md font-semibold text-white hover:shadow-lg hover:shadow-black/50 transition-all duration-300 hover:scale-105 border border-gray-700"
           >
             Get Started Now

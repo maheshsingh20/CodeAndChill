@@ -259,32 +259,47 @@ export function ChatInterface() {
 
   // Function to render code blocks if detected
   const renderMessage = (text: string) => {
-    const codeRegex = /```(.*?)\n([\s\S]*?)```/g;
+    // First handle code blocks (triple backticks)
+    const codeBlockRegex = /```(.*?)\n([\s\S]*?)```/g;
     const parts: React.ReactNode[] = [];
     let lastIndex = 0;
 
     let match;
-    while ((match = codeRegex.exec(text)) !== null) {
+    while ((match = codeBlockRegex.exec(text)) !== null) {
       const [full, lang, code] = match;
       if (match.index > lastIndex) {
-        parts.push(text.slice(lastIndex, match.index));
+        // Process the text before the code block for inline code
+        const textBefore = text.slice(lastIndex, match.index);
+        parts.push(renderInlineCode(textBefore));
       }
       parts.push(
-        <div key={match.index} className="relative">
+        <div key={match.index} className="relative my-3 w-full">
           <SyntaxHighlighter
             language={lang || "javascript"}
             style={vsDark}
-            className="rounded-md my-2"
+            className="rounded-md !my-0 !bg-gray-900 !border !border-gray-700"
+            customStyle={{
+              margin: 0,
+              padding: '12px',
+              fontSize: '13px',
+              lineHeight: '1.4',
+              maxWidth: '100%',
+              overflow: 'auto',
+              wordBreak: 'break-all',
+              whiteSpace: 'pre-wrap'
+            }}
+            wrapLongLines={true}
           >
             {code}
           </SyntaxHighlighter>
           <Button
             variant="ghost"
             size="sm"
-            className="absolute top-2 right-2 text-gray-400 hover:text-white p-1 h-auto"
+            className="absolute top-2 right-2 text-gray-400 hover:text-white p-1 h-auto bg-gray-800/80 hover:bg-gray-700/80"
             onClick={() => copyToClipboard(code)}
           >
-            <Copy size={12} />
+            <Copy size={10} className="md:hidden" />
+            <Copy size={12} className="hidden md:block" />
           </Button>
         </div>
       );
@@ -292,17 +307,48 @@ export function ChatInterface() {
     }
 
     if (lastIndex < text.length) {
+      // Process remaining text for inline code
+      const remainingText = text.slice(lastIndex);
+      parts.push(renderInlineCode(remainingText));
+    }
+
+    return parts.length > 0 ? parts : renderInlineCode(text);
+  };
+
+  // Function to render inline code (single backticks)
+  const renderInlineCode = (text: string) => {
+    const inlineCodeRegex = /`([^`]+)`/g;
+    const parts: React.ReactNode[] = [];
+    let lastIndex = 0;
+
+    let match;
+    while ((match = inlineCodeRegex.exec(text)) !== null) {
+      if (match.index > lastIndex) {
+        parts.push(text.slice(lastIndex, match.index));
+      }
+      parts.push(
+        <code
+          key={match.index}
+          className="bg-gray-700 text-cyan-300 px-1.5 py-0.5 rounded text-sm font-mono"
+        >
+          {match[1]}
+        </code>
+      );
+      lastIndex = match.index + match[0].length;
+    }
+
+    if (lastIndex < text.length) {
       parts.push(text.slice(lastIndex));
     }
 
-    return parts;
+    return parts.length > 0 ? parts : text;
   };
 
   return (
-    <div className="flex h-[80vh] w-full gap-2 md:gap-4">
+    <div className="flex h-[80vh] w-full gap-2 md:gap-4 overflow-hidden">
       {/* Sidebar - Chat History */}
       <div className={cn(
-        "transition-all duration-300 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 border border-gray-700 rounded-2xl",
+        "transition-all duration-300 bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 border border-gray-700 rounded-2xl flex-shrink-0",
         showHistory ? "w-72 md:w-80" : "w-12 md:w-16"
       )}>
         <div className="p-2 md:p-4 h-full flex flex-col">
@@ -377,7 +423,7 @@ export function ChatInterface() {
       </div>
 
       {/* Main Chat Interface */}
-      <Card className="flex-1 rounded-2xl shadow-xl flex flex-col bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 border border-gray-700">
+      <Card className="flex-1 rounded-2xl shadow-xl flex flex-col bg-gradient-to-br from-gray-950 via-gray-900 to-gray-800 border border-gray-700 min-w-0 overflow-hidden">
         {/* Header */}
         <CardHeader className="pb-3 md:pb-4">
           <div className="flex items-center justify-between">
@@ -403,52 +449,54 @@ export function ChatInterface() {
           </div>
         </CardHeader>
 
-        <CardContent className="flex-1 flex flex-col min-h-0 px-3 md:px-4 lg:px-6 pb-4 md:pb-6">
+        <CardContent className="flex-1 flex flex-col min-h-0 px-3 md:px-4 lg:px-6 pb-4 md:pb-6 overflow-hidden">
           <ScrollArea
-            className="flex-1 min-h-0 overflow-y-auto pr-4 -mr-4"
+            className="flex-1 min-h-0 overflow-y-auto pr-2 -mr-2"
             ref={scrollAreaRef}
           >
-            <div className="space-y-4">
+            <div className="space-y-4 py-2">
               {messages.map((message) => (
                 <div
                   key={message.id}
                   className={cn(
-                    "flex items-start gap-3 max-w-[90%]",
+                    "flex items-start gap-2 md:gap-3 w-full",
                     message.sender === "user"
-                      ? "ml-auto flex-row-reverse"
-                      : "mr-auto"
+                      ? "justify-end"
+                      : "justify-start"
                   )}
                 >
-                  <Avatar className="h-6 w-6 md:h-7 md:w-7 border border-gray-700 shadow-sm flex-shrink-0">
-                    <AvatarFallback
-                      className={cn(
-                        message.sender === "ai"
-                          ? "bg-cyan-900 text-cyan-300"
-                          : "bg-purple-700 text-white"
-                      )}
-                    >
-                      {message.sender === "ai" ? (
+                  {message.sender === "ai" && (
+                    <Avatar className="h-6 w-6 md:h-7 md:w-7 border border-gray-700 shadow-sm flex-shrink-0">
+                      <AvatarFallback className="bg-cyan-900 text-cyan-300">
                         <Bot className="h-3 w-3 md:h-4 md:w-4" />
-                      ) : (
-                        <User className="h-3 w-3 md:h-4 md:w-4" />
-                      )}
-                    </AvatarFallback>
-                  </Avatar>
-                  <div className="flex flex-col space-y-1 flex-1">
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
+
+                  <div className={cn(
+                    "flex flex-col space-y-1 max-w-[85%] min-w-0",
+                    message.sender === "user" ? "items-end" : "items-start"
+                  )}>
                     <div
                       className={cn(
-                        "p-2 md:p-3 rounded-xl whitespace-pre-wrap break-words shadow-md text-xs md:text-sm leading-relaxed",
+                        "p-2 md:p-3 rounded-xl shadow-md text-xs md:text-sm leading-relaxed w-full overflow-hidden",
                         message.sender === "ai"
                           ? "bg-gray-800 text-gray-200 border border-gray-700 rounded-bl-none"
-                          : "bg-gradient-to-r from-cyan-600 to-purple-700 text-white rounded-br-none"
+                          : "bg-gradient-to-r from-cyan-600 to-purple-700 text-white rounded-br-none max-w-md"
                       )}
+                      style={{
+                        wordBreak: 'break-word',
+                        overflowWrap: 'break-word'
+                      }}
                     >
-                      {renderMessage(message.text)}
+                      <div className="whitespace-pre-wrap break-words">
+                        {renderMessage(message.text)}
+                      </div>
                     </div>
 
                     {/* Message Actions */}
                     {message.sender === "ai" && message.text && (
-                      <div className="flex items-center justify-between text-xs text-gray-500">
+                      <div className="flex items-center justify-between text-xs text-gray-500 mt-1 px-1">
                         <div className="flex items-center space-x-2">
                           <Button
                             variant="ghost"
@@ -488,6 +536,14 @@ export function ChatInterface() {
                       </div>
                     )}
                   </div>
+
+                  {message.sender === "user" && (
+                    <Avatar className="h-6 w-6 md:h-7 md:w-7 border border-gray-700 shadow-sm flex-shrink-0">
+                      <AvatarFallback className="bg-purple-700 text-white">
+                        <User className="h-3 w-3 md:h-4 md:w-4" />
+                      </AvatarFallback>
+                    </Avatar>
+                  )}
                 </div>
               ))}
               {isLoading && (

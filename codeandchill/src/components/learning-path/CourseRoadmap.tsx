@@ -103,7 +103,7 @@ export function CourseRoadmap({
 
                   return isLevelUnlocked ? (
                     <Link
-                      to={`/courses/${course.id}`}
+                      to={`/learning-paths/${course.id}`}
                       key={course.id}
                       tabIndex={-1}
                     >

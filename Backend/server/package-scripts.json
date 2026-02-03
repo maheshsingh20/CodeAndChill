@@ -1,0 +1,6 @@
+{
+  "scripts": {
+    "seed:engineering": "ts-node seedEngineeringCoursesRich.ts",
+    "seed:engineering:js": "node dist/seedEngineeringCoursesRich.js"
+  }
+}

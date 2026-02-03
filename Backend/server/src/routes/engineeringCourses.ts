@@ -1,222 +1,30 @@
 import express from 'express';
 import { authMiddleware } from '../middleware/auth';
+import { adminAuthMiddleware } from '../middleware/adminAuth';
+import EngineeringCourse from '../models/EngineeringCourse';
 
 const router = express.Router();
 
-// Engineering courses data (predefined)
-const engineeringCourses = {
-  'dsa': {
-    id: 'dsa',
-    title: 'Data Structures & Algorithms',
-    description: 'Master fundamental data structures and algorithms essential for programming interviews and efficient coding.',
-    difficulty: 'intermediate',
-    duration: '60 hours',
-    totalLessons: 45,
-    estimatedHours: 60,
-    modules: [
-      {
-        title: 'Arrays and Strings',
-        lessons: ['Introduction to Arrays', 'Array Operations', 'String Manipulation', 'Two Pointer Technique']
-      },
-      {
-        title: 'Linked Lists',
-        lessons: ['Singly Linked Lists', 'Doubly Linked Lists', 'Circular Linked Lists', 'Advanced Operations']
-      },
-      {
-        title: 'Stacks and Queues',
-        lessons: ['Stack Implementation', 'Queue Implementation', 'Priority Queues', 'Applications']
-      },
-      {
-        title: 'Trees and Graphs',
-        lessons: ['Binary Trees', 'Binary Search Trees', 'Graph Representation', 'Graph Traversal']
-      },
-      {
-        title: 'Dynamic Programming',
-        lessons: ['Introduction to DP', 'Memoization', 'Tabulation', 'Advanced DP Problems']
-      }
-    ]
-  },
-  'dbms': {
-    id: 'dbms',
-    title: 'Database Management Systems',
-    description: 'Learn database design, SQL, normalization, and advanced database concepts for modern applications.',
-    difficulty: 'intermediate',
-    duration: '45 hours',
-    totalLessons: 35,
-    estimatedHours: 45,
-    modules: [
-      {
-        title: 'Database Fundamentals',
-        lessons: ['Introduction to DBMS', 'Database Models', 'ER Diagrams', 'Relational Model']
-      },
-      {
-        title: 'SQL Basics',
-        lessons: ['DDL Commands', 'DML Commands', 'Basic Queries', 'Joins']
-      },
-      {
-        title: 'Advanced SQL',
-        lessons: ['Subqueries', 'Views', 'Stored Procedures', 'Triggers']
-      },
-      {
-        title: 'Database Design',
-        lessons: ['Normalization', 'Functional Dependencies', 'BCNF', 'Denormalization']
-      },
-      {
-        title: 'Transaction Management',
-        lessons: ['ACID Properties', 'Concurrency Control', 'Locking', 'Recovery']
-      }
-    ]
-  },
-  'operating-systems': {
-    id: 'operating-systems',
-    title: 'Operating Systems',
-    description: 'Understand OS concepts including processes, memory management, file systems, and system calls.',
-    difficulty: 'advanced',
-    duration: '55 hours',
-    totalLessons: 40,
-    estimatedHours: 55,
-    modules: [
-      {
-        title: 'OS Fundamentals',
-        lessons: ['Introduction to OS', 'System Calls', 'OS Structure', 'Kernel vs User Mode']
-      },
-      {
-        title: 'Process Management',
-        lessons: ['Process Concept', 'Process Scheduling', 'Inter-process Communication', 'Threads']
-      },
-      {
-        title: 'Memory Management',
-        lessons: ['Memory Hierarchy', 'Paging', 'Segmentation', 'Virtual Memory']
-      },
-      {
-        title: 'File Systems',
-        lessons: ['File System Interface', 'File System Implementation', 'Directory Structure', 'File Allocation']
-      },
-      {
-        title: 'Synchronization',
-        lessons: ['Critical Section', 'Semaphores', 'Monitors', 'Deadlocks']
-      }
-    ]
-  },
-  'computer-networks': {
-    id: 'computer-networks',
-    title: 'Computer Networks',
-    description: 'Explore networking protocols, TCP/IP, network security, and distributed systems fundamentals.',
-    difficulty: 'advanced',
-    duration: '50 hours',
-    totalLessons: 38,
-    estimatedHours: 50,
-    modules: [
-      {
-        title: 'Network Fundamentals',
-        lessons: ['Network Models', 'OSI Model', 'TCP/IP Stack', 'Network Topologies']
-      },
-      {
-        title: 'Physical Layer',
-        lessons: ['Transmission Media', 'Encoding', 'Multiplexing', 'Switching']
-      },
-      {
-        title: 'Data Link Layer',
-        lessons: ['Framing', 'Error Detection', 'Flow Control', 'MAC Protocols']
-      },
-      {
-        title: 'Network Layer',
-        lessons: ['IP Protocol', 'Routing Algorithms', 'Subnetting', 'ICMP']
-      },
-      {
-        title: 'Transport Layer',
-        lessons: ['TCP Protocol', 'UDP Protocol', 'Congestion Control', 'Socket Programming']
-      }
-    ]
-  },
-  'software-engineering': {
-    id: 'software-engineering',
-    title: 'Software Engineering',
-    description: 'Learn software development lifecycle, design patterns, testing, and project management principles.',
-    difficulty: 'intermediate',
-    duration: '58 hours',
-    totalLessons: 42,
-    estimatedHours: 58,
-    modules: [
-      {
-        title: 'SDLC Models',
-        lessons: ['Waterfall Model', 'Agile Methodology', 'Scrum Framework', 'DevOps Practices']
-      },
-      {
-        title: 'Requirements Engineering',
-        lessons: ['Requirements Gathering', 'Use Cases', 'User Stories', 'Requirements Analysis']
-      },
-      {
-        title: 'System Design',
-        lessons: ['System Architecture', 'Design Patterns', 'UML Diagrams', 'Database Design']
-      },
-      {
-        title: 'Testing',
-        lessons: ['Testing Fundamentals', 'Unit Testing', 'Integration Testing', 'Test Automation']
-      },
-      {
-        title: 'Project Management',
-        lessons: ['Project Planning', 'Risk Management', 'Quality Assurance', 'Maintenance']
-      }
-    ]
-  },
-  'web-development': {
-    id: 'web-development',
-    title: 'Web Development',
-    description: 'Build modern web applications with HTML, CSS, JavaScript, React, and backend technologies.',
-    difficulty: 'beginner',
-    duration: '70 hours',
-    totalLessons: 50,
-    estimatedHours: 70,
-    modules: [
-      {
-        title: 'Frontend Fundamentals',
-        lessons: ['HTML Basics', 'CSS Styling', 'JavaScript Fundamentals', 'DOM Manipulation']
-      },
-      {
-        title: 'Modern JavaScript',
-        lessons: ['ES6+ Features', 'Async Programming', 'Modules', 'Error Handling']
-      },
-      {
-        title: 'React Development',
-        lessons: ['React Basics', 'Components', 'State Management', 'Hooks']
-      },
-      {
-        title: 'Backend Development',
-        lessons: ['Node.js', 'Express.js', 'RESTful APIs', 'Database Integration']
-      },
-      {
-        title: 'Full Stack Projects',
-        lessons: ['Project Setup', 'Authentication', 'Deployment', 'Best Practices']
-      }
-    ]
-  }
-};
-
-// Get all engineering courses
-router.get('/', (req, res) => {
+// Get all engineering courses (public)
+router.get('/', async (req, res) => {
   try {
-    const coursesList = Object.values(engineeringCourses).map(course => ({
-      id: course.id,
-      title: course.title,
-      description: course.description,
-      difficulty: course.difficulty,
-      duration: course.duration,
-      totalLessons: course.totalLessons
-    }));
+    const courses = await EngineeringCourse.find({ isActive: true })
+      .select('id title description difficulty duration totalLessons estimatedHours category tags')
+      .sort({ createdAt: -1 });
     
-    res.json(coursesList);
+    res.json(courses);
   } catch (error) {
     console.error('Error fetching engineering courses:', error);
     res.status(500).json({ error: 'Failed to fetch engineering courses' });
   }
 });
 
-// Get specific engineering course by ID
-router.get('/:courseId', (req, res) => {
+// Get specific engineering course by ID (public)
+router.get('/:courseId', async (req, res) => {
   try {
     const { courseId } = req.params;
-    const course = engineeringCourses[courseId as keyof typeof engineeringCourses];
+    
+    const course = await EngineeringCourse.findOne({ id: courseId, isActive: true });
     
     if (!course) {
       return res.status(404).json({ error: 'Engineering course not found' });
@@ -229,14 +37,18 @@ router.get('/:courseId', (req, res) => {
   }
 });
 
-// Get course progress for a specific engineering course
+// Get course progress for a specific engineering course (authenticated)
 router.get('/:courseId/progress', authMiddleware, async (req, res) => {
   try {
     const { courseId } = req.params;
-    const userId = req.user._id;
+    const userId = (req.user as any)?._id;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
     
     // Check if course exists
-    const course = engineeringCourses[courseId as keyof typeof engineeringCourses];
+    const course = await EngineeringCourse.findOne({ id: courseId, isActive: true });
     if (!course) {
       return res.status(404).json({ error: 'Engineering course not found' });
     }
@@ -282,15 +94,19 @@ router.get('/:courseId/progress', authMiddleware, async (req, res) => {
   }
 });
 
-// Update lesson progress for engineering course
+// Update lesson progress for engineering course (authenticated)
 router.post('/:courseId/progress', authMiddleware, async (req, res) => {
   try {
     const { courseId } = req.params;
     const { lessonId, timeSpent, completed } = req.body;
-    const userId = req.user._id;
+    const userId = (req.user as any)?._id;
+    
+    if (!userId) {
+      return res.status(401).json({ error: 'User not authenticated' });
+    }
     
     // Check if course exists
-    const course = engineeringCourses[courseId as keyof typeof engineeringCourses];
+    const course = await EngineeringCourse.findOne({ id: courseId, isActive: true });
     if (!course) {
       return res.status(404).json({ error: 'Engineering course not found' });
     }
@@ -344,6 +160,251 @@ router.post('/:courseId/progress', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Error updating engineering course progress:', error);
     res.status(500).json({ error: 'Failed to update course progress' });
+  }
+});
+
+// ADMIN ROUTES FOR MANAGING ENGINEERING COURSES
+
+// Get all courses for admin (including inactive)
+router.get('/admin/courses', adminAuthMiddleware, async (req, res) => {
+  try {
+    const courses = await EngineeringCourse.find()
+      .sort({ createdAt: -1 });
+    
+    res.json(courses);
+  } catch (error) {
+    console.error('Error fetching admin courses:', error);
+    res.status(500).json({ error: 'Failed to fetch courses' });
+  }
+});
+
+// Create new engineering course
+router.post('/admin/courses', adminAuthMiddleware, async (req, res) => {
+  try {
+    const {
+      id,
+      title,
+      description,
+      difficulty,
+      duration,
+      estimatedHours,
+      category,
+      tags,
+      prerequisites,
+      learningOutcomes,
+      modules
+    } = req.body;
+
+    // Validate required fields
+    if (!id || !title || !description || !difficulty || !duration || !estimatedHours || !category) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Check if course ID already exists
+    const existingCourse = await EngineeringCourse.findOne({ id });
+    if (existingCourse) {
+      return res.status(400).json({ error: 'Course ID already exists' });
+    }
+
+    // Calculate total lessons
+    const totalLessons = modules?.reduce((total: number, module: any) => 
+      total + (module.lessons?.length || 0), 0) || 0;
+
+    const newCourse = new EngineeringCourse({
+      id,
+      title,
+      description,
+      difficulty,
+      duration,
+      totalLessons,
+      estimatedHours,
+      category,
+      tags: tags || [],
+      prerequisites: prerequisites || [],
+      learningOutcomes: learningOutcomes || [],
+      modules: modules || [],
+      createdBy: (req.user as any)?.id || 'admin'
+    });
+
+    await newCourse.save();
+    res.status(201).json(newCourse);
+  } catch (error) {
+    console.error('Error creating engineering course:', error);
+    res.status(500).json({ error: 'Failed to create course' });
+  }
+});
+
+// Update engineering course
+router.put('/admin/courses/:courseId', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const updateData = req.body;
+
+    // Calculate total lessons if modules are updated
+    if (updateData.modules) {
+      updateData.totalLessons = updateData.modules.reduce((total: number, module: any) => 
+        total + (module.lessons?.length || 0), 0);
+    }
+
+    const updatedCourse = await EngineeringCourse.findOneAndUpdate(
+      { id: courseId },
+      updateData,
+      { new: true, runValidators: true }
+    );
+
+    if (!updatedCourse) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    res.json(updatedCourse);
+  } catch (error) {
+    console.error('Error updating engineering course:', error);
+    res.status(500).json({ error: 'Failed to update course' });
+  }
+});
+
+// Delete engineering course (soft delete)
+router.delete('/admin/courses/:courseId', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { courseId } = req.params;
+
+    const updatedCourse = await EngineeringCourse.findOneAndUpdate(
+      { id: courseId },
+      { isActive: false },
+      { new: true }
+    );
+
+    if (!updatedCourse) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    res.json({ message: 'Course deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting engineering course:', error);
+    res.status(500).json({ error: 'Failed to delete course' });
+  }
+});
+
+// Add module to existing course
+router.post('/admin/courses/:courseId/modules', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { courseId } = req.params;
+    const moduleData = req.body;
+
+    const course = await EngineeringCourse.findOne({ id: courseId });
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    // Generate module ID if not provided
+    if (!moduleData.id) {
+      moduleData.id = `module-${Date.now()}`;
+    }
+
+    // Set order if not provided
+    if (!moduleData.order) {
+      moduleData.order = course.modules.length + 1;
+    }
+
+    course.modules.push(moduleData);
+    course.totalLessons = course.modules.reduce((total, module) => 
+      total + module.lessons.length, 0);
+
+    await course.save();
+    res.json(course);
+  } catch (error) {
+    console.error('Error adding module:', error);
+    res.status(500).json({ error: 'Failed to add module' });
+  }
+});
+
+// Add lesson to existing module
+router.post('/admin/courses/:courseId/modules/:moduleId/lessons', adminAuthMiddleware, async (req, res) => {
+  try {
+    const { courseId, moduleId } = req.params;
+    const lessonData = req.body;
+
+    const course = await EngineeringCourse.findOne({ id: courseId });
+    if (!course) {
+      return res.status(404).json({ error: 'Course not found' });
+    }
+
+    const module = course.modules.find(m => m.id === moduleId);
+    if (!module) {
+      return res.status(404).json({ error: 'Module not found' });
+    }
+
+    // Generate lesson ID if not provided
+    if (!lessonData.id) {
+      lessonData.id = `lesson-${Date.now()}`;
+    }
+
+    // Set order if not provided
+    if (!lessonData.order) {
+      lessonData.order = module.lessons.length + 1;
+    }
+
+    module.lessons.push(lessonData);
+    course.totalLessons = course.modules.reduce((total, module) => 
+      total + module.lessons.length, 0);
+
+    await course.save();
+    res.json(course);
+  } catch (error) {
+    console.error('Error adding lesson:', error);
+    res.status(500).json({ error: 'Failed to add lesson' });
+  }
+});
+
+// Seed hardcoded courses to database (one-time migration)
+router.post('/admin/seed-courses', adminAuthMiddleware, async (req, res) => {
+  try {
+    // Import and run the seeding function
+    const { seedEngineeringCourses } = await import('../seeds/engineeringCourses');
+    const seededCourses = await seedEngineeringCourses();
+
+    res.json({
+      message: `Successfully seeded ${seededCourses.length} courses`,
+      courses: seededCourses.map(c => ({ id: c.id, title: c.title }))
+    });
+  } catch (error) {
+    console.error('Error seeding courses:', error);
+    res.status(500).json({ error: 'Failed to seed courses' });
+  }
+});
+// Recalculate progress for all users (admin utility)
+router.post('/admin/recalculate-progress', adminAuthMiddleware, async (req, res) => {
+  try {
+    // Import UserProgress here to avoid circular dependency
+    const UserProgress = (await import('../models/UserProgress')).default;
+    // Get all progress records
+    const progressRecords = await UserProgress.find({});
+    let updatedCount = 0;
+    
+    for (const progress of progressRecords) {
+      // Get the course to check totalLessons
+      const course = await EngineeringCourse.findOne({ id: progress.courseId });
+      if (course) {
+        const completedCount = progress.completedLessons.length;
+        const calculatedProgress = course.totalLessons > 0 ? 
+          Math.round((completedCount / course.totalLessons) * 100) : 0;
+        
+        if (progress.progressPercentage !== calculatedProgress) {
+          progress.progressPercentage = calculatedProgress;
+          await progress.save();
+          updatedCount++;
+        }
+      }
+    }
+    
+    res.json({
+      message: `Successfully recalculated progress for ${updatedCount} records`,
+      totalRecords: progressRecords.length,
+      updatedRecords: updatedCount
+    });
+  } catch (error) {
+    console.error('Error recalculating progress:', error);
+    res.status(500).json({ error: 'Failed to recalculate progress' });
   }
 });
 

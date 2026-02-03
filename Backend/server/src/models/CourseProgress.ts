@@ -35,7 +35,7 @@ const CourseProgressSchema = new Schema<ICourseProgress>({
   },
   courseId: {
     type: Schema.Types.ObjectId,
-    ref: 'GeneralCourse',
+    ref: 'EngineeringCourse',
     required: true
   },
   completedLessons: [{

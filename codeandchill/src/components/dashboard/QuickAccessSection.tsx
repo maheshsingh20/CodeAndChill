@@ -24,10 +24,10 @@ const quickActions = [
     category: "Practice"
   },
   {
-    title: "Take Courses",
-    description: "Learn new technologies with structured content",
+    title: "Learning Paths",
+    description: "Structured learning journeys with guided content",
     icon: Code,
-    href: "/courses",
+    href: "/learning-paths",
     iconColor: "text-blue-300",
     category: "Learn"
   },

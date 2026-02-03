@@ -53,7 +53,7 @@ export const LearningPathsSection: React.FC = () => {
         {paths.map((path, index) => (
           <div
             key={index}
-            onClick={() => navigate('/courses')}
+            onClick={() => navigate('/learning-paths')}
             className="group cursor-pointer p-6 bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300 hover:-translate-y-2"
           >
             <div className={`w-14 h-14 rounded-xl bg-gradient-to-br ${path.gradient} p-3 mb-4 group-hover:scale-110 transition-transform duration-300`}>

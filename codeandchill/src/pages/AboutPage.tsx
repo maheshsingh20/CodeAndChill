@@ -344,9 +344,9 @@ export const AboutPage: React.FC = () => {
                     </Button>
                   </Link>
 
-                  <Link to="/courses">
+                  <Link to="/learning-paths">
                     <Button variant="outline" className="border-gray-600 text-gray-300 hover:bg-gray-800 px-8 py-3 text-lg">
-                      Explore Courses
+                      Explore Learning Paths
                     </Button>
                   </Link>
                 </div>

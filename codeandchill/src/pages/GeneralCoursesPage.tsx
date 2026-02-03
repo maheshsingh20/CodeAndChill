@@ -1,6 +1,6 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { Cpu, Database, Network, Server, BookOpen, ArrowRight, Clock, Users, Star, Code, Palette } from "lucide-react";
+import { Cpu, Database, Network, Server, BookOpen, ArrowRight, Clock, Users, Star, Code, Palette, Terminal } from "lucide-react";
 
 // Enhanced engineering subjects data with more details
 const subjects = [
@@ -81,6 +81,19 @@ const subjects = [
     color: "from-yellow-500 to-orange-500",
     bgGradient: "from-yellow-900/30 via-yellow-800/20 to-yellow-900/30",
     borderColor: "border-yellow-500/30"
+  },
+  {
+    id: "dotnet-development",
+    icon: <Terminal size={32} />,
+    title: ".NET Development",
+    description: "Master .NET ecosystem including C#, ASP.NET Core, Entity Framework, and modern web API development.",
+    difficulty: "intermediate",
+    duration: "75 hours",
+    students: "8,420",
+    rating: 4.8,
+    color: "from-violet-500 to-purple-500",
+    bgGradient: "from-violet-900/30 via-violet-800/20 to-violet-900/30",
+    borderColor: "border-violet-500/30"
   }
 ];
 

@@ -43,7 +43,7 @@ export const ActivityTracker: React.FC<ActivityTrackerProps> = ({ isAuthenticate
       let metadata: any = {};
 
       // Determine activity type based on route
-      if (path.startsWith('/courses/') || path.startsWith('/learn/')) {
+      if (path.startsWith('/engineering-courses/') || path.startsWith('/learn/')) {
         activityType = 'course_viewing';
         const courseId = path.split('/')[2];
         if (courseId) metadata.courseId = courseId;

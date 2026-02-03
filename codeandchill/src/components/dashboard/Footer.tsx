@@ -49,10 +49,10 @@ export function Footer() {
             <ul className="space-y-3 text-sm">
               <li>
                 <Link
-                  to="/courses"
+                  to="/learning-paths"
                   className="text-slate-400 hover:text-slate-200 transition-colors duration-200"
                 >
-                  Courses
+                  Learning Paths
                 </Link>
               </li>
               <li>

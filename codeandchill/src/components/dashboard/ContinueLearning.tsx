@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { ModernCard, ModernCardHeader, ModernCardContent } from "@/components/ui/ModernCard";
 import { ModernButton } from "@/components/ui/ModernButton";
-import { Cpu, Database, Network, Server, BookOpen, ArrowRight, Clock, Loader, Code } from "lucide-react";
+import { Cpu, Database, Network, Server, BookOpen, ArrowRight, Clock, Loader, Code, Terminal } from "lucide-react";
 import { Link, useNavigate } from 'react-router-dom';
 import { useUser } from '@/contexts/UserContext';
 
@@ -14,6 +14,7 @@ const courseIcons: Record<string, any> = {
   'computer-networks': Network,
   'software-engineering': BookOpen,
   'web-development': Code,
+  'dotnet-development': Terminal,
   'default': BookOpen
 };
 
@@ -56,7 +57,7 @@ export function ContinueLearning() {
       const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
 
       // Fetch engineering courses and their progress
-      const engineeringCoursesResponse = await fetch(`${API_URL}/engineering-courses`, {
+      const engineeringCoursesResponse = await fetch(`${API_URL}/api/engineering-courses`, {
         headers: {
           'Authorization': `Bearer ${token}`,
           'Content-Type': 'application/json'
@@ -70,7 +71,7 @@ export function ContinueLearning() {
         const coursesWithProgress = await Promise.all(
           engineeringCourses.slice(0, 4).map(async (course: any) => {
             try {
-              const progressResponse = await fetch(`${API_URL}/engineering-courses/${course.id}/progress`, {
+              const progressResponse = await fetch(`${API_URL}/api/engineering-courses/${course.id}/progress`, {
                 headers: {
                   'Authorization': `Bearer ${token}`,
                   'Content-Type': 'application/json'

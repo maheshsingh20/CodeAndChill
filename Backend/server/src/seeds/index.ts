@@ -1,12 +1,13 @@
 import mongoose from "mongoose";
 import dotenv from "dotenv";
-import { Course, GeneralCourse, Subject, Quiz, Problem, ProblemSet } from "../models";
+import { Course, Subject, Quiz, Problem, ProblemSet } from "../models";
 import LearningPath from "../models/LearningPath";
 import { seedSkillTests } from './skillTests';
 import { seedContests } from './contests';
 import { seedLearningPaths } from './learningPaths';
 import { seedLearningPathsModular } from './learning-paths';
 import { seedBlogAndCommunity } from './blogAndCommunity';
+import { seedEngineeringCourses } from './engineeringCourses';
 
 dotenv.config();
 
@@ -238,184 +239,6 @@ const coursesToSeed = [
       }
     ]
   }
-];
-
-// General courses data
-const generalCoursesToSeed = [
-  {
-    title: "Full-Stack Web Development",
-    slug: "full-stack-web-dev",
-    description: "Master the MERN stack and build real-world applications from scratch.",
-    tutor: {
-      name: "Jane Doe",
-      image: "https://randomuser.me/api/portraits/women/68.jpg",
-    },
-    cost: 49.99,
-    modules: [
-      {
-        title: "Module 1: Frontend with React",
-        lessons: [
-          {
-            title: "Introduction to React",
-            topics: [
-              {
-                title: "What is React?",
-                contentType: "text",
-                textContent: "React is a JavaScript library for building user interfaces. It allows developers to create large web applications that can update and render efficiently in response to data changes.",
-              },
-              {
-                title: "Setting up Your Environment",
-                contentType: "video",
-                videoUrl: "https://www.youtube.com/embed/SqcY0GlETPk",
-              },
-            ],
-          },
-          {
-            title: "Components & Props",
-            topics: [
-              {
-                title: "Functional Components",
-                contentType: "text",
-                textContent: "Functional components are simple JavaScript functions that return React elements. They are the backbone of React UI and are easier to test and debug.",
-              },
-              {
-                title: "Props in React",
-                contentType: "text",
-                textContent: "Props are arguments passed into React components. Props allow data to be passed from parent to child components, making components reusable.",
-              },
-            ],
-          },
-        ],
-      },
-      {
-        title: "Module 2: Backend with Node.js",
-        lessons: [
-          {
-            title: "Node.js Fundamentals",
-            topics: [
-              {
-                title: "Introduction to Node.js",
-                contentType: "text",
-                textContent: "Node.js is a runtime environment that lets you run JavaScript on the server side. It's built on Chrome's V8 JavaScript engine.",
-              },
-              {
-                title: "Express.js Setup",
-                contentType: "video",
-                videoUrl: "https://www.youtube.com/embed/L72fhGm1tfE",
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Data Structures & Algorithms Mastery",
-    slug: "dsa-mastery",
-    description: "Complete guide to DSA with coding practice and interview preparation.",
-    tutor: {
-      name: "John Smith",
-      image: "https://randomuser.me/api/portraits/men/32.jpg",
-    },
-    cost: 0,
-    modules: [
-      {
-        title: "Module 1: Arrays & Strings",
-        lessons: [
-          {
-            title: "Array Fundamentals",
-            topics: [
-              {
-                title: "Array Basics",
-                contentType: "text",
-                textContent: "Arrays are fundamental data structures that store elements in contiguous memory locations. They provide O(1) access time.",
-              },
-              {
-                title: "Time Complexity Analysis",
-                contentType: "table",
-                tableData: [
-                  ["Operation", "Time Complexity", "Space Complexity"],
-                  ["Access", "O(1)", "O(1)"],
-                  ["Search", "O(n)", "O(1)"],
-                  ["Insertion", "O(n)", "O(1)"],
-                  ["Deletion", "O(n)", "O(1)"],
-                ],
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Machine Learning Fundamentals",
-    slug: "ml-fundamentals",
-    description: "Learn ML concepts, algorithms, and build real-world projects.",
-    tutor: {
-      name: "Dr. Sarah Wilson",
-      image: "https://randomuser.me/api/portraits/women/45.jpg",
-    },
-    cost: 79.99,
-    modules: [
-      {
-        title: "Module 1: Introduction to ML",
-        lessons: [
-          {
-            title: "What is Machine Learning?",
-            topics: [
-              {
-                title: "ML Overview",
-                contentType: "text",
-                textContent: "Machine Learning is a subset of AI that enables systems to learn and improve from data without explicit programming.",
-              },
-              {
-                title: "Types of ML",
-                contentType: "table",
-                tableData: [
-                  ["Type", "Description", "Examples"],
-                  ["Supervised", "Learning with labeled data", "Classification, Regression"],
-                  ["Unsupervised", "Finding patterns in unlabeled data", "Clustering, Association"],
-                  ["Reinforcement", "Learning through rewards/penalties", "Game AI, Robotics"],
-                ],
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
-  {
-    title: "Python Programming Complete",
-    slug: "python-complete",
-    description: "From basics to advanced Python programming with projects.",
-    tutor: {
-      name: "Mike Johnson",
-      image: "https://randomuser.me/api/portraits/men/55.jpg",
-    },
-    cost: 29.99,
-    modules: [
-      {
-        title: "Module 1: Python Basics",
-        lessons: [
-          {
-            title: "Getting Started with Python",
-            topics: [
-              {
-                title: "Python Introduction",
-                contentType: "text",
-                textContent: "Python is a high-level, interpreted programming language known for its simplicity and readability. It's widely used in web development, data science, AI, and automation.",
-              },
-              {
-                title: "Python Setup",
-                contentType: "video",
-                videoUrl: "https://www.youtube.com/embed/YYXdXT2l-Gg",
-              },
-            ],
-          },
-        ],
-      },
-    ],
-  },
 ];
 
 // Quiz subjects and quizzes
@@ -912,7 +735,6 @@ const seedDatabase = async () => {
     // Clear existing data
     await Promise.all([
       Course.deleteMany({}),
-      GeneralCourse.deleteMany({}),
       Subject.deleteMany({}),
       Quiz.deleteMany({}),
       Problem.deleteMany({}),
@@ -924,10 +746,6 @@ const seedDatabase = async () => {
     // Seed courses
     await Course.insertMany(coursesToSeed);
     console.log("✅ CS Courses seeded");
-
-    // Seed general courses
-    await GeneralCourse.insertMany(generalCoursesToSeed);
-    console.log("✅ General courses seeded");
 
     // Seed subjects
     const createdSubjects = await Subject.insertMany(subjectsToSeed);
@@ -962,15 +780,14 @@ const seedDatabase = async () => {
 
     // Seed skill tests
     await seedSkillTests();
-
     // Seed contests
     await seedContests();
-
     // Seed learning paths (modular approach with real content)
     await seedLearningPathsModular();
-
     // Seed blog and community posts
     await seedBlogAndCommunity();
+    // Seed engineering courses
+    await seedEngineeringCourses();
 
     console.log("🎉 Database seeding completed successfully!");
   } catch (error) {

@@ -71,16 +71,16 @@ export const HeroSection: React.FC = () => {
           {/* CTA Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
             <button
-              onClick={() => navigate('/courses')}
+              onClick={() => navigate('/learning-paths')}
               className="px-8 py-4 bg-gradient-to-r from-purple-600 to-pink-600 rounded-xl font-semibold text-white hover:shadow-lg hover:shadow-purple-500/50 transition-all duration-300 hover:scale-105 hover-lift"
             >
               Start Learning Free
             </button>
             <button
-              onClick={() => navigate('/courses')}
+              onClick={() => navigate('/learning-paths')}
               className="px-8 py-4 border-2 border-slate-700 rounded-xl font-semibold text-white hover:border-slate-600 transition-all duration-300 hover-scale"
             >
-              View Courses
+              View Learning Paths
             </button>
           </div>
         </AnimatedSection>
