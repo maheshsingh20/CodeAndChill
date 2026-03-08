@@ -57,6 +57,7 @@ class ChatService {
     const wsUrl = API_BASE_URL.replace('/api', '').replace('http', 'ws');
     
     this.socket = io(wsUrl, {
+      path: '/socket.io/chat',
       transports: ['websocket', 'polling'],
       reconnection: true,
       reconnectionDelay: 1000,

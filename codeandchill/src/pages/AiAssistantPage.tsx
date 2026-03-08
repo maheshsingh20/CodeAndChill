@@ -1,6 +1,5 @@
 import React from "react";
 import { ChatInterface } from "@/components/ai/ChatInterface";
-import { Card } from "@/components/ui/card";
 import { Lightbulb, Code, BookOpen } from "lucide-react";
 
 export function AiAssistantPage() {

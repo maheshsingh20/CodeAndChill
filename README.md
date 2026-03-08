@@ -89,6 +89,29 @@
 - **Theme Support**: Light and dark modes
 - **Split View**: Problem description + editor side-by-side
 
+### 🤝 Collaborative Coding
+
+#### Real-time Pair Programming
+- **Live Code Sessions**: Code together in real-time with multiple users
+- **Session Management**: Create or join sessions with unique 6-character codes
+- **Multi-language Support**: JavaScript, Python, Java, C++, C, C#, Go, Rust, TypeScript, PHP, Ruby
+- **Control System**: Request and grant editor control seamlessly
+- **Real-time Sync**: See code changes instantly as they happen
+- **Code Execution**: Run code directly in the collaborative editor
+- **Output Panel**: View execution results in real-time
+- **Group Chat**: Communicate with your team while coding
+- **Participant Management**: See who's in the session and who has control
+- **Session Persistence**: Sessions auto-expire after 24 hours of inactivity
+
+#### Collaborative Features
+- **Host Controls**: Session creator has initial control
+- **Control Requests**: Non-controllers can request editor access
+- **Accept/Deny System**: Current controller can grant or deny requests
+- **Read-only Mode**: View code when you don't have control
+- **Language Switching**: Change programming language on the fly
+- **WebSocket Communication**: Low-latency real-time updates
+- **Session Codes**: Easy sharing with 6-character alphanumeric codes
+
 ### 🧠 Skill Assessment
 
 #### Quiz System
@@ -649,6 +672,114 @@ Before you begin, ensure you have the following installed:
 **OR**
 
 - **Docker Desktop** - [Download](https://www.docker.com/products/docker-desktop) (Recommended for easy setup)
+
+### Compiler Installation (For Collaborative Coding)
+
+To use the collaborative coding feature with local code execution, install the following compilers:
+
+#### Windows
+
+1. **Python**
+   - Download from [python.org](https://www.python.org/downloads/)
+   - During installation, check "Add Python to PATH"
+
+2. **Node.js** (Already installed for the project)
+
+3. **Java**
+   - Download JDK from [Oracle](https://www.oracle.com/java/technologies/downloads/) or [OpenJDK](https://adoptium.net/)
+   - Set `JAVA_HOME` environment variable
+
+4. **C/C++**
+   - Install [MinGW-w64](https://www.mingw-w64.org/downloads/)
+   - Or install [Visual Studio Build Tools](https://visualstudio.microsoft.com/downloads/#build-tools-for-visual-studio-2022)
+   - Add to PATH: `C:\MinGW\bin` or `C:\Program Files\Microsoft Visual Studio\...\VC\Tools\MSVC\...\bin`
+
+5. **C#**
+   - Install [.NET SDK](https://dotnet.microsoft.com/download)
+   - Verify with `dotnet --version`
+
+6. **Go**
+   - Download from [golang.org](https://go.dev/dl/)
+   - Verify with `go version`
+
+7. **Rust**
+   - Install from [rustup.rs](https://rustup.rs/)
+   - Run: `curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh`
+
+8. **TypeScript**
+   ```bash
+   npm install -g typescript ts-node
+   ```
+
+9. **PHP**
+   - Download from [php.net](https://www.php.net/downloads)
+   - Add to PATH
+
+10. **Ruby**
+    - Download from [rubyinstaller.org](https://rubyinstaller.org/)
+    - Verify with `ruby --version`
+
+#### macOS
+
+```bash
+# Install Homebrew (if not installed)
+/bin/bash -c "$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"
+
+# Install compilers
+brew install python3
+brew install openjdk
+brew install gcc
+brew install dotnet
+brew install go
+brew install rust
+brew install node
+brew install php
+brew install ruby
+
+# Install TypeScript globally
+npm install -g typescript ts-node
+```
+
+#### Linux (Ubuntu/Debian)
+
+```bash
+# Update package list
+sudo apt update
+
+# Install compilers
+sudo apt install python3 python3-pip
+sudo apt install default-jdk
+sudo apt install build-essential  # gcc, g++, make
+sudo apt install dotnet-sdk-8.0
+sudo apt install golang-go
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+sudo apt install nodejs npm
+sudo apt install php
+sudo apt install ruby-full
+
+# Install TypeScript globally
+npm install -g typescript ts-node
+```
+
+#### Verify Installation
+
+After installing, verify each compiler:
+
+```bash
+python --version
+node --version
+java --version
+gcc --version
+g++ --version
+dotnet --version
+go version
+rustc --version
+tsc --version
+php --version
+ruby --version
+```
+
+**Note**: Make sure all compilers are added to your system PATH. Restart your terminal/command prompt after installation.
 
 ### Clone Repository
 

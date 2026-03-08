@@ -28,13 +28,13 @@ export function Footer() {
                 <Twitter />
               </a>
               <a
-                href="#"
+                href="https://github.com/maheshsingh20"
                 className="text-slate-500 hover:text-blue-400 transition-colors duration-200 p-2 rounded-lg hover:bg-slate-800/50"
               >
                 <Github />
               </a>
               <a
-                href="#"
+                href="https://www.linkedin.com/in/maheshsingh20"
                 className="text-slate-500 hover:text-blue-400 transition-colors duration-200 p-2 rounded-lg hover:bg-slate-800/50"
               >
                 <Linkedin />
@@ -127,10 +127,7 @@ export function Footer() {
                 placeholder="Enter your email"
                 className="input"
               />
-              <Button
-                type="submit"
-                className="btn btn-default"
-              >
+              <Button type="submit" className="btn btn-default">
                 Subscribe
               </Button>
             </form>

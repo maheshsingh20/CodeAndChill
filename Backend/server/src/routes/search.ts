@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { ProblemSet, Subject, Quiz, Contest } from "../models";
+import { ProblemSet, Subject, Quiz, Contest, CollaborativeSession } from "../models";
 import SkillTest from "../models/SkillTest";
 import { authMiddleware, AuthRequest } from "../middleware";
 
@@ -9,12 +9,15 @@ interface SearchResult {
   id: string;
   title: string;
   description: string;
-  type: 'course' | 'problem' | 'quiz' | 'contest' | 'skill-test';
+  type: 'course' | 'problem' | 'quiz' | 'contest' | 'skill-test' | 'collaborative';
   url: string;
   category?: string;
   difficulty?: string;
   tags?: string[];
   score?: number; // Relevance score
+  sessionCode?: string; // For collaborative sessions
+  participants?: number; // For collaborative sessions
+  language?: string; // For collaborative sessions
 }
 
 // Global search endpoint
@@ -158,6 +161,45 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
       });
     } catch (error) {
       console.error('Skill test search error:', error);
+    }
+
+    // Search active collaborative sessions
+    try {
+      const sessions = await CollaborativeSession.find({
+        isActive: true,
+        $or: [
+          { sessionCode: searchRegex },
+          { hostName: searchRegex },
+          { language: searchRegex },
+          { 'participants.name': searchRegex }
+        ]
+      }).limit(5);
+
+      sessions.forEach(session => {
+        const title = `${session.hostName}'s ${session.language} Session`;
+        const description = `Active collaborative coding session with ${session.participants.length} participant(s)`;
+        const score = calculateRelevanceScore(title, description, searchQuery);
+        
+        // Boost score if searching by session code
+        if (session.sessionCode.toLowerCase().includes(searchQuery.toLowerCase())) {
+          score += 50;
+        }
+
+        results.push({
+          id: session._id.toString(),
+          title,
+          description,
+          type: 'collaborative',
+          url: `/collaborative/${session.sessionCode}`,
+          category: 'Collaborative Coding',
+          sessionCode: session.sessionCode,
+          participants: session.participants.length,
+          language: session.language,
+          score
+        });
+      });
+    } catch (error) {
+      console.error('Collaborative session search error:', error);
     }
 
     // Sort by relevance score (highest first) and limit results

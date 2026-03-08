@@ -23,6 +23,7 @@ import communityRoutes from "./community";
 import codeExecutionRoutes from "./codeExecution";
 import jobRoutes from "./jobs";
 import chatRoutes from "./chat";
+import collaborativeRoutes from "./collaborative";
 const router = Router();
 
 // Mount all routes
@@ -49,6 +50,7 @@ router.use("/community", communityRoutes);
 router.use("/code", codeExecutionRoutes);
 router.use("/jobs", jobRoutes);
 router.use("/chat", chatRoutes);
+router.use("/collaborative", collaborativeRoutes);
 router.use("/", aiRoutes); // AI routes are mounted at root level for /gemini-chat
 
 export default router;

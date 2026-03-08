@@ -9,7 +9,6 @@ import { Toaster } from "react-hot-toast";
 
 // Import NoirSystem
 import { initNoirAccentSystem } from "./utils/noir-accent";
-
 // import { FloatingParticles } from "./components/ui/FloatingParticles";
 // Import Background Components (commented out - animations disabled to prevent auto-refresh)
 // import { AnimatedBackground, StaticDottedBackground } from "./components/ui/AnimatedBackground";
@@ -98,6 +97,8 @@ import { Footer } from "./components/dashboard/Footer";
 
 // Context providers
 import { UserProvider } from "./contexts/UserContext";
+import { CollaborativeCodingPage } from "./pages/CollaborativeCodingPage";
+import { CollaborativeWrapper } from "./components/collaborative/CollaborativeWrapper";
 
 // Hooks
 
@@ -412,6 +413,14 @@ function App() {
                   <Route
                     path="/chat"
                     element={<PrivateRoute element={<ChatPage />} />}
+                  />
+                  <Route
+                    path="/collaborative"
+                    element={<PrivateRoute element={<CollaborativeWrapper />} />}
+                  />
+                  <Route
+                    path="/collaborative/:sessionCode"
+                    element={<PrivateRoute element={<CollaborativeWrapper />} />}
                   />
                   <Route
                     path="/ai"

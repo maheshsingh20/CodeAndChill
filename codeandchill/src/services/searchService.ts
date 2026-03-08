@@ -4,11 +4,14 @@ export interface SearchResult {
   id: string;
   title: string;
   description: string;
-  type: 'course' | 'problem' | 'quiz' | 'contest' | 'skill-test';
+  type: 'course' | 'problem' | 'quiz' | 'contest' | 'skill-test' | 'collaborative';
   url: string;
   category?: string;
   difficulty?: string;
   tags?: string[];
+  sessionCode?: string;
+  participants?: number;
+  language?: string;
 }
 
 export class SearchService {

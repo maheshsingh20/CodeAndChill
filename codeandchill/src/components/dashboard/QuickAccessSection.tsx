@@ -11,7 +11,8 @@ import {
   MessageSquare,
   MessageCircle,
   Bot,
-  ArrowRight
+  ArrowRight,
+  Code2
 } from "lucide-react";
 
 const quickActions = [
@@ -22,6 +23,14 @@ const quickActions = [
     href: "/problems",
     iconColor: "text-orange-300",
     category: "Practice"
+  },
+  {
+    title: "Collaborative Coding",
+    description: "Code together in real-time with pair programming",
+    icon: Code2,
+    href: "/collaborative",
+    iconColor: "text-cyan-300",
+    category: "Collaborate"
   },
   {
     title: "Learning Paths",
@@ -46,14 +55,6 @@ const quickActions = [
     href: "/skill-tests",
     iconColor: "text-green-300",
     category: "Test"
-  },
-  {
-    title: "Learning Paths",
-    description: "Follow structured learning journeys",
-    icon: BookOpen,
-    href: "/learning-paths",
-    iconColor: "text-blue-300",
-    category: "Learn"
   },
   {
     title: "Chat",

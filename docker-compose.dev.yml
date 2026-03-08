@@ -1,0 +1,72 @@
+# Development Docker Compose - No Build Required
+services:
+  # MongoDB Database
+  mongodb:
+    image: mongo:latest
+    container_name: codeandchill-mongodb
+    restart: unless-stopped
+    ports:
+      - "27017:27017"
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: admin
+      MONGO_INITDB_ROOT_PASSWORD: admin123
+      MONGO_INITDB_DATABASE: codeandchill
+    volumes:
+      - mongodb_data:/data/db
+    networks:
+      - codeandchill-network
+
+  # Backend API (Development - No Build)
+  backend:
+    image: node:20-alpine
+    container_name: codeandchill-backend
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "npm install && npm run dev"
+    ports:
+      - "3001:3001"
+    environment:
+      NODE_ENV: development
+      PORT: 3001
+      MONGO_URI: mongodb://admin:admin123@mongodb:27017/codeandchill?authSource=admin
+      JWT_SECRET: your-super-secret-jwt-key-change-this-in-production
+      GEMINI_API_KEY: ${GEMINI_API_KEY}
+      GITHUB_CLIENT_ID: ${GITHUB_CLIENT_ID}
+      GITHUB_CLIENT_SECRET: ${GITHUB_CLIENT_SECRET}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET}
+      FRONTEND_URL: http://localhost:5173
+    volumes:
+      - ./Backend/server:/app
+      - /app/node_modules
+    depends_on:
+      - mongodb
+    networks:
+      - codeandchill-network
+
+  # Frontend (Development - Vite Dev Server)
+  frontend:
+    image: node:20-alpine
+    container_name: codeandchill-frontend
+    restart: unless-stopped
+    working_dir: /app
+    command: sh -c "npm install && npm run dev -- --host 0.0.0.0"
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_URL: http://localhost:3001
+    volumes:
+      - ./codeandchill:/app
+      - /app/node_modules
+    depends_on:
+      - backend
+    networks:
+      - codeandchill-network
+
+volumes:
+  mongodb_data:
+    driver: local
+
+networks:
+  codeandchill-network:
+    driver: bridge
