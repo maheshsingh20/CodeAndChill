@@ -1,7 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { SearchResult } from '@/services/searchService';
-import { Code, BookOpen, Trophy, Zap, Target, Clock } from 'lucide-react';
+import { Code, BookOpen, Trophy, Zap, Target, Clock, Users, Map, FileText, MessageSquare, Briefcase, Award, GraduationCap } from 'lucide-react';
 
 interface SearchResultsProps {
   results: SearchResult[];
@@ -14,6 +14,8 @@ const getTypeIcon = (type: SearchResult['type']) => {
   switch (type) {
     case 'course':
       return <BookOpen className="w-4 h-4 text-blue-400" />;
+    case 'engineering-course':
+      return <GraduationCap className="w-4 h-4 text-indigo-400" />;
     case 'problem':
       return <Code className="w-4 h-4 text-green-400" />;
     case 'quiz':
@@ -22,6 +24,18 @@ const getTypeIcon = (type: SearchResult['type']) => {
       return <Trophy className="w-4 h-4 text-yellow-400" />;
     case 'skill-test':
       return <Zap className="w-4 h-4 text-orange-400" />;
+    case 'collaborative':
+      return <Users className="w-4 h-4 text-cyan-400" />;
+    case 'learning-path':
+      return <Map className="w-4 h-4 text-pink-400" />;
+    case 'blog':
+      return <FileText className="w-4 h-4 text-blue-300" />;
+    case 'community':
+      return <MessageSquare className="w-4 h-4 text-purple-300" />;
+    case 'job':
+      return <Briefcase className="w-4 h-4 text-green-300" />;
+    case 'success-story':
+      return <Award className="w-4 h-4 text-yellow-300" />;
     default:
       return <Code className="w-4 h-4 text-gray-400" />;
   }
@@ -31,6 +45,8 @@ const getTypeLabel = (type: SearchResult['type']) => {
   switch (type) {
     case 'course':
       return 'Course';
+    case 'engineering-course':
+      return 'Engineering Course';
     case 'problem':
       return 'Problem';
     case 'quiz':
@@ -39,6 +55,18 @@ const getTypeLabel = (type: SearchResult['type']) => {
       return 'Contest';
     case 'skill-test':
       return 'Skill Test';
+    case 'collaborative':
+      return 'Collaborative Session';
+    case 'learning-path':
+      return 'Learning Path';
+    case 'blog':
+      return 'Blog Post';
+    case 'community':
+      return 'Community Post';
+    case 'job':
+      return 'Job';
+    case 'success-story':
+      return 'Success Story';
     default:
       return 'Content';
   }
@@ -106,7 +134,7 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
         <div className="text-xs text-gray-400 px-3 py-2 border-b border-gray-700">
           Found {results.length} result{results.length !== 1 ? 's' : ''} for "{query}"
         </div>
-        
+
         {Object.entries(groupedResults).map(([type, typeResults]) => (
           <div key={type} className="mt-2">
             <div className="text-xs font-medium text-gray-500 px-3 py-1 uppercase tracking-wide">
@@ -137,13 +165,49 @@ export const SearchResults: React.FC<SearchResultsProps> = ({
                     <p className="text-xs text-gray-400 line-clamp-2">
                       {result.description}
                     </p>
-                    {result.category && (
-                      <div className="flex items-center gap-1 mt-1">
+                    <div className="flex items-center gap-2 mt-1 flex-wrap">
+                      {result.category && (
                         <span className="text-xs text-gray-500">
                           {result.category}
                         </span>
-                      </div>
-                    )}
+                      )}
+                      {result.type === 'collaborative' && result.sessionCode && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-cyan-500/10 text-cyan-400 font-mono">
+                          {result.sessionCode}
+                        </span>
+                      )}
+                      {result.type === 'collaborative' && result.language && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-blue-500/10 text-blue-400">
+                          {result.language}
+                        </span>
+                      )}
+                      {result.type === 'collaborative' && result.participants !== undefined && (
+                        <span className="text-xs text-gray-500 flex items-center gap-1">
+                          <Users className="w-3 h-3" />
+                          {result.participants}
+                        </span>
+                      )}
+                      {(result.type === 'blog' || result.type === 'community') && result.author && (
+                        <span className="text-xs text-gray-500">
+                          by {result.author}
+                        </span>
+                      )}
+                      {(result.type === 'job' || result.type === 'success-story') && result.company && (
+                        <span className="text-xs px-2 py-0.5 rounded bg-green-500/10 text-green-400">
+                          {result.company}
+                        </span>
+                      )}
+                      {result.type === 'job' && result.location && (
+                        <span className="text-xs text-gray-500">
+                          📍 {result.location}
+                        </span>
+                      )}
+                      {result.tags && result.tags.length > 0 && (
+                        <span className="text-xs text-gray-500">
+                          {result.tags.slice(0, 2).join(', ')}
+                        </span>
+                      )}
+                    </div>
                   </div>
                 </div>
               </Link>

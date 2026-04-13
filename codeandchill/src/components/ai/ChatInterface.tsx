@@ -194,6 +194,8 @@ export function ChatInterface() {
     setInput("");
     setIsLoading(true);
 
+    const aiMessageId = Date.now() + 1;
+
     try {
       const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:3001/api';
       const response = await fetch(`${API_BASE}/gemini-chat`, {
@@ -210,7 +212,6 @@ export function ChatInterface() {
       const reader = response.body.getReader();
       const decoder = new TextDecoder();
       let done = false;
-      const aiMessageId = Date.now() + 1;
 
       // Add empty AI message to update as stream comes
       const aiMessage: Message = {

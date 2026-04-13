@@ -4,7 +4,7 @@ export interface SearchResult {
   id: string;
   title: string;
   description: string;
-  type: 'course' | 'problem' | 'quiz' | 'contest' | 'skill-test' | 'collaborative';
+  type: 'course' | 'problem' | 'quiz' | 'contest' | 'skill-test' | 'collaborative' | 'learning-path' | 'blog' | 'community' | 'job' | 'success-story' | 'engineering-course';
   url: string;
   category?: string;
   difficulty?: string;
@@ -12,6 +12,9 @@ export interface SearchResult {
   sessionCode?: string;
   participants?: number;
   language?: string;
+  author?: string;
+  company?: string;
+  location?: string;
 }
 
 export class SearchService {

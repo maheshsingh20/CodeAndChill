@@ -11,6 +11,7 @@ export interface IUser extends Document {
   skills: string[];
   attempts: mongoose.Types.ObjectId[];
   profilePicture?: string;
+  avatar?: string; // alias for profilePicture
   phone?: string;
   website?: string;
   github?: string;

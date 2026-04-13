@@ -1,5 +1,5 @@
 import { Router, Request, Response } from "express";
-import { ProblemSet, UserProblem } from "../models";
+import { ProblemSet, UserProblem, User } from "../models";
 import { authMiddleware, AuthRequest } from '../middleware/auth';
 
 const router = Router();
@@ -69,7 +69,7 @@ router.get("/:slug", authMiddleware, async (req: AuthRequest, res: Response): Pr
 router.get("/:slug/progress", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { slug } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     // Get the problem set with its problems
     const problemSet = await ProblemSet.findOne({ slug }).populate("problems");
@@ -107,7 +107,7 @@ router.get("/:slug/progress", authMiddleware, async (req: AuthRequest, res: Resp
 router.post("/:slug/refresh-status", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const { slug } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     const problemSet = await ProblemSet.findOne({ slug }).populate('problems');
     if (!problemSet) {

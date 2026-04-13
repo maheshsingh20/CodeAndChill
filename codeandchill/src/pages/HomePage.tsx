@@ -68,7 +68,9 @@ export function HomePage(): JSX.Element {
         animate={{ opacity: 1, y: 0, scale: 1 }}
         transition={{ duration: 1, ease: [0.25, 0.46, 0.45, 0.94] }}
       >
-        <WelcomeBack userName={loading ? "Loading..." : (user?.name || "User")} />
+        <WelcomeBack
+          userName={loading ? "Loading..." : (user?.name || "User")}
+        />
       </motion.div>
 
       <motion.div

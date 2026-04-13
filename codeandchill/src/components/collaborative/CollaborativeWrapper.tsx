@@ -69,7 +69,7 @@ export function CollaborativeWrapper() {
           localStorage.setItem('user', JSON.stringify(userData));
         } else if (response.status === 401) {
           console.log('Token invalid, redirecting to auth');
-          TokenManager.clearToken();
+          TokenManager.removeToken();
           navigate('/auth');
           return;
         } else {

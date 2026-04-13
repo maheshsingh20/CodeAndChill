@@ -81,6 +81,7 @@ class ChatService {
 
     // Set up event listeners
     this.socket.on('message:new', (data: any) => {
+      console.log('📨 Socket received message:new', data);
       this.emit('message:new', data);
     });
 
@@ -102,6 +103,11 @@ class ChatService {
 
     this.socket.on('user:offline', (data: any) => {
       this.emit('user:offline', data);
+    });
+
+    this.socket.on('message:deleted', (data: any) => {
+      console.log('🗑️ Socket received message:deleted', data);
+      this.emit('message:deleted', data);
     });
   }
 
@@ -148,6 +154,7 @@ class ChatService {
   }
 
   sendMessage(chatId: string, content: string, type: 'text' | 'image' | 'file' = 'text', fileUrl?: string, fileName?: string) {
+    console.log('📤 Emitting message:send event', { chatId, content });
     this.socket?.emit('message:send', {
       chatId,
       content,
@@ -167,6 +174,11 @@ class ChatService {
 
   stopTyping(chatId: string) {
     this.socket?.emit('typing:stop', { chatId });
+  }
+
+  deleteMessage(chatId: string, messageId: string) {
+    console.log('🗑️ Emitting message:delete event', { chatId, messageId });
+    this.socket?.emit('message:delete', { chatId, messageId });
   }
 
   // HTTP API calls
@@ -253,6 +265,19 @@ class ChatService {
 
     if (!response.ok) {
       throw new Error('Failed to delete chat');
+    }
+  }
+
+  async deleteMessageHttp(chatId: string, messageId: string): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/chat/chats/${chatId}/messages/${messageId}`, {
+      method: 'DELETE',
+      headers: {
+        'Authorization': `Bearer ${this.token}`
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to delete message');
     }
   }
 

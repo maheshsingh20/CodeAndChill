@@ -1,9 +1,5 @@
-import { Sparkles, Code, Zap, Star } from "lucide-react";
+import { Sparkles, Code, Trophy, TrendingUp } from "lucide-react";
 import { motion } from "framer-motion";
-import { CodedBackground3D } from "@/components/ui/CodedBackground3D";
-import { FloatingCodeSnippets } from "@/components/ui/FloatingCodeSnippets";
-import { MatrixRain } from "@/components/ui/MatrixRain";
-import { BinaryRain } from "@/components/ui/BinaryRain";
 import "@/styles/animated-background.css";
 
 interface WelcomeBackProps {
@@ -15,7 +11,7 @@ interface WelcomeBackProps {
 export function WelcomeBack({
   userName = "Alex",
   quote = "The only way to do great work is to love what you do.",
-  author = "— Steve Jobs",
+  author = "— Steve Jobs"
 }: WelcomeBackProps) {
   const currentDate = new Date().toLocaleDateString("en-US", {
     weekday: "long",
@@ -31,150 +27,156 @@ export function WelcomeBack({
   return (
     <section
       aria-label="Welcome back user"
-      className="relative w-full px-6 md:px-12 py-20 overflow-hidden min-h-[70vh]"
+      className="relative w-full px-6 md:px-12 py-16 overflow-hidden"
     >
+      {/* Animated Background Elements */}
+      <div className="absolute inset-0 -z-10">
+        <div className="absolute top-20 left-10 w-72 h-72 bg-purple-500/10 rounded-full blur-3xl animate-pulse" />
+        <div className="absolute bottom-20 right-10 w-96 h-96 bg-blue-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }} />
+        <div className="absolute top-1/2 left-1/2 w-80 h-80 bg-pink-500/10 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '2s' }} />
+      </div>
+
       <div className="relative z-20 max-w-7xl mx-auto">
-        {/* Enhanced Date and Time Section */}
+        {/* Top Bar with Date and Status */}
         <motion.div
-          className="flex items-center justify-between mb-8"
+          className="flex items-center justify-between mb-10"
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8 }}
+          transition={{ duration: 0.6 }}
         >
           <div className="relative">
-            <p className="text-sm bg-gradient-to-r from-gray-200 via-white to-gray-200 bg-clip-text text-transparent tracking-wider uppercase font-semibold mb-1">
+            <p className="text-sm bg-gradient-to-r from-gray-300 via-white to-gray-300 bg-clip-text text-transparent tracking-wider uppercase font-semibold mb-1">
               {currentDate}
             </p>
-            <p className="text-xs bg-gradient-to-r from-gray-400 via-gray-300 to-gray-400 bg-clip-text text-transparent font-mono">
+            <p className="text-xs text-gray-400 font-mono">
               {currentTime}
             </p>
-            <div className="absolute -bottom-2 left-0 w-20 h-0.5 bg-gradient-to-r from-blue-400 via-purple-400 to-transparent animate-pulse"></div>
+            <div className="absolute -bottom-2 left-0 w-16 h-0.5 bg-gradient-to-r from-purple-500 via-blue-500 to-transparent"></div>
           </div>
 
           <div className="flex items-center gap-3">
             <motion.div
-              className="px-3 py-1 bg-black border border-green-500/30 rounded-full"
-              animate={{ scale: [1, 1.05, 1] }}
+              className="px-4 py-1.5 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-500/30 rounded-full backdrop-blur-sm"
+              animate={{ scale: [1, 1.02, 1] }}
               transition={{ duration: 2, repeat: Infinity }}
             >
-              <span className="bg-gradient-to-r from-green-200 via-green-100 to-green-200 bg-clip-text text-transparent text-xs font-mono flex items-center gap-1">
+              <span className="text-green-400 text-xs font-medium flex items-center gap-2">
                 <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                Online
+                Learning Mode Active
               </span>
             </motion.div>
           </div>
         </motion.div>
 
-        {/* Enhanced Main Heading */}
+        {/* Main Welcome Section */}
         <motion.div
-          className="space-y-6"
+          className="space-y-6 mb-12"
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ duration: 1, delay: 0.2 }}
+          transition={{ duration: 0.8, delay: 0.2 }}
         >
-          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black leading-tight tracking-tight">
+          <h1 className="text-5xl md:text-6xl lg:text-7xl font-black leading-tight">
             <motion.div
-              className="flex items-center gap-6 flex-wrap mb-4"
-              initial={{ x: -100, opacity: 0 }}
+              className="flex items-center gap-4 flex-wrap mb-3"
+              initial={{ x: -50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.4 }}
+              transition={{ duration: 0.6, delay: 0.3 }}
             >
               <motion.div
-                animate={{ rotate: 360 }}
-                transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
+                animate={{ rotate: [0, 10, -10, 0] }}
+                transition={{ duration: 3, repeat: Infinity, ease: "easeInOut" }}
               >
-                <Sparkles className="h-12 w-12 md:h-16 md:w-16 text-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 bg-clip-text drop-shadow-2xl" />
+                <Sparkles className="h-10 w-10 md:h-14 md:w-14 text-yellow-400 drop-shadow-[0_0_15px_rgba(250,204,21,0.5)]" />
               </motion.div>
-              <span className="bg-gradient-to-r from-white via-gray-100 to-gray-300 bg-clip-text text-transparent drop-shadow-2xl">
+              <span className="bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent">
                 Welcome back,
               </span>
             </motion.div>
 
             <motion.div
-              initial={{ x: 100, opacity: 0 }}
+              initial={{ x: 50, opacity: 0 }}
               animate={{ x: 0, opacity: 1 }}
-              transition={{ duration: 0.8, delay: 0.6 }}
+              transition={{ duration: 0.6, delay: 0.5 }}
+              className="mb-4"
             >
-              <span className="capitalize bg-gradient-to-r from-cyan-400 via-blue-500 to-purple-600 bg-clip-text text-transparent drop-shadow-2xl block">
+              <span className="capitalize bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent drop-shadow-2xl">
                 {userName}
-                <motion.span
-                  className="inline-block ml-2"
-                  animate={{ rotate: [0, 15, -15, 0] }}
-                  transition={{ duration: 0.6, delay: 1.2 }}
-                >
-                  !
-                </motion.span>
               </span>
+              <motion.span
+                className="inline-block ml-2 text-purple-400"
+                animate={{ rotate: [0, 15, -15, 0] }}
+                transition={{ duration: 0.5, delay: 1 }}
+              >
+                !
+              </motion.span>
             </motion.div>
           </h1>
 
-          {/* Enhanced Subtitle */}
           <motion.p
-            className="text-xl md:text-2xl bg-gradient-to-r from-gray-300 via-gray-200 to-gray-300 bg-clip-text text-transparent max-w-3xl leading-relaxed"
+            className="text-lg md:text-xl text-gray-300 max-w-3xl leading-relaxed"
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.8 }}
+            transition={{ duration: 0.6, delay: 0.7 }}
           >
-            Ready to{" "}
-            <span className="bg-gradient-to-r from-green-400 to-blue-500 bg-clip-text text-transparent font-semibold">
-              code
-            </span>
-            ,{" "}
-            <span className="bg-gradient-to-r from-purple-400 to-pink-500 bg-clip-text text-transparent font-semibold">
-              learn
-            </span>
-            , and{" "}
-            <span className="bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent font-semibold">
-              innovate
-            </span>
-            ? Let's make today amazing!
+            Continue your learning journey. Master new skills, solve challenges, and level up your coding expertise.
           </motion.p>
         </motion.div>
 
-        {/* Enhanced Quote Section with Better Styling */}
+        {/* Motivational Quote */}
         <motion.div
-          className="mt-12 max-w-4xl"
+          className="max-w-4xl"
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.0 }}
+          transition={{ duration: 0.6, delay: 0.9 }}
         >
-          <div className="bg-black/40 backdrop-blur-sm rounded-lg p-8 md:p-10">
-            <blockquote className="relative text-xl md:text-2xl lg:text-3xl italic font-medium leading-relaxed mb-6">
-              <span className="text-gray-100 drop-shadow-lg">
+          <div className="relative bg-gradient-to-br from-gray-900/50 to-black/50 backdrop-blur-md rounded-2xl p-8 md:p-10 border border-gray-800 overflow-hidden">
+            {/* Decorative corner accent */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-purple-500/20 to-transparent rounded-bl-full"></div>
+
+            <div className="relative z-10">
+              <div className="flex items-start gap-3 mb-4">
+                <div className="p-2 bg-purple-500/20 rounded-lg">
+                  <Sparkles className="w-5 h-5 text-purple-400" />
+                </div>
+                <span className="text-xs uppercase tracking-wider text-purple-400 font-semibold mt-2">
+                  Daily Inspiration
+                </span>
+              </div>
+
+              <blockquote className="text-lg md:text-xl italic font-medium leading-relaxed mb-4 text-gray-200">
                 "{quote}"
-              </span>
-            </blockquote>
-            <p className="text-right text-gray-300 font-semibold text-lg">
-              {author}
-            </p>
+              </blockquote>
+
+              <p className="text-right text-gray-400 font-medium text-sm">
+                {author}
+              </p>
+            </div>
           </div>
         </motion.div>
 
-        {/* Enhanced Status Cards with Simple Dark Design */}
+        {/* Quick Action Status Cards */}
         <motion.div
-          className="mt-12 flex gap-4 flex-wrap"
-          initial={{ opacity: 0, y: 30 }}
+          className="mt-10 flex gap-3 flex-wrap"
+          initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 1.2 }}
+          transition={{ duration: 0.6, delay: 1.7 }}
         >
           {[
-            { icon: Code, text: "Ready to code", color: "blue", iconColor: "text-blue-300" },
-            { icon: Zap, text: "System online", color: "green", iconColor: "text-green-300" },
-            { icon: Star, text: "AI assistant active", color: "purple", iconColor: "text-purple-300" }
+            { icon: Code, text: "Code Editor Ready", color: "blue" },
+            { icon: Trophy, text: "Challenges Available", color: "yellow" },
+            { icon: TrendingUp, text: "Progress Tracking", color: "green" }
           ].map((item, index) => (
             <motion.div
               key={item.text}
               initial={{ opacity: 0, x: -20 }}
               animate={{ opacity: 1, x: 0 }}
-              transition={{ duration: 0.6, delay: 1.4 + index * 0.1 }}
-              whileHover={{ scale: 1.05, y: -2 }}
+              transition={{ duration: 0.4, delay: 1.9 + index * 0.1 }}
+              whileHover={{ scale: 1.05 }}
             >
-              <div className="px-6 py-3 bg-black border border-gray-800 rounded-lg hover:border-gray-700 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-xl hover:shadow-black/60">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 rounded-md bg-gray-900 border border-gray-700">
-                    <item.icon className={`w-4 h-4 ${item.iconColor}`} />
-                  </div>
-                  <span className={`text-sm font-mono bg-gradient-to-r from-white via-${item.color}-100 to-${item.color}-200 bg-clip-text text-transparent transition-all duration-300`}>
+              <div className="px-5 py-2.5 bg-black/50 border border-gray-800 rounded-lg hover:border-gray-700 transition-all duration-300 backdrop-blur-sm">
+                <div className="flex items-center gap-2.5">
+                  <item.icon className={`w-4 h-4 text-${item.color}-400`} />
+                  <span className="text-sm text-gray-300 font-medium">
                     {item.text}
                   </span>
                 </div>

@@ -53,7 +53,7 @@ router.get('/skills', async (req, res) => {
 router.get('/:testId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { testId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     const skillTest = await SkillTest.findById(testId);
     if (!skillTest) {
@@ -92,7 +92,7 @@ router.get('/:testId', authMiddleware, async (req: AuthRequest, res) => {
 router.post('/:testId/submit', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { testId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const { answers, timeSpent, startedAt } = req.body;
 
     const skillTest = await SkillTest.findById(testId);
@@ -114,7 +114,7 @@ router.post('/:testId/submit', authMiddleware, async (req: AuthRequest, res) => 
     // Calculate score
     let totalScore = 0;
     let totalPoints = 0;
-    const gradedAnswers = [];
+    const gradedAnswers: any[] = [];
 
     for (const question of skillTest.questions) {
       const userAnswer = answers.find((a: any) => a.questionId === question.id);
@@ -223,7 +223,7 @@ router.post('/:testId/submit', authMiddleware, async (req: AuthRequest, res) => 
 // Get user's skill test attempts
 router.get('/attempts/history', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const { page = 1, limit = 10, skill, passed } = req.query;
 
     const filter: any = { userId };
@@ -257,7 +257,7 @@ router.get('/attempts/history', authMiddleware, async (req: AuthRequest, res) =>
 router.get('/attempts/:attemptId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { attemptId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     const attempt = await SkillTestAttempt.findOne({
       _id: attemptId,
@@ -278,7 +278,7 @@ router.get('/attempts/:attemptId', authMiddleware, async (req: AuthRequest, res)
 // Get user's earned skills from skill tests
 router.get('/earned/skills', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     const earnedSkills = await SkillTestAttempt.find({
       userId,

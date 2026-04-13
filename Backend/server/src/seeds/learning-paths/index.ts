@@ -77,7 +77,7 @@ export const seedLearningPathsModular = async () => {
       console.log(`📚 Processing: ${seed.pathData.title}`);
 
       // Create courses for this learning path
-      const createdCourses = [];
+      const createdCourses: any[] = [];
       for (const courseData of seed.courses) {
         try {
           // Check if course already exists

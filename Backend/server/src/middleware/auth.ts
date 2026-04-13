@@ -2,8 +2,25 @@ import { Request, Response, NextFunction } from "express";
 import jwt from "jsonwebtoken";
 import { User } from "../models";
 
+// Augment Express Request to include user
+declare global {
+  namespace Express {
+    interface User {
+      _id: any;
+      id?: string;
+      userId?: string;
+      name: string;
+      email: string;
+      profilePicture?: string;
+      avatar?: string;
+      role?: string;
+      [key: string]: any;
+    }
+  }
+}
+
 export interface AuthRequest extends Request {
-  user?: any;
+  user?: Express.User;
 }
 
 export const authMiddleware = async (
@@ -35,7 +52,7 @@ export const authMiddleware = async (
       return;
     }
 
-    req.user = user;
+    req.user = user as any;
     next();
   } catch (error) {
     res.status(401).json({ message: "Token is not valid" });

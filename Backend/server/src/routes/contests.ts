@@ -99,7 +99,7 @@ router.get('/:contestId', async (req, res) => {
 router.post('/:contestId/register', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { contestId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const contest = await Contest.findById(contestId);
     if (!contest) {
@@ -155,7 +155,7 @@ router.post('/:contestId/register', authMiddleware, async (req: AuthRequest, res
 router.get('/:contestId/problems', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { contestId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const contest = await Contest.findById(contestId)
       .populate('problems.problemId');
@@ -212,7 +212,7 @@ router.post('/:contestId/submit', authMiddleware, async (req: AuthRequest, res) 
   try {
     const { contestId } = req.params;
     const { problemId, code, language, testCasesPassed, totalTestCases } = req.body;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const contest = await Contest.findById(contestId);
     if (!contest) {
@@ -316,7 +316,7 @@ router.get('/:contestId/leaderboard', async (req, res) => {
 router.get('/:contestId/submissions', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { contestId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const submissions = await ContestSubmission.find({ contestId, userId })
       .populate('problemId', 'title')

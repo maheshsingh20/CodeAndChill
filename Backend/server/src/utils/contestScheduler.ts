@@ -29,7 +29,7 @@ export async function updateContestStatuses() {
         
         // Update user profiles with contest results
         if (contest.status !== 'completed') {
-          await updateUserProfilesWithContestResults(contest._id.toString());
+          await updateUserProfilesWithContestResults((contest._id as any).toString());
         }
       }
       

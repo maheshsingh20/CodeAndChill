@@ -2,15 +2,15 @@ import express from 'express';
 import UserProgress from '../models/UserProgress';
 import Submission from '../models/Submission';
 import Leaderboard from '../models/Leaderboard';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
 // Get user progress for a specific course
-router.get('/course/:courseId', authMiddleware, async (req, res) => {
+router.get('/course/:courseId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { courseId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     let progress = await UserProgress.findOne({ userId, courseId });
     
@@ -33,10 +33,10 @@ router.get('/course/:courseId', authMiddleware, async (req, res) => {
 });
 
 // Update lesson progress
-router.post('/lesson', authMiddleware, async (req, res) => {
+router.post('/lesson', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { courseId, lessonId, timeSpent, completed } = req.body;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     let progress = await UserProgress.findOne({ userId, courseId });
     
@@ -78,10 +78,10 @@ router.post('/lesson', authMiddleware, async (req, res) => {
 });
 
 // Add or update course notes
-router.post('/notes', authMiddleware, async (req, res) => {
+router.post('/notes', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { courseId, lessonId, timestamp, content } = req.body;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     let progress = await UserProgress.findOne({ userId, courseId });
     
@@ -105,9 +105,9 @@ router.post('/notes', authMiddleware, async (req, res) => {
 });
 
 // Get user's overall statistics
-router.get('/stats', authMiddleware, async (req, res) => {
+router.get('/stats', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     // Get course progress
     const courseProgress = await UserProgress.find({ userId });
@@ -153,10 +153,10 @@ router.get('/stats', authMiddleware, async (req, res) => {
 });
 
 // Submit quiz score
-router.post('/quiz', authMiddleware, async (req, res) => {
+router.post('/quiz', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { courseId, quizId, score, maxScore } = req.body;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     let progress = await UserProgress.findOne({ userId, courseId });
     

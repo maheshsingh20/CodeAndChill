@@ -7,12 +7,12 @@ const router = Router();
 // Get user notifications
 router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const notifications = await Notification.find({ userId: req.user._id })
+    const notifications = await Notification.find({ userId: req.user?._id })
       .sort({ createdAt: -1 })
       .limit(50);
 
     const unreadCount = await Notification.countDocuments({
-      userId: req.user._id,
+      userId: req.user?._id,
       read: false
     });
 
@@ -30,7 +30,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
 router.put("/:id/read", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     const notification = await Notification.findOneAndUpdate(
-      { _id: req.params.id, userId: req.user._id },
+      { _id: req.params.id, userId: req.user?._id },
       { read: true },
       { new: true }
     );
@@ -51,7 +51,7 @@ router.put("/:id/read", authMiddleware, async (req: AuthRequest, res: Response):
 router.put("/read-all", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
     await Notification.updateMany(
-      { userId: req.user._id, read: false },
+      { userId: req.user?._id, read: false },
       { read: true }
     );
 
@@ -67,7 +67,7 @@ router.delete("/:id", authMiddleware, async (req: AuthRequest, res: Response): P
   try {
     const notification = await Notification.findOneAndDelete({
       _id: req.params.id,
-      userId: req.user._id
+      userId: req.user?._id
     });
 
     if (!notification) {
@@ -88,7 +88,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response): Promis
     const { type, title, message } = req.body;
 
     const notification = new Notification({
-      userId: req.user._id,
+      userId: req.user?._id,
       type,
       title,
       message
@@ -119,31 +119,31 @@ router.post("/generate-samples", authMiddleware, async (req: AuthRequest, res: R
   try {
     const sampleNotifications = [
       {
-        userId: req.user._id,
+        userId: req.user?._id,
         type: 'achievement',
         title: 'Achievement Unlocked! 🏆',
         message: 'You earned the "First Steps" achievement for solving your first problem!'
       },
       {
-        userId: req.user._id,
+        userId: req.user?._id,
         type: 'problem_solved',
         title: 'Problem Solved! 🎉',
         message: 'Congratulations! You successfully solved "Two Sum"'
       },
       {
-        userId: req.user._id,
+        userId: req.user?._id,
         type: 'course_completed',
         title: 'Course Completed! 📚',
         message: 'Great job! You completed the course "JavaScript Fundamentals"'
       },
       {
-        userId: req.user._id,
+        userId: req.user?._id,
         type: 'contest',
         title: 'Contest Starting Soon! ⚡',
         message: 'The "Weekly Challenge #42" contest starts in 1 hour. Get ready!'
       },
       {
-        userId: req.user._id,
+        userId: req.user?._id,
         type: 'system',
         title: 'Welcome to Code & Chill! 👋',
         message: 'Start your coding journey by solving your first problem or taking a course.'

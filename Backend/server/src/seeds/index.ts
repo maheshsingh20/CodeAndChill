@@ -766,11 +766,11 @@ const seedDatabase = async () => {
     // Seed problem sets with problem references
     const problemSetsWithProblems = problemSetsToSeed.map((set, index) => {
       if (index === 0) { // Beginner's set - Easy problems for beginners
-        set.problems = [createdProblems[0]._id, createdProblems[1]._id, createdProblems[2]._id, createdProblems[5]._id, createdProblems[6]._id];
+        (set as any).problems = [createdProblems[0]._id, createdProblems[1]._id, createdProblems[2]._id, createdProblems[5]._id, createdProblems[6]._id];
       } else if (index === 1) { // Array mastery - Array and math problems
-        set.problems = [createdProblems[0]._id, createdProblems[3]._id, createdProblems[4]._id];
+        (set as any).problems = [createdProblems[0]._id, createdProblems[3]._id, createdProblems[4]._id];
       } else { // Interview prep - Common interview problems
-        set.problems = [createdProblems[0]._id, createdProblems[1]._id, createdProblems[4]._id, createdProblems[5]._id, createdProblems[6]._id];
+        (set as any).problems = [createdProblems[0]._id, createdProblems[1]._id, createdProblems[4]._id, createdProblems[5]._id, createdProblems[6]._id];
       }
       return set;
     });

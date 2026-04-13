@@ -10,6 +10,8 @@ export interface User {
   joinDate: string;
   skills: string[];
   attempts: string[];
+  profilePicture?: string;
+  avatar?: string;
 }
 
 export interface Course {

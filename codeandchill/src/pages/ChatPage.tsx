@@ -9,7 +9,8 @@ import {
   User,
   Trash2,
   Circle,
-  Sparkles
+  Sparkles,
+  MoreVertical
 } from 'lucide-react';
 import { chatService, Chat, ChatMessage, UserSearchResult } from '@/services/chatService';
 import { useUser } from '@/contexts/UserContext';
@@ -27,6 +28,12 @@ export const ChatPage: React.FC = () => {
   const [isTyping, setIsTyping] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<number | undefined>(undefined);
+  const selectedChatRef = useRef<Chat | null>(null);
+
+  // Keep ref in sync with state
+  useEffect(() => {
+    selectedChatRef.current = selectedChat;
+  }, [selectedChat]);
 
   useEffect(() => {
     const token = localStorage.getItem('authToken');
@@ -35,21 +42,71 @@ export const ChatPage: React.FC = () => {
       loadChats();
     }
 
-    chatService.on('message:new', handleNewMessage);
-    chatService.on('typing:start', handleTypingStart);
-    chatService.on('typing:stop', handleTypingStop);
+    // Use refs in handlers to avoid stale closures
+    const handleNewMessageWrapper = (data: { chatId: string; message: ChatMessage }) => {
+      console.log('📨 Received message:new event', data);
+      if (selectedChatRef.current?._id === data.chatId) {
+        console.log('✅ Message is for current chat, adding to messages');
+        setMessages(prev => {
+          // Prevent duplicates by checking if message already exists
+          const exists = prev.some(m => m._id === data.message._id);
+          if (exists) {
+            console.log('⚠️ Message already exists, skipping');
+            return prev;
+          }
+          // Also check for temporary optimistic messages and replace them
+          const filtered = prev.filter(m => !m._id?.startsWith('temp-'));
+          return [...filtered, data.message];
+        });
+        chatService.markAsRead(data.chatId);
+      } else {
+        console.log('ℹ️ Message is for different chat');
+      }
+      loadChats();
+    };
+
+    const handleTypingStartWrapper = (data: { chatId: string; userId: string }) => {
+      if (selectedChatRef.current?._id === data.chatId) {
+        setTypingUsers(prev => new Set(prev).add(data.userId));
+      }
+    };
+
+    const handleTypingStopWrapper = (data: { chatId: string; userId: string }) => {
+      if (selectedChatRef.current?._id === data.chatId) {
+        setTypingUsers(prev => {
+          const newSet = new Set(prev);
+          newSet.delete(data.userId);
+          return newSet;
+        });
+      }
+    };
+
+    const handleMessageDeletedWrapper = (data: { chatId: string; messageId: string }) => {
+      console.log('🗑️ Received message:deleted event', data);
+      if (selectedChatRef.current?._id === data.chatId) {
+        console.log('✅ Removing message from UI');
+        setMessages(prev => prev.filter(m => m._id !== data.messageId));
+      }
+      loadChats();
+    };
+
+    chatService.on('message:new', handleNewMessageWrapper);
+    chatService.on('typing:start', handleTypingStartWrapper);
+    chatService.on('typing:stop', handleTypingStopWrapper);
+    chatService.on('message:deleted', handleMessageDeletedWrapper);
     chatService.on('user:online', handleUserOnline);
     chatService.on('user:offline', handleUserOffline);
 
     return () => {
-      chatService.off('message:new', handleNewMessage);
-      chatService.off('typing:start', handleTypingStart);
-      chatService.off('typing:stop', handleTypingStop);
+      chatService.off('message:new', handleNewMessageWrapper);
+      chatService.off('typing:start', handleTypingStartWrapper);
+      chatService.off('typing:stop', handleTypingStopWrapper);
+      chatService.off('message:deleted', handleMessageDeletedWrapper);
       chatService.off('user:online', handleUserOnline);
       chatService.off('user:offline', handleUserOffline);
 
-      if (selectedChat) {
-        chatService.leaveChat(selectedChat._id);
+      if (selectedChatRef.current) {
+        chatService.leaveChat(selectedChatRef.current._id);
       }
     };
   }, []);
@@ -80,30 +137,6 @@ export const ChatPage: React.FC = () => {
     }
   };
 
-  const handleNewMessage = (data: { chatId: string; message: ChatMessage }) => {
-    if (selectedChat?._id === data.chatId) {
-      setMessages(prev => [...prev, data.message]);
-      chatService.markAsRead(data.chatId);
-    }
-    loadChats();
-  };
-
-  const handleTypingStart = (data: { chatId: string; userId: string }) => {
-    if (selectedChat?._id === data.chatId) {
-      setTypingUsers(prev => new Set(prev).add(data.userId));
-    }
-  };
-
-  const handleTypingStop = (data: { chatId: string; userId: string }) => {
-    if (selectedChat?._id === data.chatId) {
-      setTypingUsers(prev => {
-        const newSet = new Set(prev);
-        newSet.delete(data.userId);
-        return newSet;
-      });
-    }
-  };
-
   const handleUserOnline = () => loadChats();
   const handleUserOffline = () => loadChats();
 
@@ -119,7 +152,28 @@ export const ChatPage: React.FC = () => {
   };
 
   const handleSendMessage = () => {
-    if (!inputMessage.trim() || !selectedChat) return;
+    if (!inputMessage.trim() || !selectedChat || !user) return;
+
+    console.log('📤 Sending message:', inputMessage);
+
+    // Optimistically add message to UI immediately
+    const optimisticMessage: ChatMessage = {
+      _id: `temp-${Date.now()}`, // Temporary ID
+      senderId: user._id,
+      senderName: user.name,
+      senderAvatar: user.profilePicture,
+      content: inputMessage,
+      timestamp: new Date(),
+      read: false,
+      type: 'text'
+    };
+
+    setMessages(prev => {
+      console.log('Adding optimistic message to UI');
+      return [...prev, optimisticMessage];
+    });
+
+    // Send to server
     chatService.sendMessage(selectedChat._id, inputMessage);
     setInputMessage('');
     setIsTyping(false);
@@ -184,6 +238,28 @@ export const ChatPage: React.FC = () => {
       loadChats();
     } catch (error) {
       console.error('Error deleting chat:', error);
+    }
+  };
+
+  const handleDeleteMessage = async (messageId: string) => {
+    if (!selectedChat || !messageId) return;
+
+    try {
+      // Optimistically remove from UI
+      setMessages(prev => prev.filter(m => m._id !== messageId));
+
+      // Send delete request via WebSocket
+      chatService.deleteMessage(selectedChat._id, messageId);
+
+      // Reload chats to update last message
+      loadChats();
+    } catch (error) {
+      console.error('Error deleting message:', error);
+      // Reload messages on error
+      if (selectedChat) {
+        const chat = await chatService.getChatById(selectedChat._id);
+        setMessages(chat.messages);
+      }
     }
   };
 
@@ -418,23 +494,36 @@ export const ChatPage: React.FC = () => {
                             key={message._id || index}
                             initial={{ opacity: 0, y: 10 }}
                             animate={{ opacity: 1, y: 0 }}
-                            className={`flex ${isOwn ? 'justify-end' : 'justify-start'}`}
+                            className={`flex ${isOwn ? 'justify-end' : 'justify-start'} group`}
                           >
-                            <div
-                              className={`max-w-[75%] p-3 rounded-2xl ${isOwn
-                                ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-br-sm'
-                                : 'bg-gray-800 text-gray-100 rounded-bl-sm border border-gray-700'
-                                }`}
-                            >
-                              <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
-                                {message.content}
-                              </p>
-                              <p className={`text-xs mt-1.5 ${isOwn ? 'text-purple-100' : 'text-gray-500'}`}>
-                                {new Date(message.timestamp).toLocaleTimeString([], {
-                                  hour: '2-digit',
-                                  minute: '2-digit'
-                                })}
-                              </p>
+                            <div className="relative flex items-start gap-2">
+                              {isOwn && message._id && !message._id.startsWith('temp-') && (
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  onClick={() => handleDeleteMessage(message._id!)}
+                                  className="opacity-0 group-hover:opacity-100 transition-opacity h-7 w-7 p-0 text-gray-400 hover:text-red-400 hover:bg-red-500/10 mt-1"
+                                  title="Delete message"
+                                >
+                                  <Trash2 className="w-3.5 h-3.5" />
+                                </Button>
+                              )}
+                              <div
+                                className={`max-w-[75%] p-3 rounded-2xl ${isOwn
+                                  ? 'bg-gradient-to-br from-purple-600 to-pink-600 text-white rounded-br-sm'
+                                  : 'bg-gray-800 text-gray-100 rounded-bl-sm border border-gray-700'
+                                  }`}
+                              >
+                                <p className="whitespace-pre-wrap break-words text-sm leading-relaxed">
+                                  {message.content}
+                                </p>
+                                <p className={`text-xs mt-1.5 ${isOwn ? 'text-purple-100' : 'text-gray-500'}`}>
+                                  {new Date(message.timestamp).toLocaleTimeString([], {
+                                    hour: '2-digit',
+                                    minute: '2-digit'
+                                  })}
+                                </p>
+                              </div>
                             </div>
                           </motion.div>
                         );

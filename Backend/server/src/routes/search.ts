@@ -1,6 +1,19 @@
 import { Router, Request, Response } from "express";
-import { ProblemSet, Subject, Quiz, Contest, CollaborativeSession } from "../models";
+import { 
+  ProblemSet, 
+  Subject, 
+  Quiz, 
+  Contest, 
+  CollaborativeSession,
+  Course,
+  SuccessStory
+} from "../models";
 import SkillTest from "../models/SkillTest";
+import EngineeringCourse from "../models/EngineeringCourse";
+import LearningPath from "../models/LearningPath";
+import BlogPost from "../models/BlogPost";
+import CommunityPost from "../models/CommunityPost";
+import Job from "../models/Job";
 import { authMiddleware, AuthRequest } from "../middleware";
 
 const router = Router();
@@ -9,7 +22,7 @@ interface SearchResult {
   id: string;
   title: string;
   description: string;
-  type: 'course' | 'problem' | 'quiz' | 'contest' | 'skill-test' | 'collaborative';
+  type: 'course' | 'problem' | 'quiz' | 'contest' | 'skill-test' | 'collaborative' | 'learning-path' | 'blog' | 'community' | 'job' | 'success-story' | 'engineering-course';
   url: string;
   category?: string;
   difficulty?: string;
@@ -18,6 +31,9 @@ interface SearchResult {
   sessionCode?: string; // For collaborative sessions
   participants?: number; // For collaborative sessions
   language?: string; // For collaborative sessions
+  author?: string; // For blog/community posts
+  company?: string; // For jobs
+  location?: string; // For jobs
 }
 
 // Global search endpoint
@@ -57,32 +73,16 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
         // Add problem set itself
         const setScore = calculateRelevanceScore(set.title, set.description, searchQuery);
         results.push({
-          id: set._id.toString(),
+          id: (set._id as any).toString(),
           title: set.title,
           description: set.description,
           type: 'problem',
           url: `/problems/${set._id}`,
-          difficulty: set.difficulty,
-          category: set.category,
           score: setScore
         });
 
-        // Add individual problems that match
-        set.problems?.forEach(problem => {
-          if (searchRegex.test(problem.title) || searchRegex.test(problem.description)) {
-            const problemScore = calculateRelevanceScore(problem.title, problem.description, searchQuery);
-            results.push({
-              id: problem._id.toString(),
-              title: problem.title,
-              description: problem.description,
-              type: 'problem',
-              url: `/solve/${problem._id}`,
-              difficulty: problem.difficulty,
-              category: set.category,
-              score: problemScore
-            });
-          }
-        });
+        // Add individual problems that match (problems are ObjectIds, skip individual problem search here)
+
       });
     } catch (error) {
       console.error('Problem search error:', error);
@@ -97,7 +97,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
       subjects.forEach(subject => {
         const score = calculateRelevanceScore(subject.name, `Quiz subject: ${subject.name}`, searchQuery);
         results.push({
-          id: subject._id.toString(),
+          id: (subject._id as any).toString(),
           title: subject.name,
           description: `Quiz subject: ${subject.name}`,
           type: 'quiz',
@@ -122,7 +122,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
       contests.forEach(contest => {
         const score = calculateRelevanceScore(contest.title, contest.description, searchQuery);
         results.push({
-          id: contest._id.toString(),
+          id: (contest._id as any).toString(),
           title: contest.title,
           description: contest.description,
           type: 'contest',
@@ -139,23 +139,23 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
     try {
       const skillTests = await SkillTest.find({
         $or: [
-          { skill: searchRegex },
+          { skillName: searchRegex },
           { title: searchRegex }
         ]
       }).limit(5);
 
       skillTests.forEach(test => {
-        const title = test.title || `${test.skill} Skill Test`;
-        const description = `Test your ${test.skill} skills`;
+        const title = test.title || `${test.skillName} Skill Test`;
+        const description = `Test your ${test.skillName} skills`;
         const score = calculateRelevanceScore(title, description, searchQuery);
         results.push({
-          id: test._id.toString(),
+          id: (test._id as any).toString(),
           title,
           description,
           type: 'skill-test',
           url: `/skill-tests/${test._id}`,
           difficulty: test.difficulty,
-          category: test.skill,
+          category: test.skillName,
           score
         });
       });
@@ -178,7 +178,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
       sessions.forEach(session => {
         const title = `${session.hostName}'s ${session.language} Session`;
         const description = `Active collaborative coding session with ${session.participants.length} participant(s)`;
-        const score = calculateRelevanceScore(title, description, searchQuery);
+        let score = calculateRelevanceScore(title, description, searchQuery);
         
         // Boost score if searching by session code
         if (session.sessionCode.toLowerCase().includes(searchQuery.toLowerCase())) {
@@ -186,7 +186,7 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
         }
 
         results.push({
-          id: session._id.toString(),
+          id: (session._id as any).toString(),
           title,
           description,
           type: 'collaborative',
@@ -200,6 +200,203 @@ router.get("/", authMiddleware, async (req: AuthRequest, res: Response): Promise
       });
     } catch (error) {
       console.error('Collaborative session search error:', error);
+    }
+
+    // Search CS courses (free courses)
+    try {
+      const courses = await Course.find({
+        $or: [
+          { courseTitle: searchRegex },
+          { slug: searchRegex }
+        ]
+      }).limit(5);
+
+      courses.forEach(course => {
+        const score = calculateRelevanceScore(course.courseTitle, course.courseTitle, searchQuery);
+        results.push({
+          id: (course._id as any).toString(),
+          title: course.courseTitle,
+          description: course.courseTitle,
+          type: 'course',
+          url: `/courses/${course.slug}`,
+          score
+        });
+      });
+    } catch (error) {
+      console.error('Course search error:', error);
+    }
+
+    // Search engineering courses (paid courses)
+    try {
+      const engineeringCourses = await EngineeringCourse.find({
+        isActive: true,
+        $or: [
+          { title: searchRegex },
+          { description: searchRegex },
+          { category: searchRegex },
+          { tags: searchRegex }
+        ]
+      }).limit(5);
+
+      engineeringCourses.forEach(course => {
+        const score = calculateRelevanceScore(course.title, course.description, searchQuery);
+        results.push({
+          id: (course._id as any).toString(),
+          title: course.title,
+          description: course.description,
+          type: 'engineering-course',
+          url: `/engineering-courses/${course.id}`,
+          category: course.category,
+          difficulty: course.difficulty,
+          score
+        });
+      });
+    } catch (error) {
+      console.error('Engineering course search error:', error);
+    }
+
+    // Search learning paths
+    try {
+      const learningPaths = await LearningPath.find({
+        isPublic: true,
+        $or: [
+          { title: searchRegex },
+          { description: searchRegex },
+          { tags: searchRegex }
+        ]
+      }).limit(5);
+
+      learningPaths.forEach(path => {
+        const score = calculateRelevanceScore(path.title, path.description, searchQuery);
+        results.push({
+          id: (path._id as any).toString(),
+          title: path.title,
+          description: path.description,
+          type: 'learning-path',
+          url: `/learning-paths/${path._id}`,
+          difficulty: path.difficulty,
+          score
+        });
+      });
+    } catch (error) {
+      console.error('Learning path search error:', error);
+    }
+
+    // Search blog posts
+    try {
+      const blogPosts = await BlogPost.find({
+        $or: [
+          { title: searchRegex },
+          { content: searchRegex },
+          { tags: searchRegex },
+          { author: searchRegex }
+        ]
+      }).limit(5);
+
+      blogPosts.forEach(post => {
+        const score = calculateRelevanceScore(post.title, post.content.substring(0, 200), searchQuery);
+        results.push({
+          id: (post._id as any).toString(),
+          title: post.title,
+          description: post.content.substring(0, 150) + '...',
+          type: 'blog',
+          url: `/blog/${post._id}`,
+          category: 'Blog',
+          author: (post.author as any)?.toString(),
+          tags: post.tags,
+          score
+        });
+      });
+    } catch (error) {
+      console.error('Blog post search error:', error);
+    }
+
+    // Search community posts
+    try {
+      const communityPosts = await CommunityPost.find({
+        $or: [
+          { title: searchRegex },
+          { content: searchRegex },
+          { tags: searchRegex }
+        ]
+      }).limit(5);
+
+      communityPosts.forEach(post => {
+        const score = calculateRelevanceScore(post.title, post.content.substring(0, 200), searchQuery);
+        results.push({
+          id: (post._id as any).toString(),
+          title: post.title,
+          description: post.content.substring(0, 150) + '...',
+          type: 'community',
+          url: `/forum/${post._id}`,
+          category: 'Community',
+          tags: post.tags,
+          score
+        });
+      });
+    } catch (error) {
+      console.error('Community post search error:', error);
+    }
+
+    // Search jobs
+    try {
+      const jobs = await Job.find({
+        isActive: true,
+        $or: [
+          { title: searchRegex },
+          { description: searchRegex },
+          { company: searchRegex },
+          { location: searchRegex },
+          { skills: searchRegex },
+          { type: searchRegex }
+        ]
+      }).limit(5);
+
+      jobs.forEach(job => {
+        const score = calculateRelevanceScore(job.title, job.description, searchQuery);
+        results.push({
+          id: (job._id as any).toString(),
+          title: job.title,
+          description: job.description.substring(0, 150) + '...',
+          type: 'job',
+          url: `/jobs/${job._id}`,
+          category: job.type,
+          company: job.company,
+          location: job.location,
+          score
+        });
+      });
+    } catch (error) {
+      console.error('Job search error:', error);
+    }
+
+    // Search success stories
+    try {
+      const stories = await SuccessStory.find({
+        $or: [
+          { name: searchRegex },
+          { company: searchRegex },
+          { quote: searchRegex },
+          { skills: searchRegex }
+        ]
+      }).limit(5);
+
+      stories.forEach(story => {
+        const title = `${story.name} - ${story.company}`;
+        const score = calculateRelevanceScore(title, story.quote, searchQuery);
+        results.push({
+          id: (story._id as any).toString(),
+          title,
+          description: story.quote.substring(0, 150) + '...',
+          type: 'success-story',
+          url: `/success-stories/${story._id}`,
+          category: 'Success Story',
+          company: story.company,
+          score
+        });
+      });
+    } catch (error) {
+      console.error('Success story search error:', error);
     }
 
     // Sort by relevance score (highest first) and limit results

@@ -62,8 +62,7 @@ export function GeneralCourseDetailPage() {
           // Use engineering courses API
           response = await fetch(`http://localhost:3001/api/engineering-courses/${courseId}`);
         } else {
-          // This shouldn't happen for engineering courses, but keeping for safety
-          return res.status(404).json({ error: 'Course not found' });
+          throw new Error('Course not found');
         }
 
         if (!response.ok) {

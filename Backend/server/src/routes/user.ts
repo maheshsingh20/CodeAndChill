@@ -20,7 +20,7 @@ const storage = multer.diskStorage({
   },
   filename: (req: any, file, cb) => {
     const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-    cb(null, req.user._id + '-' + uniqueSuffix + path.extname(file.originalname));
+    cb(null, req.user?._id + '-' + uniqueSuffix + path.extname(file.originalname));
   }
 });
 
@@ -45,7 +45,7 @@ const upload = multer({
 // Get user profile
 router.get("/profile", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const userProfile = await User.findById(req.user._id)
+    const userProfile = await User.findById(req.user?._id)
       .populate({
         path: "attempts",
         populate: {
@@ -66,7 +66,7 @@ router.get("/profile", authMiddleware, async (req: AuthRequest, res: Response): 
 // Get user profile dashboard with real data
 router.get("/profile-dashboard", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const userProfile = await User.findById(req.user._id)
+    const userProfile = await User.findById(req.user?._id)
       .populate({
         path: "attempts",
         populate: { path: "quizId", model: "Quiz", select: "title" },
@@ -172,7 +172,7 @@ router.put("/profile", authMiddleware, async (req: AuthRequest, res: Response): 
     if (preferences !== undefined) updateData.preferences = preferences;
     
     const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
+      req.user?._id,
       updateData,
       { new: true }
     ).select("-password");
@@ -197,7 +197,7 @@ router.post("/profile-picture", authMiddleware, upload.single('profilePicture'),
       return;
     }
 
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user?._id);
     if (!user) {
       res.status(404).json({ message: "User not found" });
       return;
@@ -231,13 +231,13 @@ router.post("/change-password", authMiddleware, async (req: AuthRequest, res: Re
   try {
     const { currentPassword, newPassword } = req.body;
     
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user?._id);
     if (!user) {
       res.status(404).json({ message: "User not found." });
       return;
     }
 
-    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    const isMatch = await bcrypt.compare(currentPassword, user.password || '');
     if (!isMatch) {
       res.status(400).json({ message: "Incorrect current password." });
       return;
@@ -260,7 +260,7 @@ router.put("/preferences", authMiddleware, async (req: AuthRequest, res: Respons
     const { theme, language, notifications } = req.body;
     
     const updatedUser = await User.findByIdAndUpdate(
-      req.user._id,
+      req.user?._id,
       { 
         preferences: {
           theme: theme || 'dark',
@@ -298,7 +298,7 @@ router.post("/update-stats", authMiddleware, async (req: AuthRequest, res: Respo
       streakUpdate 
     } = req.body;
     
-    const user = await User.findById(req.user._id);
+    const user = await User.findById(req.user?._id);
     if (!user) {
       res.status(404).json({ message: "User not found" });
       return;
@@ -350,7 +350,7 @@ router.post("/update-stats", authMiddleware, async (req: AuthRequest, res: Respo
 // Get user achievements
 router.get("/achievements", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const user = await User.findById(req.user._id).select("-password");
+    const user = await User.findById(req.user?._id).select("-password");
     if (!user) {
       res.status(404).json({ message: "User not found" });
       return;
@@ -415,7 +415,7 @@ router.get("/achievements", authMiddleware, async (req: AuthRequest, res: Respon
 // Get user's solved problems grouped by difficulty
 router.get("/solved-problems", authMiddleware, async (req: AuthRequest, res: Response): Promise<void> => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     // Use UserProblem model
     
@@ -426,7 +426,7 @@ router.get("/solved-problems", authMiddleware, async (req: AuthRequest, res: Res
     .populate('problemId', 'title slug difficulty topic')
     .sort({ solvedAt: -1 });
 
-    const groupedByDifficulty = {
+    const groupedByDifficulty: Record<string, any[]> = {
       Easy: [],
       Medium: [],
       Hard: []

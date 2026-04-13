@@ -1,7 +1,7 @@
 import express from 'express';
 import Job from '../models/Job';
 import JobApplication from '../models/JobApplication';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { adminAuthMiddleware } from '../middleware/adminAuth';
 import mongoose from 'mongoose';
 
@@ -129,10 +129,10 @@ router.get('/:jobId', async (req, res) => {
 });
 
 // Apply for a job
-router.post('/:jobId/apply', authMiddleware, async (req, res) => {
+router.post('/:jobId/apply', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { jobId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const {
       coverLetter,
       resume,
@@ -185,7 +185,8 @@ router.post('/:jobId/apply', authMiddleware, async (req, res) => {
     });
   } catch (error) {
     console.error('Error submitting application:', error);
-    if (error.code === 11000) {
+    const err = error as any;
+    if (err.code === 11000) {
       return res.status(400).json({ error: 'You have already applied for this job' });
     }
     res.status(500).json({ error: 'Failed to submit application' });
@@ -193,9 +194,9 @@ router.post('/:jobId/apply', authMiddleware, async (req, res) => {
 });
 
 // Get user's applications
-router.get('/applications/my', authMiddleware, async (req, res) => {
+router.get('/applications/my', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const { page = 1, limit = 10, status } = req.query;
 
     const filter: any = { applicantId: userId };
@@ -228,10 +229,10 @@ router.get('/applications/my', authMiddleware, async (req, res) => {
 });
 
 // Get application by ID
-router.get('/applications/:applicationId', authMiddleware, async (req, res) => {
+router.get('/applications/:applicationId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { applicationId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     if (!mongoose.Types.ObjectId.isValid(applicationId)) {
       return res.status(400).json({ error: 'Invalid application ID' });
@@ -259,10 +260,10 @@ router.get('/applications/:applicationId', authMiddleware, async (req, res) => {
 });
 
 // Withdraw application
-router.delete('/applications/:applicationId', authMiddleware, async (req, res) => {
+router.delete('/applications/:applicationId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { applicationId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     if (!mongoose.Types.ObjectId.isValid(applicationId)) {
       return res.status(400).json({ error: 'Invalid application ID' });

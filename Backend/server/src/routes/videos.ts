@@ -1,7 +1,7 @@
-import express, { Request, Response } from 'express';
+import express, { Response } from 'express';
 import Video from '../models/Video';
 import VideoProgress from '../models/VideoProgress';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
 import multer from 'multer';
 import path from 'path';
 import fs from 'fs';
@@ -41,7 +41,7 @@ const upload = multer({
 });
 
 // Upload video (admin/instructor only)
-router.post('/upload', authMiddleware, upload.single('video'), async (req: Request, res: Response) => {
+router.post('/upload', authMiddleware, upload.single('video'), async (req: AuthRequest, res: Response) => {
   try {
     if (!req.file) {
       return res.status(400).json({ message: 'No video file uploaded' });
@@ -66,7 +66,7 @@ router.post('/upload', authMiddleware, upload.single('video'), async (req: Reque
         url: videoUrl,
         size: req.file.size
       }],
-      uploadedBy: req.user.userId,
+      uploadedBy: req.user?._id,
       tags: tags ? JSON.parse(tags) : [],
       isPublished: false
     });
@@ -84,7 +84,7 @@ router.post('/upload', authMiddleware, upload.single('video'), async (req: Reque
 });
 
 // Get videos by learning path
-router.get('/learning-path/:pathId', async (req: Request, res: Response) => {
+router.get('/learning-path/:pathId', async (req: AuthRequest, res: Response) => {
   try {
     const { pathId } = req.params;
 
@@ -104,7 +104,7 @@ router.get('/learning-path/:pathId', async (req: Request, res: Response) => {
 });
 
 // Get single video details
-router.get('/:videoId', async (req: Request, res: Response) => {
+router.get('/:videoId', async (req: AuthRequest, res: Response) => {
   try {
     const { videoId } = req.params;
 
@@ -127,7 +127,7 @@ router.get('/:videoId', async (req: Request, res: Response) => {
 });
 
 // Stream video
-router.get('/:videoId/stream', async (req: Request, res: Response) => {
+router.get('/:videoId/stream', async (req: AuthRequest, res: Response) => {
   try {
     const { videoId } = req.params;
 
@@ -176,11 +176,11 @@ router.get('/:videoId/stream', async (req: Request, res: Response) => {
 });
 
 // Update video progress
-router.post('/:videoId/progress', authMiddleware, async (req: Request, res: Response) => {
+router.post('/:videoId/progress', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { videoId } = req.params;
     const { watchedDuration, lastPosition } = req.body;
-    const userId = req.user.userId;
+    const userId = req.user?._id;
 
     const video = await Video.findById(videoId);
     if (!video) {
@@ -233,10 +233,10 @@ router.post('/:videoId/progress', authMiddleware, async (req: Request, res: Resp
 });
 
 // Get user's video progress
-router.get('/:videoId/progress', authMiddleware, async (req: Request, res: Response) => {
+router.get('/:videoId/progress', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { videoId } = req.params;
-    const userId = req.user.userId;
+    const userId = req.user?._id;
 
     const progress = await VideoProgress.findOne({ userId, videoId });
 
@@ -258,10 +258,10 @@ router.get('/:videoId/progress', authMiddleware, async (req: Request, res: Respo
 });
 
 // Like/unlike video
-router.post('/:videoId/like', authMiddleware, async (req: Request, res: Response) => {
+router.post('/:videoId/like', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { videoId } = req.params;
-    const userId = req.user.userId;
+    const userId = req.user?._id;
 
     const video = await Video.findById(videoId);
     if (!video) {
@@ -292,9 +292,9 @@ router.post('/:videoId/like', authMiddleware, async (req: Request, res: Response
 });
 
 // Get all videos for a user (with progress)
-router.get('/user/all', authMiddleware, async (req: Request, res: Response) => {
+router.get('/user/all', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
-    const userId = req.user.userId;
+    const userId = req.user?._id;
 
     const progress = await VideoProgress.find({ userId })
       .populate({
@@ -315,7 +315,7 @@ router.get('/user/all', authMiddleware, async (req: Request, res: Response) => {
 });
 
 // Admin: Publish/unpublish video
-router.patch('/:videoId/publish', authMiddleware, async (req: Request, res: Response) => {
+router.patch('/:videoId/publish', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { videoId } = req.params;
     const { isPublished } = req.body;
@@ -341,7 +341,7 @@ router.patch('/:videoId/publish', authMiddleware, async (req: Request, res: Resp
 });
 
 // Admin: Delete video
-router.delete('/:videoId', authMiddleware, async (req: Request, res: Response) => {
+router.delete('/:videoId', authMiddleware, async (req: AuthRequest, res: Response) => {
   try {
     const { videoId } = req.params;
 

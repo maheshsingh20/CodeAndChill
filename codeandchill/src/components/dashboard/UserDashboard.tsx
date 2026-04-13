@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import {
   TrendingUp,
   Award,
@@ -15,6 +15,8 @@ import { Progress } from '@/components/ui/progress';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { LearningPathProgress } from '@/components/learning-path/LearningPathProgress';
+import { useUser } from '@/contexts/UserContext';
+import { API_BASE_URL } from '@/constants';
 import {
   LineChart,
   Line,
@@ -61,78 +63,148 @@ interface ActivityData {
 }
 
 export const UserDashboard: React.FC = () => {
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  const { user } = useUser();
   const [stats, setStats] = useState<UserStats>({
-    totalCourses: 12,
-    completedCourses: 8,
-    totalProblems: 150,
-    solvedProblems: 89,
-    currentStreak: 7,
-    longestStreak: 15,
-    totalStudyTime: 2340, // 39 hours
-    averageScore: 87.5,
-    rank: 23,
-    totalUsers: 1250
+    totalCourses: 0,
+    completedCourses: 0,
+    totalProblems: 0,
+    solvedProblems: 0,
+    currentStreak: 0,
+    longestStreak: 0,
+    totalStudyTime: 0,
+    averageScore: 0,
+    rank: 0,
+    totalUsers: 0
   });
+  const [achievements, setAchievements] = useState<Achievement[]>([]);
+  const [activityData, setActivityData] = useState<ActivityData[]>([]);
+  const [skillsData, setSkillsData] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [achievements, setAchievements] = useState<Achievement[]>([
-    {
-      id: '1',
-      title: 'First Steps',
-      description: 'Complete your first course',
-      icon: '🎯',
-      unlockedAt: new Date('2024-01-15')
-    },
-    {
-      id: '2',
-      title: 'Problem Solver',
-      description: 'Solve 50 coding problems',
-      icon: '🧩',
-      unlockedAt: new Date('2024-02-10')
-    },
-    {
-      id: '3',
-      title: 'Streak Master',
-      description: 'Maintain a 10-day study streak',
-      icon: '🔥',
-      unlockedAt: new Date('2024-02-20')
-    },
-    {
-      id: '4',
-      title: 'Quiz Champion',
-      description: 'Score 90%+ on 10 quizzes',
-      icon: '🏆',
-      progress: 7,
-      maxProgress: 10
-    },
-    {
-      id: '5',
-      title: 'Code Master',
-      description: 'Solve 100 coding problems',
-      icon: '💻',
-      progress: 89,
-      maxProgress: 100
+  useEffect(() => {
+    if (user) {
+      fetchDashboardData();
     }
-  ]);
+  }, [user]);
 
-  const [activityData] = useState<ActivityData[]>([
-    { date: '2024-02-15', studyTime: 45, problemsSolved: 3, quizScore: 85 },
-    { date: '2024-02-16', studyTime: 60, problemsSolved: 5, quizScore: 92 },
-    { date: '2024-02-17', studyTime: 30, problemsSolved: 2, quizScore: 78 },
-    { date: '2024-02-18', studyTime: 75, problemsSolved: 4, quizScore: 95 },
-    { date: '2024-02-19', studyTime: 50, problemsSolved: 3, quizScore: 88 },
-    { date: '2024-02-20', studyTime: 90, problemsSolved: 6, quizScore: 91 },
-    { date: '2024-02-21', studyTime: 40, problemsSolved: 2, quizScore: 87 }
-  ]);
+  const fetchDashboardData = async () => {
+    try {
+      setLoading(true);
+      const token = localStorage.getItem('authToken');
+      if (!token) return;
 
-  const skillsData = [
-    { name: 'JavaScript', value: 85, color: '#f7df1e' },
-    { name: 'React', value: 78, color: '#61dafb' },
-    { name: 'Python', value: 72, color: '#3776ab' },
-    { name: 'Node.js', value: 68, color: '#339933' },
-    { name: 'TypeScript', value: 65, color: '#3178c6' }
-  ];
+      // Fetch user profile with stats
+      const profileResponse = await fetch(`${API_BASE_URL}/user/profile-dashboard`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (profileResponse.ok) {
+        const profileData = await profileResponse.json();
+
+        setStats({
+          totalCourses: profileData.stats?.totalCoursesCompleted || 0,
+          completedCourses: profileData.stats?.totalCoursesCompleted || 0,
+          totalProblems: profileData.stats?.totalProblemsAttempted || 0,
+          solvedProblems: profileData.stats?.totalProblemsSolved || 0,
+          currentStreak: profileData.stats?.currentStreak || 0,
+          longestStreak: profileData.stats?.longestStreak || 0,
+          totalStudyTime: 0,
+          averageScore: 0,
+          rank: 0,
+          totalUsers: 0
+        });
+
+        // Use activity data from profile-dashboard
+        if (profileData.activity) {
+          const formattedActivity = profileData.activity.map((item: any, index: number) => {
+            const date = new Date();
+            date.setDate(date.getDate() - (6 - index));
+            return {
+              date: date.toISOString().split('T')[0],
+              studyTime: 0,
+              problemsSolved: item.solved || 0,
+              quizScore: 0
+            };
+          });
+          setActivityData(formattedActivity);
+        }
+      }
+
+      // Fetch achievements
+      const achievementsResponse = await fetch(`${API_BASE_URL}/user/achievements`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (achievementsResponse.ok) {
+        const achievementsData = await achievementsResponse.json();
+        // Convert backend format to frontend format
+        const formattedAchievements = achievementsData.achievements.map((ach: any) => ({
+          id: ach.id,
+          title: ach.title,
+          description: ach.description,
+          icon: ach.icon,
+          unlockedAt: ach.unlocked ? new Date() : undefined,
+          progress: ach.progress,
+          maxProgress: ach.maxProgress
+        }));
+        setAchievements(formattedAchievements);
+      }
+
+      if (achievementsResponse.ok) {
+        const achievementsData = await achievementsResponse.json();
+        setAchievements(achievementsData.achievements || []);
+      }
+
+      // Fetch activity data (last 7 days)
+      const activityResponse = await fetch(`${API_BASE_URL}/progress/activity?days=7`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (activityResponse.ok) {
+        const activityDataResponse = await activityResponse.json();
+        setActivityData(activityDataResponse.activity || []);
+      }
+
+      // Fetch skills/problem stats
+      const skillsResponse = await fetch(`${API_BASE_URL}/submissions/stats`, {
+        headers: { 'Authorization': `Bearer ${token}` }
+      });
+
+      if (skillsResponse.ok) {
+        const skillsDataResponse = await skillsResponse.json();
+        // Convert language breakdown to skills format
+        const languageBreakdown = skillsDataResponse.languageBreakdown || {};
+        const skills = Object.entries(languageBreakdown).map(([name, count]: [string, any]) => ({
+          name,
+          value: count,
+          color: getLanguageColor(name)
+        }));
+        setSkillsData(skills);
+      }
+
+    } catch (error) {
+      console.error('Error fetching dashboard data:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const getLanguageColor = (language: string): string => {
+    const colors: { [key: string]: string } = {
+      'JavaScript': '#f7df1e',
+      'TypeScript': '#3178c6',
+      'Python': '#3776ab',
+      'Java': '#007396',
+      'C++': '#00599c',
+      'C': '#a8b9cc',
+      'C#': '#239120',
+      'Go': '#00add8',
+      'Rust': '#ce422b',
+      'PHP': '#777bb4',
+      'Ruby': '#cc342d'
+    };
+    return colors[language] || '#6b7280';
+  };
 
   const formatTime = (minutes: number) => {
     const hours = Math.floor(minutes / 60);
@@ -141,8 +213,30 @@ export const UserDashboard: React.FC = () => {
   };
 
   const getCompletionPercentage = (completed: number, total: number) => {
+    if (total === 0) return 0;
     return Math.round((completed / total) * 100);
   };
+
+  if (loading) {
+    return (
+      <div className="space-y-6">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          {[...Array(4)].map((_, i) => (
+            <Card key={i} className="p-6 bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
+              <div className="animate-pulse space-y-3">
+                <div className="h-4 bg-gray-700 rounded w-24"></div>
+                <div className="h-8 bg-gray-700 rounded w-16"></div>
+                <div className="h-2 bg-gray-700 rounded"></div>
+              </div>
+            </Card>
+          ))}
+        </div>
+        <div className="text-center text-gray-400 py-12">
+          Loading your dashboard...
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-6">
@@ -251,38 +345,45 @@ export const UserDashboard: React.FC = () => {
           {/* Activity Chart */}
           <div className="p-6 bg-gradient-to-br from-gray-900 via-black to-gray-800 backdrop-blur-sm border border-gray-700 hover:border-gray-600 rounded-md shadow-lg hover:shadow-xl hover:shadow-black/60 transition-all duration-300">
             <h3 className="text-lg font-semibold bg-gradient-to-r from-white via-gray-100 to-gray-200 bg-clip-text text-transparent mb-4">Study Activity (Last 7 Days)</h3>
-            <ResponsiveContainer width="100%" height={300}>
-              <LineChart data={activityData}>
-                <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                <XAxis
-                  dataKey="date"
-                  stroke="#9CA3AF"
-                  tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                />
-                <YAxis stroke="#9CA3AF" />
-                <Tooltip
-                  contentStyle={{
-                    backgroundColor: '#1F2937',
-                    border: '1px solid #374151',
-                    borderRadius: '8px'
-                  }}
-                />
-                <Line
-                  type="monotone"
-                  dataKey="studyTime"
-                  stroke="#8B5CF6"
-                  strokeWidth={2}
-                  name="Study Time (min)"
-                />
-                <Line
-                  type="monotone"
-                  dataKey="problemsSolved"
-                  stroke="#10B981"
-                  strokeWidth={2}
-                  name="Problems Solved"
-                />
-              </LineChart>
-            </ResponsiveContainer>
+            {activityData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={activityData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                  <XAxis
+                    dataKey="date"
+                    stroke="#9CA3AF"
+                    tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                  />
+                  <YAxis stroke="#9CA3AF" />
+                  <Tooltip
+                    contentStyle={{
+                      backgroundColor: '#1F2937',
+                      border: '1px solid #374151',
+                      borderRadius: '8px'
+                    }}
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="studyTime"
+                    stroke="#8B5CF6"
+                    strokeWidth={2}
+                    name="Study Time (min)"
+                  />
+                  <Line
+                    type="monotone"
+                    dataKey="problemsSolved"
+                    stroke="#10B981"
+                    strokeWidth={2}
+                    name="Problems Solved"
+                  />
+                </LineChart>
+              </ResponsiveContainer>
+            ) : (
+              <div className="text-center py-12 text-gray-400">
+                <Clock className="mx-auto mb-3 opacity-30" size={48} />
+                <p>No activity data yet. Start learning to see your progress!</p>
+              </div>
+            )}
           </div>
 
           {/* Performance Metrics */}
@@ -324,25 +425,32 @@ export const UserDashboard: React.FC = () => {
 
             <Card className="p-6 bg-gray-900/50 backdrop-blur-sm border-gray-700">
               <h3 className="text-lg font-semibold text-white mb-4">Weekly Quiz Scores</h3>
-              <ResponsiveContainer width="100%" height={200}>
-                <BarChart data={activityData}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
-                  <XAxis
-                    dataKey="date"
-                    stroke="#9CA3AF"
-                    tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { weekday: 'short' })}
-                  />
-                  <YAxis stroke="#9CA3AF" />
-                  <Tooltip
-                    contentStyle={{
-                      backgroundColor: '#1F2937',
-                      border: '1px solid #374151',
-                      borderRadius: '8px'
-                    }}
-                  />
-                  <Bar dataKey="quizScore" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
+              {activityData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={activityData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#374151" />
+                    <XAxis
+                      dataKey="date"
+                      stroke="#9CA3AF"
+                      tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { weekday: 'short' })}
+                    />
+                    <YAxis stroke="#9CA3AF" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: '#1F2937',
+                        border: '1px solid #374151',
+                        borderRadius: '8px'
+                      }}
+                    />
+                    <Bar dataKey="quizScore" fill="#8B5CF6" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center py-12 text-gray-400">
+                  <Target className="mx-auto mb-3 opacity-30" size={48} />
+                  <p>No quiz data available</p>
+                </div>
+              )}
             </Card>
           </div>
         </TabsContent>
@@ -350,90 +458,119 @@ export const UserDashboard: React.FC = () => {
         <TabsContent value="achievements" className="space-y-6">
           <Card className="p-6 bg-gray-900/50 backdrop-blur-sm border-gray-700">
             <h3 className="text-lg font-semibold text-white mb-4">Achievements</h3>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              {achievements.map((achievement) => (
-                <Card
-                  key={achievement.id}
-                  className={`p-4 ${achievement.unlockedAt
-                    ? 'bg-gradient-to-r from-yellow-900/30 to-yellow-800/20 border-yellow-600'
-                    : 'bg-gray-800 border-gray-600'
-                    }`}
-                >
-                  <div className="flex items-start space-x-3">
-                    <div className="text-2xl">{achievement.icon}</div>
-                    <div className="flex-1">
-                      <h4 className={`font-semibold ${achievement.unlockedAt ? 'text-yellow-300' : 'text-gray-300'
-                        }`}>
-                        {achievement.title}
-                      </h4>
-                      <p className="text-sm text-gray-400 mt-1">
-                        {achievement.description}
-                      </p>
+            {achievements.length > 0 ? (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {achievements.map((achievement) => (
+                  <Card
+                    key={achievement.id}
+                    className={`p-4 ${achievement.unlockedAt
+                      ? 'bg-gradient-to-r from-yellow-900/30 to-yellow-800/20 border-yellow-600'
+                      : 'bg-gray-800 border-gray-600'
+                      }`}
+                  >
+                    <div className="flex items-start space-x-3">
+                      <div className="text-2xl">{achievement.icon}</div>
+                      <div className="flex-1">
+                        <h4 className={`font-semibold ${achievement.unlockedAt ? 'text-yellow-300' : 'text-gray-300'
+                          }`}>
+                          {achievement.title}
+                        </h4>
+                        <p className="text-sm text-gray-400 mt-1">
+                          {achievement.description}
+                        </p>
 
-                      {achievement.unlockedAt ? (
-                        <Badge variant="secondary" className="mt-2 bg-yellow-600 text-yellow-100">
-                          <Award size={12} className="mr-1" />
-                          Unlocked {achievement.unlockedAt.toLocaleDateString()}
-                        </Badge>
-                      ) : achievement.progress !== undefined ? (
-                        <div className="mt-2">
-                          <Progress
-                            value={(achievement.progress! / achievement.maxProgress!) * 100}
-                            className="w-full"
-                          />
-                          <p className="text-xs text-gray-400 mt-1">
-                            {achievement.progress}/{achievement.maxProgress}
-                          </p>
-                        </div>
-                      ) : (
-                        <Badge variant="outline" className="mt-2">
-                          Locked
-                        </Badge>
-                      )}
+                        {achievement.unlockedAt ? (
+                          <Badge variant="secondary" className="mt-2 bg-yellow-600 text-yellow-100">
+                            <Award size={12} className="mr-1" />
+                            Unlocked {new Date(achievement.unlockedAt).toLocaleDateString()}
+                          </Badge>
+                        ) : achievement.progress !== undefined ? (
+                          <div className="mt-2">
+                            <Progress
+                              value={(achievement.progress! / achievement.maxProgress!) * 100}
+                              className="w-full"
+                            />
+                            <p className="text-xs text-gray-400 mt-1">
+                              {achievement.progress}/{achievement.maxProgress}
+                            </p>
+                          </div>
+                        ) : (
+                          <Badge variant="outline" className="mt-2">
+                            Locked
+                          </Badge>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                </Card>
-              ))}
-            </div>
+                  </Card>
+                ))}
+              </div>
+            ) : (
+              <div className="text-center py-12 text-gray-400">
+                <Trophy className="mx-auto mb-3 opacity-30" size={48} />
+                <p>Start learning to unlock achievements!</p>
+              </div>
+            )}
           </Card>
         </TabsContent>
 
         <TabsContent value="skills" className="space-y-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <Card className="p-6 bg-gray-900/50 backdrop-blur-sm border-gray-700">
-              <h3 className="text-lg font-semibold text-white mb-4">Skill Levels</h3>
-              <div className="space-y-4">
-                {skillsData.map((skill) => (
-                  <div key={skill.name} className="space-y-2">
-                    <div className="flex items-center justify-between">
-                      <span className="text-gray-300">{skill.name}</span>
-                      <span className="text-white font-semibold">{skill.value}%</span>
+              <h3 className="text-lg font-semibold text-white mb-4">Programming Languages</h3>
+              {skillsData.length > 0 ? (
+                <div className="space-y-4">
+                  {skillsData.slice(0, 5).map((skill) => (
+                    <div key={skill.name} className="space-y-2">
+                      <div className="flex items-center justify-between">
+                        <span className="text-gray-300">{skill.name}</span>
+                        <span className="text-white font-semibold">{skill.value} submissions</span>
+                      </div>
+                      <div className="w-full bg-gray-700 rounded-full h-2">
+                        <div
+                          className="h-2 rounded-full transition-all duration-300"
+                          style={{
+                            width: `${Math.min((skill.value / Math.max(...skillsData.map(s => s.value))) * 100, 100)}%`,
+                            backgroundColor: skill.color
+                          }}
+                        />
+                      </div>
                     </div>
-                    <Progress value={skill.value} className="w-full" />
-                  </div>
-                ))}
-              </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-12 text-gray-400">
+                  <Code className="mx-auto mb-3 opacity-30" size={48} />
+                  <p>Solve problems to track your language skills</p>
+                </div>
+              )}
             </Card>
 
             <Card className="p-6 bg-gray-900/50 backdrop-blur-sm border-gray-700">
-              <h3 className="text-lg font-semibold text-white mb-4">Skill Distribution</h3>
-              <ResponsiveContainer width="100%" height={250}>
-                <PieChart>
-                  <Pie
-                    data={skillsData}
-                    cx="50%"
-                    cy="50%"
-                    outerRadius={80}
-                    dataKey="value"
-                    label={({ name, value }) => `${name}: ${value}%`}
-                  >
-                    {skillsData.map((entry, index) => (
-                      <Cell key={`cell-${index}`} fill={entry.color} />
-                    ))}
-                  </Pie>
-                  <Tooltip />
-                </PieChart>
-              </ResponsiveContainer>
+              <h3 className="text-lg font-semibold text-white mb-4">Language Distribution</h3>
+              {skillsData.length > 0 ? (
+                <ResponsiveContainer width="100%" height={250}>
+                  <PieChart>
+                    <Pie
+                      data={skillsData}
+                      cx="50%"
+                      cy="50%"
+                      outerRadius={80}
+                      dataKey="value"
+                      label={({ name, value }) => `${name}: ${value}`}
+                    >
+                      {skillsData.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={entry.color} />
+                      ))}
+                    </Pie>
+                    <Tooltip />
+                  </PieChart>
+                </ResponsiveContainer>
+              ) : (
+                <div className="text-center py-12 text-gray-400">
+                  <Target className="mx-auto mb-3 opacity-30" size={48} />
+                  <p>No language data available yet</p>
+                </div>
+              )}
             </Card>
           </div>
         </TabsContent>

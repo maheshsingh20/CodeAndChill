@@ -1,7 +1,7 @@
 import express from 'express';
 import Leaderboard from '../models/Leaderboard';
-import User from '../models/User';
-import { authMiddleware } from '../middleware/auth';
+import { User } from '../models/User';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
 
 const router = express.Router();
 
@@ -37,9 +37,9 @@ router.get('/global', async (req, res) => {
 });
 
 // Get user's rank and nearby users
-router.get('/rank', authMiddleware, async (req, res) => {
+router.get('/rank', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const userEntry = await Leaderboard.findOne({ userId })
       .populate('userId', 'username email profilePicture');
@@ -165,9 +165,9 @@ router.get('/stats', async (req, res) => {
 });
 
 // Get user's achievement progress
-router.get('/achievements', authMiddleware, async (req, res) => {
+router.get('/achievements', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const userEntry = await Leaderboard.findOne({ userId });
     if (!userEntry) {
@@ -269,7 +269,7 @@ router.get('/achievements', authMiddleware, async (req, res) => {
           ...achievement,
           progress: currentValue,
           maxProgress: targetValue,
-          progressPercentage: Math.min((currentValue / targetValue) * 100, 100)
+          progressPercentage: Math.min((currentValue / (targetValue ?? 1)) * 100, 100)
         };
       }
       return achievement;

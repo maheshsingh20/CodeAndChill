@@ -44,7 +44,7 @@ router.get("/by-subject/:subjectSlug", authMiddleware, async (req: AuthRequest, 
     const quizzes = await Quiz.find({ subject: subject._id }).select("title slug").lean();
     
     const attempts = await QuizAttempt.find({
-      userId: req.user._id,
+      userId: req.user?._id,
       quizId: { $in: quizzes.map((q) => q._id) },
     });
 
@@ -109,7 +109,7 @@ router.post("/:quizId/submit", authMiddleware, async (req: AuthRequest, res: Res
     const percentage = totalQuestions > 0 ? (score / totalQuestions) * 100 : 0;
 
     const attempt = new QuizAttempt({
-      userId: req.user._id,
+      userId: req.user?._id,
       quizId: quiz._id,
       score,
       totalQuestions: totalQuestions,
@@ -118,7 +118,7 @@ router.post("/:quizId/submit", authMiddleware, async (req: AuthRequest, res: Res
     });
 
     await attempt.save();
-    await User.findByIdAndUpdate(req.user._id, { $push: { attempts: attempt._id } });
+    await User.findByIdAndUpdate(req.user?._id, { $push: { attempts: attempt._id } });
 
     res.status(201).json({ attemptId: attempt._id });
   } catch (error) {
@@ -132,7 +132,7 @@ router.get("/results/:attemptId", authMiddleware, async (req: AuthRequest, res: 
   try {
     const attempt = await QuizAttempt.findById(req.params.attemptId).lean();
     
-    if (!attempt || attempt.userId.toString() !== req.user._id.toString()) {
+    if (!attempt || attempt.userId.toString() !== req.user?._id.toString()) {
       res.status(404).json({ message: "Attempt not found" });
       return;
     }

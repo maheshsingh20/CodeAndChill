@@ -24,6 +24,10 @@ router.post("/send", authMiddleware, async (req: AuthRequest, res: Response): Pr
     }
 
     const user = req.user;
+    if (!user) {
+      res.status(401).json({ message: "Unauthorized" });
+      return;
+    }
     
     const feedbackData = {
       userName: userName || user.name,

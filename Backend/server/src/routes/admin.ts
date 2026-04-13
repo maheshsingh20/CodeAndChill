@@ -433,12 +433,13 @@ router.post("/problems", adminAuthMiddleware, checkPermission('edit_content'), a
     });
   } catch (error) {
     console.error("Error creating problem:", error);
-    if (error.name === 'ValidationError') {
+    const err = error as any;
+    if (err.name === 'ValidationError') {
       res.status(400).json({ 
         message: "Validation error", 
-        details: error.message 
+        details: err.message 
       });
-    } else if (error.code === 11000) {
+    } else if (err.code === 11000) {
       res.status(400).json({ 
         message: "Problem with this slug already exists" 
       });
@@ -497,12 +498,13 @@ router.put("/problems/:id", adminAuthMiddleware, checkPermission('edit_content')
     });
   } catch (error) {
     console.error("Error updating problem:", error);
-    if (error.name === 'ValidationError') {
+    const err = error as any;
+    if (err.name === 'ValidationError') {
       res.status(400).json({ 
         message: "Validation error", 
-        details: error.message 
+        details: err.message 
       });
-    } else if (error.code === 11000) {
+    } else if (err.code === 11000) {
       res.status(400).json({ 
         message: "Problem with this slug already exists" 
       });

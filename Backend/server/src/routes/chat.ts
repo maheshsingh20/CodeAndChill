@@ -1,13 +1,13 @@
 import express from 'express';
 import Chat from '../models/Chat';
 import { User } from '../models/User';
-import { authMiddleware } from '../middleware/auth';
+import { authMiddleware, AuthRequest } from '../middleware/auth';
 import { chatService } from '../services/chatService';
 
 const router = express.Router();
 
 // Get all chats for current user
-router.get('/chats', authMiddleware, async (req, res) => {
+router.get('/chats', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const userId = req.user?._id;
     
@@ -34,7 +34,7 @@ router.get('/chats', authMiddleware, async (req, res) => {
 });
 
 // Get or create chat with another user
-router.post('/chats/direct', authMiddleware, async (req, res) => {
+router.post('/chats/direct', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const userId = req.user?._id;
     const { recipientId } = req.body;
@@ -52,8 +52,8 @@ router.post('/chats/direct', authMiddleware, async (req, res) => {
     if (!chat) {
       // Get user details
       const [currentUser, recipient] = await Promise.all([
-        User.findById(userId).select('name avatar'),
-        User.findById(recipientId).select('name avatar')
+        User.findById(userId).select('name profilePicture'),
+        User.findById(recipientId).select('name profilePicture')
       ]);
 
       if (!currentUser || !recipient) {
@@ -67,12 +67,12 @@ router.post('/chats/direct', authMiddleware, async (req, res) => {
           {
             userId: currentUser._id,
             name: currentUser.name,
-            avatar: currentUser.avatar
+            avatar: currentUser.profilePicture
           },
           {
             userId: recipient._id,
             name: recipient.name,
-            avatar: recipient.avatar
+            avatar: recipient.profilePicture
           }
         ],
         messages: [],
@@ -91,7 +91,7 @@ router.post('/chats/direct', authMiddleware, async (req, res) => {
 });
 
 // Get chat by ID with messages
-router.get('/chats/:chatId', authMiddleware, async (req, res) => {
+router.get('/chats/:chatId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const userId = req.user?._id;
     const { chatId } = req.params;
@@ -124,7 +124,7 @@ router.get('/chats/:chatId', authMiddleware, async (req, res) => {
 });
 
 // Search users to start chat
-router.get('/users/search', authMiddleware, async (req, res) => {
+router.get('/users/search', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const userId = req.user?._id;
     const { query } = req.query;
@@ -140,13 +140,13 @@ router.get('/users/search', authMiddleware, async (req, res) => {
         { email: { $regex: query, $options: 'i' } }
       ]
     })
-      .select('name email avatar')
+      .select('name email profilePicture')
       .limit(20);
 
     // Add online status
     const usersWithStatus = users.map(user => ({
       ...user.toObject(),
-      isOnline: chatService.isUserOnline(user._id.toString())
+      isOnline: chatService.isUserOnline((user._id as any).toString())
     }));
 
     res.json(usersWithStatus);
@@ -157,7 +157,7 @@ router.get('/users/search', authMiddleware, async (req, res) => {
 });
 
 // Get online users
-router.get('/users/online', authMiddleware, async (req, res) => {
+router.get('/users/online', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const onlineUsers = chatService.getOnlineUsers();
     res.json(onlineUsers);
@@ -168,7 +168,7 @@ router.get('/users/online', authMiddleware, async (req, res) => {
 });
 
 // Delete chat
-router.delete('/chats/:chatId', authMiddleware, async (req, res) => {
+router.delete('/chats/:chatId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const userId = req.user?._id;
     const { chatId } = req.params;
@@ -189,6 +189,59 @@ router.delete('/chats/:chatId', authMiddleware, async (req, res) => {
   } catch (error) {
     console.error('Error deleting chat:', error);
     res.status(500).json({ error: 'Failed to delete chat' });
+  }
+});
+
+// Delete a specific message
+router.delete('/chats/:chatId/messages/:messageId', authMiddleware, async (req: AuthRequest, res) => {
+  try {
+    const userId = req.user?._id;
+    const { chatId, messageId } = req.params;
+
+    const chat = await Chat.findById(chatId);
+
+    if (!chat) {
+      return res.status(404).json({ error: 'Chat not found' });
+    }
+
+    // Check if user is participant
+    if (!chat.participants.some(p => p.toString() === userId)) {
+      return res.status(403).json({ error: 'Not authorized' });
+    }
+
+    // Find the message
+    const messageIndex = chat.messages.findIndex(m => m._id?.toString() === messageId);
+    
+    if (messageIndex === -1) {
+      return res.status(404).json({ error: 'Message not found' });
+    }
+
+    const message = chat.messages[messageIndex];
+
+    // Only allow sender to delete their own message
+    if (message.senderId.toString() !== userId) {
+      return res.status(403).json({ error: 'You can only delete your own messages' });
+    }
+
+    // Remove the message
+    chat.messages.splice(messageIndex, 1);
+
+    // Update last message if the deleted message was the last one
+    if (chat.messages.length > 0) {
+      const lastMsg = chat.messages[chat.messages.length - 1];
+      chat.lastMessage = lastMsg.content;
+      chat.lastMessageTime = lastMsg.timestamp;
+    } else {
+      chat.lastMessage = undefined;
+      chat.lastMessageTime = undefined;
+    }
+
+    await chat.save();
+
+    res.json({ message: 'Message deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting message:', error);
+    res.status(500).json({ error: 'Failed to delete message' });
   }
 });
 

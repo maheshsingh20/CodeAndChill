@@ -267,7 +267,7 @@ router.get('/:pathId', async (req, res) => {
 router.post('/:pathId/enroll', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const path = await LearningPath.findById(pathId);
     if (!path) {
@@ -290,7 +290,7 @@ router.post('/:pathId/enroll', authMiddleware, async (req: AuthRequest, res) => 
         timeSpent: 0
       })),
       milestoneProgress: path.milestones.map((milestone, index) => ({
-        milestoneId: milestone._id || index.toString(),
+        milestoneId: (milestone as any)._id || index.toString(),
         isCompleted: false
       }))
     });
@@ -313,7 +313,7 @@ router.post('/:pathId/enroll', authMiddleware, async (req: AuthRequest, res) => 
 router.get('/:pathId/progress', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const progress = await UserLearningPath.findOne({ userId, pathId })
       .populate('pathId', 'title description courses milestones')
@@ -366,7 +366,7 @@ router.post('/:pathId/progress/:courseId', authMiddleware, async (req: AuthReque
   try {
     const { pathId, courseId } = req.params;
     const { progress, timeSpent } = req.body;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const userPath = await UserLearningPath.findOne({ userId, pathId });
     if (!userPath) {
@@ -416,7 +416,7 @@ router.post('/:pathId/progress/:courseId', authMiddleware, async (req: AuthReque
 // Get user's enrolled learning paths
 router.get('/user/enrolled', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const enrolledPaths = await UserLearningPath.find({ userId, isActive: true })
       .populate('pathId', 'title description icon difficulty estimatedDuration tags')
@@ -434,7 +434,7 @@ router.post('/:pathId/rate', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId } = req.params;
     const { rating, review } = req.body;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     if (rating < 1 || rating > 5) {
       return res.status(400).json({ error: 'Rating must be between 1 and 5' });
@@ -509,7 +509,7 @@ router.get('/leaderboard', async (req, res) => {
 // Get user analytics
 router.get('/user/analytics', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const { timeframe = 'month' } = req.query;
     
     // Mock analytics data for now
@@ -535,7 +535,7 @@ router.get('/user/analytics', authMiddleware, async (req: AuthRequest, res) => {
 // Get user stats
 router.get('/user/stats', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const enrolledPaths = await UserLearningPath.countDocuments({ userId, isActive: true });
     const completedPaths = await UserLearningPath.countDocuments({ userId, overallProgress: 100 });
@@ -563,7 +563,7 @@ router.get('/user/stats', authMiddleware, async (req: AuthRequest, res) => {
 // Get weekly activity
 router.get('/user/activity/weekly', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     // Mock weekly activity data
     const weeklyActivity = [
@@ -586,7 +586,7 @@ router.get('/user/activity/weekly', authMiddleware, async (req: AuthRequest, res
 // Create learning path
 router.post('/', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const pathData = req.body;
     
     const newPath = new LearningPath({
@@ -612,7 +612,7 @@ router.post('/', authMiddleware, async (req: AuthRequest, res) => {
 router.put('/:pathId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const pathData = req.body;
     
     const path = await LearningPath.findById(pathId);
@@ -626,7 +626,7 @@ router.put('/:pathId', authMiddleware, async (req: AuthRequest, res) => {
     }
     
     Object.assign(path, pathData);
-    path.updatedAt = new Date();
+    (path as any).updatedAt = new Date();
     
     await path.save();
     
@@ -641,7 +641,7 @@ router.put('/:pathId', authMiddleware, async (req: AuthRequest, res) => {
 router.delete('/:pathId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const path = await LearningPath.findById(pathId);
     
@@ -668,7 +668,7 @@ export default router;
 router.get('/:pathId/courses/:courseId/content', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId, courseId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     // Check if user is enrolled
     const userPath = await UserLearningPath.findOne({ userId, pathId });
@@ -733,7 +733,7 @@ router.post('/:pathId/discussions', authMiddleware, async (req: AuthRequest, res
   try {
     const { pathId } = req.params;
     const { content } = req.body;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const Discussion = require('../models/Discussion').default;
     
@@ -756,7 +756,7 @@ router.post('/:pathId/discussions', authMiddleware, async (req: AuthRequest, res
 router.post('/:pathId/discussions/:discussionId/like', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { discussionId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const Discussion = require('../models/Discussion').default;
     
@@ -785,7 +785,7 @@ router.post('/:pathId/discussions/:discussionId/reply', authMiddleware, async (r
   try {
     const { discussionId } = req.params;
     const { content } = req.body;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const Discussion = require('../models/Discussion').default;
     
@@ -814,7 +814,7 @@ router.post('/:pathId/discussions/:discussionId/reply', authMiddleware, async (r
 router.get('/:pathId/achievements', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const Achievement = require('../models/Achievement').default;
     
@@ -830,7 +830,7 @@ router.get('/:pathId/achievements', authMiddleware, async (req: AuthRequest, res
 router.post('/:pathId/achievements/check', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const Achievement = require('../models/Achievement').default;
     const LearningStreak = require('../models/LearningStreak').default;
@@ -938,7 +938,7 @@ router.post('/:pathId/achievements/check', authMiddleware, async (req: AuthReque
 // Learning Streak
 router.get('/user/streak', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const LearningStreak = require('../models/LearningStreak').default;
     
@@ -974,7 +974,7 @@ router.get('/user/streak', authMiddleware, async (req: AuthRequest, res) => {
 
 router.post('/user/streak/update', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const LearningStreak = require('../models/LearningStreak').default;
     
@@ -1034,7 +1034,7 @@ router.post('/user/streak/update', authMiddleware, async (req: AuthRequest, res)
 // Bookmarks
 router.get('/user/bookmarks', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const Bookmark = require('../models/Bookmark').default;
     
@@ -1051,7 +1051,7 @@ router.get('/user/bookmarks', authMiddleware, async (req: AuthRequest, res) => {
 router.post('/:pathId/bookmark', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const Bookmark = require('../models/Bookmark').default;
     
@@ -1077,7 +1077,7 @@ router.post('/:pathId/bookmark', authMiddleware, async (req: AuthRequest, res) =
 router.get('/:pathId/bookmark/status', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const Bookmark = require('../models/Bookmark').default;
     
@@ -1095,7 +1095,7 @@ router.post('/:pathId/courses/:courseId/quiz/:lessonId', authMiddleware, async (
   try {
     const { pathId, courseId, lessonId } = req.params;
     const { quizTitle, totalQuestions, correctAnswers, answers, timeSpent } = req.body;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     const QuizResult = require('../models/QuizResult').default;
 
@@ -1131,7 +1131,7 @@ router.post('/:pathId/courses/:courseId/quiz/:lessonId', authMiddleware, async (
 router.get('/:pathId/courses/:courseId/quiz-results', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId, courseId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     const QuizResult = require('../models/QuizResult').default;
 
@@ -1152,7 +1152,7 @@ router.get('/:pathId/courses/:courseId/quiz-results', authMiddleware, async (req
 router.post('/:pathId/courses/:courseId/certificate', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId, courseId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     const Certificate = require('../models/Certificate').default;
     const { Course } = require('../models/Course');
@@ -1232,7 +1232,7 @@ router.post('/:pathId/courses/:courseId/certificate', authMiddleware, async (req
 // Get User Certificates
 router.get('/user/certificates', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const Certificate = require('../models/Certificate').default;
 
     const certificates = await Certificate.find({ userId })
@@ -1251,7 +1251,7 @@ router.get('/user/certificates', authMiddleware, async (req: AuthRequest, res) =
 router.get('/:pathId/certificate', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { pathId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const userPath = await UserLearningPath.findOne({ userId, pathId })
       .populate('pathId', 'title');
@@ -1268,7 +1268,7 @@ router.get('/:pathId/certificate', authMiddleware, async (req: AuthRequest, res)
     
     res.json({
       userName: user.name,
-      pathTitle: userPath.pathId.title,
+      pathTitle: (userPath.pathId as any).title,
       completionDate: userPath.completedAt,
       certificateId: `CERT-${pathId}-${userId}`,
       pathId

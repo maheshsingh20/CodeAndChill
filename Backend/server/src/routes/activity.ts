@@ -7,7 +7,7 @@ const router = express.Router();
 // Start a new activity session
 router.post('/session/start', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const { activityType, metadata } = req.body;
     
     const today = new Date();
@@ -83,7 +83,7 @@ router.post('/session/start', authMiddleware, async (req: AuthRequest, res) => {
     }
     
     res.json({ 
-      sessionId: activityLog.sessions[activityLog.sessions.length - 1]._id,
+      sessionId: (activityLog.sessions[activityLog.sessions.length - 1] as any)._id,
       message: 'Session started successfully' 
     });
   } catch (error) {
@@ -95,7 +95,7 @@ router.post('/session/start', authMiddleware, async (req: AuthRequest, res) => {
 // Update current activity
 router.post('/update', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const { sessionId, activityType, metadata, timeSpent } = req.body;
     
     const today = new Date();
@@ -112,7 +112,7 @@ router.post('/update', authMiddleware, async (req: AuthRequest, res) => {
         }
         
         // Find the current session
-        const currentSession = activityLog.sessions.find(s => s._id?.toString() === sessionId);
+        const currentSession = activityLog.sessions.find(s => (s as any)._id?.toString() === sessionId);
         
         if (!currentSession) {
           return res.status(404).json({ error: 'Session not found' });
@@ -168,7 +168,7 @@ router.post('/update', authMiddleware, async (req: AuthRequest, res) => {
 // End current session
 router.post('/session/end', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const { sessionId, timeSpent } = req.body;
     
     const today = new Date();
@@ -196,7 +196,7 @@ router.post('/session/end', authMiddleware, async (req: AuthRequest, res) => {
     }
     
     // Update the last activity duration and recalculate totals in a separate operation
-    const session = result.sessions.find(s => s._id?.toString() === sessionId);
+    const session = result.sessions.find(s => (s as any)._id?.toString() === sessionId);
     if (session && session.activities.length > 0) {
       const lastActivityIndex = session.activities.length - 1;
       const calculatedDuration = timeSpent || Math.floor((new Date().getTime() - session.activities[lastActivityIndex].startTime.getTime()) / 1000);
@@ -240,7 +240,7 @@ router.post('/session/end', authMiddleware, async (req: AuthRequest, res) => {
 // Get daily activity data
 router.get('/daily/:days?', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const days = parseInt(req.params.days || '7');
     
     const endDate = new Date();
@@ -288,7 +288,7 @@ router.get('/daily/:days?', authMiddleware, async (req: AuthRequest, res) => {
 // Get activity breakdown by type
 router.get('/breakdown/:days?', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const days = parseInt(req.params.days || '7');
     
     const endDate = new Date();
@@ -330,7 +330,7 @@ router.get('/breakdown/:days?', authMiddleware, async (req: AuthRequest, res) =>
 // Get current session info
 router.get('/session/current', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     
     const today = new Date();
     today.setHours(0, 0, 0, 0);
@@ -350,7 +350,7 @@ router.get('/session/current', authMiddleware, async (req: AuthRequest, res) => 
     
     res.json({
       hasActiveSession: true,
-      sessionId: activeSession._id,
+      sessionId: (activeSession as any)._id,
       startTime: activeSession.startTime,
       currentActivity: activeSession.activities[activeSession.activities.length - 1]?.type,
       totalTimeToday: Math.floor(activityLog.totalTimeSpent / 60) // in minutes

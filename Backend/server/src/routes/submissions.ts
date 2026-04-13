@@ -9,10 +9,10 @@ const router = express.Router();
 const codeExecutor = new CodeExecutor();
 
 // Submit solution for a problem
-router.post('/', authMiddleware, async (req, res) => {
+router.post('/', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { problemId, code, language, testResults, score, status, executionTime, passedTestCases, totalTestCases } = req.body;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     console.log('📝 Submission request received:');
     console.log('- Problem ID:', problemId);
@@ -86,7 +86,7 @@ router.post('/', authMiddleware, async (req, res) => {
       if ((score || 0) > existingUserProblem.bestScore) {
         existingUserProblem.bestScore = score || 0;
         existingUserProblem.bestExecutionTime = executionTime || 0;
-        existingUserProblem.bestSubmissionId = submission._id;
+        existingUserProblem.bestSubmissionId = submission._id as any;
         existingUserProblem.language = language;
       }
       
@@ -152,10 +152,10 @@ router.post('/', authMiddleware, async (req, res) => {
 });
 
 // Get submission details
-router.get('/:submissionId', authMiddleware, async (req, res) => {
+router.get('/:submissionId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { submissionId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     const submission = await Submission.findOne({ 
       _id: submissionId, 
@@ -174,10 +174,10 @@ router.get('/:submissionId', authMiddleware, async (req, res) => {
 });
 
 // Get user's submissions for a problem
-router.get('/problem/:problemId', authMiddleware, async (req, res) => {
+router.get('/problem/:problemId', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { problemId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const { page = 1, limit = 10 } = req.query;
 
     const submissions = await Submission.find({ 
@@ -207,9 +207,9 @@ router.get('/problem/:problemId', authMiddleware, async (req, res) => {
 });
 
 // Get user's all submissions
-router.get('/', authMiddleware, async (req, res) => {
+router.get('/', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const { page = 1, limit = 20, status, language } = req.query;
 
     const filter: any = { userId };
@@ -240,9 +240,9 @@ router.get('/', authMiddleware, async (req, res) => {
 });
 
 // Get submission statistics
-router.get('/stats/summary', authMiddleware, async (req, res) => {
+router.get('/stats/summary', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     const stats = await Submission.aggregate([
       { $match: { userId: userId } },
@@ -300,7 +300,7 @@ router.get('/stats/summary', authMiddleware, async (req, res) => {
 router.get('/problem/:problemId/status', authMiddleware, async (req: AuthRequest, res) => {
   try {
     const { problemId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     const userProblem = await UserProblem.findOne({ userId, problemId });
     
@@ -324,7 +324,7 @@ router.get('/problem/:problemId/status', authMiddleware, async (req: AuthRequest
 // Get user's solved problems by difficulty
 router.get('/solved/by-difficulty', authMiddleware, async (req: AuthRequest, res) => {
   try {
-    const userId = req.user._id;
+    const userId = req.user?._id;
 
     const solvedProblems = await UserProblem.find({ 
       userId, 
@@ -333,7 +333,7 @@ router.get('/solved/by-difficulty', authMiddleware, async (req: AuthRequest, res
     .populate('problemId', 'title slug difficulty topic')
     .sort({ solvedAt: -1 });
 
-    const groupedByDifficulty = {
+    const groupedByDifficulty: Record<string, any[]> = {
       Easy: [],
       Medium: [],
       Hard: []

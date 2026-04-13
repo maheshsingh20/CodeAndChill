@@ -26,7 +26,7 @@ router.post("/", authMiddleware, async (req: AuthRequest, res: Response): Promis
       quote,
       skills,
       linkedinUrl,
-      userId: req.user._id,
+      userId: req.user?._id,
       image: `https://randomuser.me/api/portraits/lego/${Math.floor(Math.random() * 9)}.jpg`,
     });
 

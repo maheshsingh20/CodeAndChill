@@ -12,6 +12,7 @@ export const LearningPathProgress: React.FC = () => {
   const { user } = useUser();
   const [enrolledPaths, setEnrolledPaths] = useState<UserLearningPath[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     if (user) {
@@ -24,10 +25,13 @@ export const LearningPathProgress: React.FC = () => {
   const fetchEnrolledPaths = async () => {
     try {
       setLoading(true);
+      setError(null);
       const paths = await LearningPathService.getEnrolledPaths();
       setEnrolledPaths(paths.slice(0, 3)); // Show only top 3 in dashboard
     } catch (error) {
       console.error('Error fetching enrolled paths:', error);
+      setError('Failed to load learning paths');
+      setEnrolledPaths([]);
     } finally {
       setLoading(false);
     }
@@ -97,6 +101,28 @@ export const LearningPathProgress: React.FC = () => {
     );
   }
 
+  if (error) {
+    return (
+      <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
+        <CardHeader>
+          <CardTitle className="text-white flex items-center">
+            <BookOpen className="mr-2" size={20} />
+            Learning Paths
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="text-center py-8">
+          <p className="text-gray-400 mb-4">{error}</p>
+          <Button
+            onClick={fetchEnrolledPaths}
+            className="bg-purple-600 hover:bg-purple-700"
+          >
+            Try Again
+          </Button>
+        </CardContent>
+      </Card>
+    );
+  }
+
   if (enrolledPaths.length === 0) {
     return (
       <Card className="bg-gradient-to-br from-gray-900 via-black to-gray-800 border border-gray-700">
@@ -139,46 +165,57 @@ export const LearningPathProgress: React.FC = () => {
       <CardContent>
         <div className="space-y-4">
           {enrolledPaths.map((userPath) => {
-            const progress = userPath.overallProgress;
-            const isCompleted = progress === 100;
+            try {
+              const progress = userPath?.overallProgress || 0;
+              const isCompleted = progress === 100;
+              const pathTitle = userPath?.pathId?.title || 'Unknown Path';
+              const pathIcon = userPath?.pathId?.icon || '📚';
+              const pathId = userPath?.pathId?._id;
+              const completedCourses = userPath?.progress?.filter(p => p?.progress === 100).length || 0;
+              const totalCourses = userPath?.progress?.length || 0;
+              const timeSpent = userPath?.totalTimeSpent || 0;
 
-            return (
-              <div key={userPath._id} className="space-y-2">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <span className="text-gray-300 text-sm">
-                      {userPath.pathId.icon} {userPath.pathId.title}
+              return (
+                <div key={userPath._id} className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-gray-300 text-sm">
+                        {pathIcon} {pathTitle}
+                      </span>
+                      {isCompleted && (
+                        <Award className="text-green-400" size={14} />
+                      )}
+                    </div>
+                    <span className={`font-medium text-sm ${getProgressColor(progress)}`}>
+                      {progress}%
                     </span>
-                    {isCompleted && (
-                      <Award className="text-green-400" size={14} />
-                    )}
                   </div>
-                  <span className={`font-medium text-sm ${getProgressColor(progress)}`}>
-                    {progress}%
-                  </span>
-                </div>
-                <div className="relative">
-                  <Progress
-                    value={progress}
-                    className="h-2"
-                  />
-                  <div
-                    className={`absolute top-0 left-0 h-2 rounded-full transition-all duration-300 ${getProgressBarColor(progress)}`}
-                    style={{ width: `${progress}%` }}
-                  />
-                </div>
+                  <div className="relative">
+                    <Progress
+                      value={progress}
+                      className="h-2"
+                    />
+                    <div
+                      className={`absolute top-0 left-0 h-2 rounded-full transition-all duration-300 ${getProgressBarColor(progress)}`}
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
 
-                {/* Course Progress Summary */}
-                <div className="flex items-center justify-between text-xs text-gray-500">
-                  <span>
-                    {userPath.progress.filter(p => p.progress === 100).length} / {userPath.progress.length} courses
-                  </span>
-                  <span>
-                    {LearningPathService.formatDuration(userPath.totalTimeSpent / 60)} spent
-                  </span>
+                  {/* Course Progress Summary */}
+                  <div className="flex items-center justify-between text-xs text-gray-500">
+                    <span>
+                      {completedCourses} / {totalCourses} courses
+                    </span>
+                    <span>
+                      {LearningPathService.formatDuration(timeSpent / 60)} spent
+                    </span>
+                  </div>
                 </div>
-              </div>
-            );
+              );
+            } catch (err) {
+              console.error('Error rendering path:', err);
+              return null;
+            }
           })}
         </div>
 
@@ -189,7 +226,7 @@ export const LearningPathProgress: React.FC = () => {
             </Button>
           </Link>
 
-          {enrolledPaths.length > 0 && enrolledPaths[0].pathId && (
+          {enrolledPaths.length > 0 && enrolledPaths[0]?.pathId?._id && (
             <div className="text-center">
               <Link
                 to={`/learning-paths/${enrolledPaths[0].pathId._id}`}

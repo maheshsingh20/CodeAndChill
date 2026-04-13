@@ -17,7 +17,8 @@ import {
   BarChart3,
   UserCheck,
   FileText,
-  Zap
+  Zap,
+  BookOpen
 } from "lucide-react";
 import {
   LineChart,

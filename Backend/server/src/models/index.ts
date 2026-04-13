@@ -18,5 +18,6 @@ export { default as LearningStreak } from "./LearningStreak";
 export { default as Bookmark } from "./Bookmark";
 export { default as Video } from "./Video";
 export { default as QuizResult } from "./QuizResult";
+export { default as Contest } from "./Contest";
 export { default as Certificate } from "./Certificate";
 export { CollaborativeSession } from "./CollaborativeSession";

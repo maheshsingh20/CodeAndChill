@@ -31,14 +31,14 @@ class ChatService {
       socket.on('authenticate', async (token: string) => {
         try {
           const decoded = jwt.verify(token, process.env.JWT_SECRET!) as any;
-          const user = await User.findById(decoded.userId).select('name avatar');
+          const user = await User.findById(decoded.userId).select('name profilePicture');
           
           if (user) {
             this.onlineUsers.set(decoded.userId, {
               userId: decoded.userId,
               socketId: socket.id,
               name: user.name,
-              avatar: user.avatar
+              avatar: user.profilePicture
             });
 
             socket.data.userId = decoded.userId;
@@ -48,7 +48,7 @@ class ChatService {
             this.io?.emit('user:online', {
               userId: decoded.userId,
               name: user.name,
-              avatar: user.avatar
+              avatar: user.profilePicture
             });
 
             console.log(`✅ User authenticated: ${user.name} (${decoded.userId})`);
@@ -86,7 +86,7 @@ class ChatService {
             return;
           }
 
-          const user = await User.findById(userId).select('name avatar');
+          const user = await User.findById(userId).select('name profilePicture');
           if (!user) {
             socket.emit('error', { message: 'User not found' });
             return;
@@ -108,7 +108,7 @@ class ChatService {
           const message = {
             senderId: userId,
             senderName: user.name,
-            senderAvatar: user.avatar,
+            senderAvatar: user.profilePicture,
             content: data.content,
             timestamp: new Date(),
             read: false,
@@ -136,7 +136,7 @@ class ChatService {
             chatId: data.chatId,
             message: {
               ...message,
-              _id: chat.messages[chat.messages.length - 1]._id
+              _id: (chat.messages[chat.messages.length - 1] as any)._id
             }
           });
 
@@ -174,6 +174,71 @@ class ChatService {
           });
         } catch (error) {
           console.error('Error marking messages as read:', error);
+        }
+      });
+
+      // Delete message
+      socket.on('message:delete', async (data: { chatId: string; messageId: string }) => {
+        try {
+          const userId = socket.data.userId;
+          if (!userId) {
+            socket.emit('error', { message: 'Not authenticated' });
+            return;
+          }
+
+          const chat = await Chat.findById(data.chatId);
+          if (!chat) {
+            socket.emit('error', { message: 'Chat not found' });
+            return;
+          }
+
+          // Check if user is participant
+          if (!chat.participants.some(p => p.toString() === userId)) {
+            socket.emit('error', { message: 'Not authorized' });
+            return;
+          }
+
+          // Find the message
+          const messageIndex = chat.messages.findIndex(m => (m as any)._id?.toString() === data.messageId);
+          
+          if (messageIndex === -1) {
+            socket.emit('error', { message: 'Message not found' });
+            return;
+          }
+
+          const message = chat.messages[messageIndex];
+
+          // Only allow sender to delete their own message
+          if (message.senderId.toString() !== userId) {
+            socket.emit('error', { message: 'You can only delete your own messages' });
+            return;
+          }
+
+          // Remove the message
+          chat.messages.splice(messageIndex, 1);
+
+          // Update last message if the deleted message was the last one
+          if (chat.messages.length > 0) {
+            const lastMsg = chat.messages[chat.messages.length - 1];
+            chat.lastMessage = lastMsg.content;
+            chat.lastMessageTime = lastMsg.timestamp;
+          } else {
+            chat.lastMessage = undefined;
+            chat.lastMessageTime = undefined;
+          }
+
+          await chat.save();
+
+          // Notify all participants in the chat room
+          this.io?.to(`chat:${data.chatId}`).emit('message:deleted', {
+            chatId: data.chatId,
+            messageId: data.messageId
+          });
+
+          console.log(`🗑️ Message ${data.messageId} deleted from chat ${data.chatId}`);
+        } catch (error) {
+          console.error('Error deleting message:', error);
+          socket.emit('error', { message: 'Failed to delete message' });
         }
       });
 
